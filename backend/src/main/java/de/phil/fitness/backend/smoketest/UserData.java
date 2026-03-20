@@ -1,31 +1,43 @@
 package de.phil.fitness.backend.smoketest;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "USERDATA")
+@Getter
 public class UserData {
-
     @Id
-    private Integer id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    @Column(nullable = false)
-    private String name;
+    @Column(name = "USERNAME", nullable = false, unique = true, length = 32)
+    private String username;
 
-    @Column(nullable = false)
-    private Integer age;
+    @Column(name = "EMAIL", nullable = false, unique = true, length = 36)
+    private String email;
 
-    public UserData() { }
+    @Column(name = "FIRST_NAME", length = 24)
+    private String firstName;
 
-    public Integer getId() {
-        return this.id;
+    @Column(name = "LAST_NAME", length = 24)
+    private String lastName;
+
+    @Column(name = "DATE_OF_BIRTH", nullable = false)
+    private LocalDate dateOfBirth;
+
+    @ManyToOne
+    @JoinColumn(name = "ROLE_ID", nullable = false)
+    private Role role;
+
+    @Column(name = "CREATED_AT", nullable = false)
+    private LocalDateTime createdAt;
+
+    public UserData() {
+
     }
-
-    public String getName() {
-        return this.name;
-    }
-
-    public Integer getAge() {
-        return this.age;
-    }
+    //Getter: Lombok generated
 }
