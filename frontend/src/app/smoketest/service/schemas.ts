@@ -1,19 +1,19 @@
-import { z } from "zod";
+import { z } from 'zod';
 
-export const RoleSchema = z.object ({
-    roleId: z.number(),
-    roleName: z.string(),
+export const RoleSchema = z.object({
+  roleId: z.number(),
+  roleName: z.string(),
 });
 
 export const UserDataSchema = z.object({
-    id: z.number(),
-    username: z.string(),
-    email: z.string(),
-    firstName: z.string(),
-    lastName: z.string(),
-    dateOfBirth: z.string(),
-    createdAt: z.string(),
-    role: RoleSchema,
+  id: z.number(),
+  username: z.string(),
+  email: z.string(),
+  firstName: z.string(),
+  lastName: z.string(),
+  dateOfBirth: z.string(),
+  createdAt: z.string(),
+  role: RoleSchema,
 });
 
 export const UserDataDtoList = z.array(UserDataSchema);

@@ -1,9 +1,9 @@
-import backendFetch from "@/shared/api/backend"
+import backendFetch from '@/shared/api/backend';
 //currently unused
 export async function GET() {
   try {
-    const response = await backendFetch("/backend/smoketest/users", {
-      method: "GET",
+    const response = await backendFetch('/backend/smoketest/users', {
+      method: 'GET',
     });
 
     return new Response(response.body, {
@@ -12,8 +12,8 @@ export async function GET() {
     });
   } catch {
     return Response.json(
-      { error: "Spring Boot backend unreachable" },
-      { status: 500 }
+      { error: 'Spring Boot backend unreachable' },
+      { status: 500 },
     );
   }
 }

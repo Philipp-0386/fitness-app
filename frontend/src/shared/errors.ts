@@ -1,14 +1,14 @@
 export class ApiError extends Error {
-    status: number;
+  status: number;
 
-    constructor(status: number, message: string) {
-        super(message);
-        this.status = status;
-    }
+  constructor(status: number, message: string) {
+    super(message);
+    this.status = status;
+  }
 }
 
 export class NetworkError extends Error {
-    constructor(message = "Network request failed") {
-        super(message);
-    }
+  constructor(message = 'Network request failed') {
+    super(message);
+  }
 }
