@@ -1,5 +1,5 @@
 import backendFetch from "@/shared/api/backend";
-import ApiError from "./apiError";
+import { ApiError } from "@/shared/errors";
 import { UserDataDtoList } from  "../service/schemas";
 import { RoleDtoList } from "../service/schemas";
 
