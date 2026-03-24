@@ -13,7 +13,7 @@ import java.util.Optional;
  * Simple test routing ignoring all architecture.
  */
 @RestController
-@RequestMapping("/backend/test")
+@RequestMapping("/backend/smoketest")
 @Slf4j
 public class ControllerServiceTest {
     private final UserDataRepository userRepo;
