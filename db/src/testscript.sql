@@ -9,7 +9,8 @@ CREATE TABLE roles (
 CREATE TABLE userdata (
     id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     username VARCHAR2(32) UNIQUE NOT NULL,
-    email VARCHAR(64) UNIQUE NOT NULL,
+    email VARCHAR2(64) UNIQUE NOT NULL,
+    password_hashed VARCHAR2(128) NOT NULL,
     first_name VARCHAR2(24),
     last_name VARCHAR2(24),
     date_of_birth DATE NOT NULL,
@@ -21,7 +22,7 @@ CREATE TABLE userdata (
 INSERT INTO ROLES (role_name) VALUES ('USER');
 INSERT INTO ROLES (role_id, role_name) VALUES (0, 'ADMIN');
 
-INSERT INTO USERDATA (username, email, first_name, last_name, date_of_birth) VALUES ('Testuser 1', 'test@test', 'ab', 'cd', TO_DATE('01.01.2010', 'DD.MM.YYYY'));
-INSERT INTO USERDATA (username, email, first_name, last_name, date_of_birth) VALUES ('Testuser 2', '2@test', 'ab2', 'cd2', TO_DATE('02.02.2020', 'DD.MM.YYYY'));
+INSERT INTO USERDATA (username, email, password_hashed, first_name, last_name, date_of_birth) VALUES ('Testuser 1', 'test@test', 'hash1', 'ab', 'cd', TO_DATE('01.01.2010', 'DD.MM.YYYY'));
+INSERT INTO USERDATA (username, email, password_hashed, first_name, last_name, date_of_birth) VALUES ('Testuser 2', '2@test', 'hash2', 'ab2', 'cd2', TO_DATE('02.02.2020', 'DD.MM.YYYY'));
 
 COMMIT;
