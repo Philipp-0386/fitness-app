@@ -1,5 +1,6 @@
 package de.phil.fitness.backend.smoketest;
 
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,6 +16,7 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/backend/smoketest")
 @Slf4j
+@Transactional
 public class ControllerServiceTest {
     private final UserDataRepository userRepo;
     private final RoleRepository roleRepo;
