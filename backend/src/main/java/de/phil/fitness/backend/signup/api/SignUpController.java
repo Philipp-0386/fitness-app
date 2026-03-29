@@ -25,8 +25,8 @@ public class SignUpController {
 
     /**
      * Default endpoint for default user creation.
-     * @param request Contains user information after automatically mapped by Jackson.
-     * @return Returns {@link SignUpResponse} object after successful creation process.
+     * @param request Contains user information after automatically mapped by Jackson
+     * @return Returns {@link SignUpResponse} object after successful creation process
      */
     @PostMapping
     //Frontend hinweis: yyyy-MM-dd für dateOfBirth angeben (input date type)

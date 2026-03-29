@@ -5,8 +5,8 @@ import java.time.LocalDateTime;
 /**
  * Custom error response class for exception handling.
  * @param message   Message with context information
- * @param status    Contains http code.
- * @param timestamp Documents time of creation.
+ * @param status    Contains http code
+ * @param timestamp Documents time of creation
  */
 public record ErrorResponse(
         String message,

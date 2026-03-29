@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 public class GlobalExceptionHandler {
     /**
      * Handles case of already existing emails during the sign-up process and creation of a new user.
-     * @param ex Accepts the exception object.
+     * @param ex Accepts the exception object
      * @return  Returns a {@link ResponseEntity} containing key information regarding the exception
      */
     @ExceptionHandler(EmailAlreadyExistsException.class)
@@ -32,7 +32,7 @@ public class GlobalExceptionHandler {
     }
     /**
      * Handles the case of missing default role during user creation process.
-     * @param ex Accepts the exception object.
+     * @param ex Accepts the exception object
      * @return  Returns a {@link ResponseEntity} containing key information regarding the exception
      */
     @ExceptionHandler(DefaultRoleNotFoundException.class)

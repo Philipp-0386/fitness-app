@@ -36,7 +36,7 @@ public class SignUpService {
     /**
      * Creates a new user after verifying parsed information.
      * @param dto containing the user's data, must not be {@code null}
-     * @return returns a {@link SignUpResponse} object after successful creation.
+     * @return returns a {@link SignUpResponse} object after successful creation
      */
 
     public SignUpResponse createUser(SignUpRequest dto) {
