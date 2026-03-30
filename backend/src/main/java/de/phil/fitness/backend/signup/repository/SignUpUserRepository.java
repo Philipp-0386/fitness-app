@@ -8,5 +8,4 @@ import org.springframework.data.jpa.repository.JpaRepository;
  */
 public interface SignUpUserRepository extends JpaRepository<User, Long> {
     boolean existsByEmail(String email);
-
 }

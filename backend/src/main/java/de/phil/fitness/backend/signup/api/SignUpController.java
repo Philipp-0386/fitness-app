@@ -14,8 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
  * REST endpoint responsible for handling user creation process.
  */
 @RestController
-@RequestMapping("/signup")
-@Slf4j
+@RequestMapping("/backend/signup")
 public class SignUpController {
     private final SignUpService signUpService;
 
@@ -24,7 +23,7 @@ public class SignUpController {
     }
 
     /**
-     * Default endpoint for default user creation.
+     * Default endpoint for user creation.
      * @param request Contains user information after automatically mapped by Jackson
      * @return Returns {@link SignUpResponse} object after successful creation process
      */

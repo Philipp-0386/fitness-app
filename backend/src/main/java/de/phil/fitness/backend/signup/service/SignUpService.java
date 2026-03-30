@@ -10,8 +10,8 @@ import de.phil.fitness.backend.signup.model.User;
 import de.phil.fitness.backend.signup.repository.SignUpRoleRepository;
 import de.phil.fitness.backend.signup.repository.SignUpUserRepository;
 
-import java.util.Optional;
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
  */
 @Service
 @Transactional
+@Slf4j
 public class SignUpService {
     private final SignUpUserRepository signUpUserRepository;
     private final SignUpRoleRepository signUpRoleRepository;
@@ -38,20 +39,19 @@ public class SignUpService {
      * @param dto containing the user's data, must not be {@code null}
      * @return returns a {@link SignUpResponse} object after successful creation
      */
-
     public SignUpResponse createUser(SignUpRequest dto) {
+        log.debug("User creation initiated. email={}", dto.getEmail());
         if(signUpUserRepository.existsByEmail(dto.getEmail())) {
             throw new EmailAlreadyExistsException(
                     "User with email: " +dto.getEmail()+ " already exists!");
         }
         Role defaultRole = signUpRoleRepository.findById(1L)
-                .orElseThrow(() -> new DefaultRoleNotFoundException("Default role not found"));
-
+                .orElseThrow(() -> new DefaultRoleNotFoundException("Default role not found during user creation!"));
         User userEntity = signUpMapper.mapRequestToUserEntity(dto);
         userEntity.setRole(defaultRole);
         userEntity.setPasswordHashed(passwordEncoder.encode(dto.getPasswordUnhashed()));
         User savedUser = signUpUserRepository.save(userEntity);
-
+        log.info("User creation successful. userId={}, email={}", savedUser.getId(), savedUser.getEmail());
         return signUpMapper.mapUserEntityToResponse(savedUser);
     }
 }
