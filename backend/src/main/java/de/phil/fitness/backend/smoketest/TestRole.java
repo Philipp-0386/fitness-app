@@ -8,7 +8,7 @@ import lombok.Setter;
 @Table(name = "ROLES")
 @Getter
 @Setter
-public class Role {
+public class TestRole {
     @Id
     @Column(name = "ROLE_ID")
     private Integer roleId;

@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Table(name = "USERDATA")
 @Getter
 @Setter
-public class UserData {
+public class TestUser {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -33,12 +33,12 @@ public class UserData {
 
     @ManyToOne
     @JoinColumn(name = "ROLE_ID", nullable = false)
-    private Role role;
+    private TestRole role;
 
     @Column(name = "CREATED_AT", nullable = false)
     private LocalDateTime createdAt;
 
-    public UserData() {
+    public TestUser() {
 
     }
     //Getter: Lombok generated

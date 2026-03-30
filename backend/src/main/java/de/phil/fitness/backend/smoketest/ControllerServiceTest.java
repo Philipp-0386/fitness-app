@@ -18,10 +18,10 @@ import java.util.Optional;
 @Slf4j
 @Transactional
 public class ControllerServiceTest {
-    private final UserDataRepository userRepo;
-    private final RoleRepository roleRepo;
+    private final TestUserRepository userRepo;
+    private final TestRoleRepository roleRepo;
 
-    public ControllerServiceTest(UserDataRepository userRepo, RoleRepository roleRepo) {
+    public ControllerServiceTest(TestUserRepository userRepo, TestRoleRepository roleRepo) {
         this.userRepo = userRepo;
         this.roleRepo = roleRepo;
     }
@@ -32,17 +32,17 @@ public class ControllerServiceTest {
         return "Test";
     }
     @GetMapping("/users")
-    public List<UserData> getAllUsers() {
+    public List<TestUser> getAllUsers() {
         log.info("getAllUsers called");
         return userRepo.findAll();
     }
     @GetMapping("/user/{id}")
-    public Optional<UserData> getUserById(@PathVariable Long id) {
+    public Optional<TestUser> getUserById(@PathVariable Long id) {
         log.info("Specific user request ({})", id);
         return userRepo.findById(id);
     }
     @GetMapping("/roles")
-    public List<Role> getAllRoles() {
+    public List<TestRole> getAllRoles() {
         log.info("getAllRoles called");
         return roleRepo.findAll();
     }
