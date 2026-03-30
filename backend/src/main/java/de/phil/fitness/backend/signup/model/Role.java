@@ -1,9 +1,6 @@
 package de.phil.fitness.backend.signup.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -18,9 +15,9 @@ import lombok.Setter;
 @Setter
 public class Role {
     @Id
-    @Column(name = "ROLE_ID")
-    private Integer roleId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
-    @Column(name = "ROLE_NAME", nullable = false, unique = true)
-    private String roleName;
+    @Column(name = "NAME", nullable = false, unique = true)
+    private String name;
 }

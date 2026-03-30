@@ -10,9 +10,9 @@ import lombok.Setter;
 @Setter
 public class TestRole {
     @Id
-    @Column(name = "ROLE_ID")
+    @Column(name = "ID")
     private Integer roleId;
 
-    @Column(name = "ROLE_NAME", nullable = false, unique = true)
+    @Column(name = "NAME", nullable = false, unique = true)
     private String roleName;
 }
