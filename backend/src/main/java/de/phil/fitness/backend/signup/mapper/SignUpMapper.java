@@ -17,11 +17,12 @@ public class SignUpMapper {
 
     /**
      * Converts {@link SignUpRequest} object into {@link User} entity.
-     * @param sur  {@link SignUpRequest} object to converty, must not be {@code null}
+     * @param sur  {@link SignUpRequest} object to convert, must not be {@code null}
      * @return  returns a {@link User} entity populated with the user's data
      */
     public User mapRequestToUserEntity(SignUpRequest sur) {
         User user = new User();
+        user.setUsername(sur.getUsername());
         user.setEmail(sur.getEmail());
         user.setFirstName(sur.getFirstName());
         user.setLastName(sur.getLastName());
@@ -36,6 +37,7 @@ public class SignUpMapper {
      */
     public SignUpResponse mapUserEntityToResponse(User user) {
         SignUpResponse res = new SignUpResponse();
+        res.setUsername(user.getUsername());
         res.setEmail(user.getEmail());
         res.setFirstName(user.getFirstName());
         res.setLastName(user.getLastName());

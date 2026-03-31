@@ -1,12 +1,11 @@
 package de.phil.fitness.backend.signup.dto;
 
-import de.phil.fitness.backend.signup.model.Role;
-
-import lombok.Getter;
-import lombok.Setter;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+
+import de.phil.fitness.backend.signup.model.Role;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Simple DTO responsible for carrying user's data.
@@ -15,8 +14,9 @@ import java.time.LocalDateTime;
 @Setter
 public class SignUpRequest {
     private final Integer id = null;
+    private String username;
     private String email;
-    private String passwordUnhashed;
+    private String password;
     private String firstName;
     private String lastName;
     private LocalDate dateOfBirth;

@@ -9,6 +9,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class SignUpResponse {
+    private String username;
     private String email;
     private String firstName;
     private String lastName;

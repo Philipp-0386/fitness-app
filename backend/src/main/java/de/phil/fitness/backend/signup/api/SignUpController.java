@@ -1,14 +1,13 @@
 package de.phil.fitness.backend.signup.api;
 
-import de.phil.fitness.backend.signup.dto.SignUpRequest;
-import de.phil.fitness.backend.signup.dto.SignUpResponse;
-import de.phil.fitness.backend.signup.service.SignUpService;
-
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import de.phil.fitness.backend.signup.dto.SignUpRequest;
+import de.phil.fitness.backend.signup.dto.SignUpResponse;
+import de.phil.fitness.backend.signup.service.SignUpService;
 
 /**
  * REST endpoint responsible for handling user creation process.

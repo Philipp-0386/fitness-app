@@ -4,6 +4,7 @@ import de.phil.fitness.backend.signup.dto.SignUpRequest;
 import de.phil.fitness.backend.signup.dto.SignUpResponse;
 import de.phil.fitness.backend.signup.exception.DefaultRoleNotFoundException;
 import de.phil.fitness.backend.signup.exception.EmailAlreadyExistsException;
+import de.phil.fitness.backend.signup.exception.UsernameAlreadyTaken;
 import de.phil.fitness.backend.signup.mapper.SignUpMapper;
 import de.phil.fitness.backend.signup.model.Role;
 import de.phil.fitness.backend.signup.model.User;
@@ -45,11 +46,16 @@ public class SignUpService {
             throw new EmailAlreadyExistsException(
                     "User with email: " +dto.getEmail()+ " already exists!");
         }
+        if(signUpUserRepository.existsByUsername(dto.getUsername())) {
+            throw new UsernameAlreadyTaken(
+                    "Username "+ dto.getUsername() +" already taken!"
+            );
+        }
         Role defaultRole = signUpRoleRepository.findById(1L)
                 .orElseThrow(() -> new DefaultRoleNotFoundException("Default role not found during user creation!"));
         User userEntity = signUpMapper.mapRequestToUserEntity(dto);
         userEntity.setRole(defaultRole);
-        userEntity.setPasswordHashed(passwordEncoder.encode(dto.getPasswordUnhashed()));
+        userEntity.setPasswordHashed(passwordEncoder.encode(dto.getPassword()));
         User savedUser = signUpUserRepository.save(userEntity);
         log.info("User creation successful. userId={}, email={}", savedUser.getId(), savedUser.getEmail());
         return signUpMapper.mapUserEntityToResponse(savedUser);
