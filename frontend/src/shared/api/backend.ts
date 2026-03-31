@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { NetworkError } from '@/shared/errors';
+import { NetworkError } from '@/shared/api/errors/network-error';
 
 const BASE_URL = process.env.SPRING_API_BASE_URL;
 
