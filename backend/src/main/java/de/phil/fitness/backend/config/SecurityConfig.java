@@ -38,7 +38,7 @@ public class SecurityConfig {
      * @throws Exception throws exception if security configuration fails
      */
     @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
@@ -55,9 +55,10 @@ public class SecurityConfig {
      * @return Container mapping settings to endpoints.
      */
     @Bean
-    CorsConfigurationSource corsConfiguration() {
+    public CorsConfigurationSource corsConfiguration() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(List.of("http://localhost:3000"));
+        config.setAllowCredentials(true);
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
         config.setAllowedHeaders(List.of("*"));
 
