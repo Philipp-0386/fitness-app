@@ -1,4 +1,4 @@
-import { ApiError } from '@/shared/errors';
+import { ApiError } from '@/shared/api/errors/api-error';
 
 import { fetchUserData } from '../api/server';
 import type { UserData } from './models';

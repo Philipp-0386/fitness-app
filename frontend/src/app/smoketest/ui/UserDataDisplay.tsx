@@ -1,6 +1,7 @@
 import { getUserDataAll } from '../service/userDataServiceServer';
 import type { UserData } from '../service/models';
-import { ApiError, NetworkError } from '@/shared/errors';
+import { ApiError } from '@/shared/api/errors/api-error';
+import { NetworkError } from '@/shared/api/errors/network-error';
 
 export default async function UserDataShowUi() {
   let users: UserData[];
