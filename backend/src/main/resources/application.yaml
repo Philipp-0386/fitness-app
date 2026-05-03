@@ -17,6 +17,10 @@ spring:
         format_sql: true
         hibernate.dialect: org.hibernate.dialect.OracleDialect
 
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: 900000
+
 logging:
   file:
     name: logs/fitness-app.log
