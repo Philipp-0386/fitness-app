@@ -1,4 +1,3 @@
 package de.phil.fitness.backend.login.dto;
 
-public class LoginResponse {
-}
+public record LoginResponse(String username, String role) {}
