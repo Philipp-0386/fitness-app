@@ -17,6 +17,9 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+/**
+ * Filter that intercepts incoming HTTP requests to authenticate users based on the JWT token present in the "jwt" cookie. If a valid token is found, the user's authentication is set in the security context for the duration of the request.
+ */
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
 

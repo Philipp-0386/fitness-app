@@ -15,6 +15,9 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 
+/**
+ * Service responsible for generating and validating JWT tokens. It uses a secret key to sign the tokens and includes user details such as username and roles in the token claims. The service also provides methods to extract information from the token and validate its authenticity and expiration.
+ */
 @Service
 public class JwtService {
 

@@ -13,6 +13,9 @@ import de.phil.fitness.backend.login.service.AuthService;
 import de.phil.fitness.backend.signup.model.User;
 import jakarta.servlet.http.HttpServletResponse;
 
+/**
+ * Controller responsible for handling authentication requests. It processes login requests, authenticates users, generates JWT tokens, and sets them in the response cookies.
+ */
 @RestController
 @RequestMapping("/backend/login")
 public class AuthController {
@@ -28,6 +31,12 @@ public class AuthController {
         this.jwtService = jwtService;
     }
     
+    /**
+     * Handles the login request, authenticates the user, generates a JWT token, and sets it in the response cookie.
+     * @param request The login request containing the username and password.
+     * @param response The HTTP response to set the JWT cookie.
+     * @return A LoginResponse containing the username and role of the authenticated user.
+     */
     @PostMapping
     public LoginResponse handleLoginRequest(@RequestBody LoginRequest request, HttpServletResponse response) {
         User user = authService.login(request);
