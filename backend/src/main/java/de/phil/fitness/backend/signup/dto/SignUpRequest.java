@@ -3,7 +3,7 @@ package de.phil.fitness.backend.signup.dto;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-import de.phil.fitness.backend.signup.model.Role;
+import de.phil.fitness.backend.user.model.Role;
 import lombok.Getter;
 import lombok.Setter;
 

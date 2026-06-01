@@ -4,7 +4,7 @@ import org.springframework.stereotype.Component;
 
 import de.phil.fitness.backend.signup.dto.SignUpRequest;
 import de.phil.fitness.backend.signup.dto.SignUpResponse;
-import de.phil.fitness.backend.signup.model.User;
+import de.phil.fitness.backend.user.model.User;
 
 /**
  * This mapper class converts numerous objects during the user creation process.

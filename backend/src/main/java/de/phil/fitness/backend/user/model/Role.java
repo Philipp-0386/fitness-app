@@ -1,4 +1,4 @@
-package de.phil.fitness.backend.signup.model;
+package de.phil.fitness.backend.user.model;
 
 import jakarta.persistence.*;
 import lombok.Getter;
