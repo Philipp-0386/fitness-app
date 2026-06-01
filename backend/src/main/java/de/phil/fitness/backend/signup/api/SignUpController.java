@@ -13,7 +13,7 @@ import de.phil.fitness.backend.signup.service.SignUpService;
  * REST endpoint responsible for handling user creation process.
  */
 @RestController
-@RequestMapping("/backend/signup")
+@RequestMapping("/backend/auth")
 public class SignUpController {
     private final SignUpService signUpService;
 
@@ -26,7 +26,7 @@ public class SignUpController {
      * @param request Contains user information after automatically mapped by Jackson
      * @return Returns {@link SignUpResponse} object after successful creation process
      */
-    @PostMapping
+    @PostMapping("/signup")
     //Frontend hinweis: yyyy-MM-dd für dateOfBirth angeben (input date type)
     public SignUpResponse root(@RequestBody SignUpRequest request) {
         return signUpService.createUser(request);
