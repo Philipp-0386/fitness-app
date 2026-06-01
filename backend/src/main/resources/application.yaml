@@ -17,9 +17,11 @@ spring:
         format_sql: true
         hibernate.dialect: org.hibernate.dialect.OracleDialect
 
-jwt:
-  secret: ${JWT_SECRET}
-  expiration: 900000
+app:
+  jwt:
+    secret: ${JWT_SECRET}
+    access-token-expiration-minutes: 15
+    refresh-token-expiration-days: 7
 
 logging:
   file:

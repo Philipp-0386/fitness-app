@@ -1,7 +1,7 @@
-package de.phil.fitness.backend.signup.repository;
+package de.phil.fitness.backend.user.repository;
 
 
-import de.phil.fitness.backend.signup.model.Role;
+import de.phil.fitness.backend.user.model.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
@@ -9,6 +9,6 @@ import java.util.Optional;
 /**
  *  Repository for {@link Role} persistence operations.
  */
-public interface SignUpRoleRepository extends JpaRepository<Role, Long> {
+public interface RoleRepository extends JpaRepository<Role, Long> {
     Optional<Role> findById(long id);
 }
