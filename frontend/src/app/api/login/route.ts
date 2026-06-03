@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
 
   let response: Response;
   try {
-    response = await backendFetch('/backend/login', {
+    response = await backendFetch('/backend/auth/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
