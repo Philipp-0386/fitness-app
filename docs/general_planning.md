@@ -9,8 +9,8 @@ This documentation will be dynamically adjusted. The only purpose it serves is b
 Note: These phases are not necessarily to be in order, nor are they fully closed within themselves or completely exclusive to each other. They act more as a conceptual blocks of tasks, while also creating some sort of timeline. For a more accurate display of continuity and exclusivity i would refer the github issues and milestones.
 
 - Phase 0: Initial Setup (Done)
-  - Setup Oracle database, Spring and Nextjs seperately
-  - Connect database to Spring (enviorment variables)
+  - Setup Oracle database, Spring and Nextjs separately
+  - Connect database to Spring (environment variables)
   - Create DB entries of user (and roles) to be displayed by nextjs (-> smoketest)
   - [Smoketest](../backend/src/main/java/de/phil/fitness/backend/smoketest/) contains successful smoketest (as of pre-jwt implementation and rework, not tested since) #
 
@@ -26,14 +26,16 @@ Note: These phases are not necessarily to be in order, nor are they fully closed
     - Note after rework: Token creation done. validation, refresh, and revoke is NOT DONE
 
 - Phase 3: Domain relevant implementations
-  -
+
+  **TODO**, after class diagram
 
 ## Key Decisions
 
 ### JWT > Sessions
 
-Initially i wanted to use sessions because spring security comes with deployable sessions out of the box, but once i realised that sessions with nextjs frontend probably doesnt really work as well as it would have with an SPA vite react frontend. On top of that, do i prefer the approach of token based authoriaztion more.
+Initially I wanted to use sessions because spring security comes with deployable sessions out of the box, but once I realised that sessions with nextjs frontend probably does not really work as well as it would have with an SPA vite react frontend, I decided against them. I also prefer token-based authorization conceptually.
 
 ### Token Authentication Idea
 
+- JWT lifecycle implementation handled by spring
 - stored as httpOnly Cookies

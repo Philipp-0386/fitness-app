@@ -1,4 +1,4 @@
-# General Notes Regarding The Domai Of The Application
+# General Notes Regarding The Domain Of The Application
 
 Overview of to be implemented features.
 
@@ -15,7 +15,7 @@ The application is a fitness app. In its final state, the software should suppor
 
 - Routines
   - Workout templates
-  - Weekly programm/schedule (multi-week plans)
+  - Weekly programme/schedule (multi-week plans)
 
 - Analytics
   - Personal records
