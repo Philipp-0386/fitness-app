@@ -23,7 +23,18 @@ Note: These phases are not necessarily to be in order, nor are they fully closed
   - Adjust spring security (CORS, CRSF, default stand-alone spring authentication)
     - Protected endpoints?
   - Implement JWTs/Token based authentication
-    - Note after rework: Token creation done. validation, refresh, and revoke is NOT DONE
+    - Note after rework: Token creation done. validation, refresh, and revoke is NOT DONE-
+    - full token lifecycle is the endgoal, but maybe not fully covered within phase 2
+
+- Phase 2.1: Token Lifecycle
+  - Creation (done)
+  - Validation (done)
+  - Token storing in DB (next, groundwork for rest of 2.1)
+  - Refresh
+  - Revoke
+  - Rotation
+  - Reuse-Detection
+  - (maybe) cleanup (@scheduled)
 
 - Phase 3: Domain relevant implementations
 

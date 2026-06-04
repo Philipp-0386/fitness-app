@@ -1,3 +1,0 @@
-# Database Modelling
-
-In this
