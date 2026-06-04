@@ -23,14 +23,14 @@ import org.springframework.stereotype.Service;
 @Transactional
 @Slf4j
 public class SignUpService {
-    private final UserRepository UserRepository;
-    private final RoleRepository RoleRepository;
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
     private final SignUpMapper signUpMapper;
     private final PasswordEncoder passwordEncoder;
 
     public SignUpService(UserRepository userRepo, RoleRepository roleRepo, SignUpMapper mapper, PasswordEncoder passwordEncoder) {
-        this.UserRepository = userRepo;
-        this.RoleRepository = roleRepo;
+        this.userRepository = userRepo;
+        this.roleRepository = roleRepo;
         this.signUpMapper = mapper;
         this.passwordEncoder = passwordEncoder;
     }
@@ -41,22 +41,22 @@ public class SignUpService {
      * @return returns a {@link SignUpResponse} object after successful creation
      */
     public SignUpResponse createUser(SignUpRequest dto) {
-        log.debug("User creation initiated. email={}", dto.getEmail());
-        if(UserRepository.existsByEmail(dto.getEmail())) {
+        log.debug("User creation initiated");
+        if(userRepository.existsByEmail(dto.getEmail())) {
             throw new EmailAlreadyExistsException(
-                    "User with email: " +dto.getEmail()+ " already exists!");
+                    "User with this email already registered!");
         }
-        if(UserRepository.existsByUsername(dto.getUsername())) {
+        if(userRepository.existsByUsername(dto.getUsername())) {
             throw new UsernameAlreadyTaken(
                     "Username "+ dto.getUsername() +" already taken!"
             );
         }
-        Role defaultRole = RoleRepository.findById(1L)
+        Role defaultRole = roleRepository.findById(1L)
                 .orElseThrow(() -> new DefaultRoleNotFoundException("Default role not found during user creation!"));
         User userEntity = signUpMapper.mapRequestToUserEntity(dto);
         userEntity.setRole(defaultRole);
         userEntity.setPasswordHashed(passwordEncoder.encode(dto.getPassword()));
-        User savedUser = UserRepository.save(userEntity);
+        User savedUser = userRepository.save(userEntity);
         log.info("User creation successful. userId={}", savedUser.getId());
         return signUpMapper.mapUserEntityToResponse(savedUser);
     }
