@@ -1,5 +1,6 @@
 import backendFetch from '@/shared/api/backend';
 import { NetworkError } from '@/shared/api/errors/network-error';
+import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
@@ -69,17 +70,46 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  let data: unknown;
+  let tokens: { accessToken?: string; refreshToken?: string } | null = null;
   try {
-    data = await response.json();
+    tokens = await response.json();
   } catch {
-    data = null;
+    return NextResponse.json(
+      {
+        code: 'INVALID_BACKEND_RESPONSE',
+        message: 'Backend returned malformed login response',
+      },
+      { status: 502 },
+    );
   }
 
-  const nextRes = NextResponse.json(data, { status: response.status });
-  const setCookie = response.headers.get('set-cookie');
-  if (setCookie) {
-    nextRes.headers.set('set-cookie', setCookie);
+  if (!tokens?.accessToken || !tokens?.refreshToken) {
+    return NextResponse.json(
+      {
+        code: 'INVALID_BACKEND_RESPONSE',
+        message: 'Backend response missing tokens',
+      },
+      { status: 502 },
+    );
   }
-  return nextRes;
+
+  const cookieStore = await cookies();
+
+  cookieStore.set('access_token', tokens.accessToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 60 * 15,
+    path: '/',
+  });
+
+  cookieStore.set('refresh_token', tokens.refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 60 * 60 * 24 * 7,
+    path: '/',
+  });
+
+  return NextResponse.json({ success: true }, { status: 200 });
 }

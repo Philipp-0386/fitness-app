@@ -8,19 +8,21 @@ const BASE_URL = process.env.SPRING_API_BASE_URL;
 if (!BASE_URL) {
   throw new Error('SPRING_API_BASE_URL is not defined');
 }
-//Server only function allowing calls to spring backend
+
+// Server only function allowing calls to spring backend
 export default async function backendFetch(
   path: string,
   init: RequestInit = {},
 ): Promise<Response> {
-  const cookieStore = cookies();
-  const cookieHeader = (await cookieStore).toString();
+  const cookieStore = await cookies();
+  const accessToken = cookieStore.get('access_token')?.value;
+
   try {
     return await fetch(`${BASE_URL}${path}`, {
       ...init,
       headers: {
         'Content-Type': 'application/json',
-        ...(cookieHeader ? { Cookie: cookieHeader } : {}),
+        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
         ...(init.headers ?? {}),
       },
       cache: 'no-store',
