@@ -57,7 +57,7 @@ public class SignUpService {
         userEntity.setRole(defaultRole);
         userEntity.setPasswordHashed(passwordEncoder.encode(dto.getPassword()));
         User savedUser = UserRepository.save(userEntity);
-        log.info("User creation successful. userId={}, email={}", savedUser.getId(), savedUser.getEmail());
+        log.info("User creation successful. userId={}", savedUser.getId());
         return signUpMapper.mapUserEntityToResponse(savedUser);
     }
 }
