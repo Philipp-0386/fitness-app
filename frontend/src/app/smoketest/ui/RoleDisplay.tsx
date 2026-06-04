@@ -1,6 +1,7 @@
 import { getRolesAll } from '../service/userDataServiceServer';
 import type { Role } from '../service/models';
-import { ApiError, NetworkError } from '@/shared/errors';
+import { ApiError } from '@/shared/api/errors/api-error';
+import { NetworkError } from '@/shared/api/errors/network-error';
 
 export default async function RoleShowUi() {
   let roles: Role[];
