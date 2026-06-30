@@ -36,7 +36,7 @@ Note: These phases are not necessarily to be in order, nor are they fully closed
   - Reuse-Detection
   - (maybe) cleanup (@scheduled)
 
-- Phase 3: Domain relevant implementations
+- ## Phase 3: Domain relevant implementations
 
   **TODO**, after class diagram
 
@@ -50,3 +50,12 @@ Initially I wanted to use sessions because spring security comes with deployable
 
 - JWT lifecycle implementation handled by spring
 - stored as httpOnly Cookies
+
+### Oracle vs Postgres
+
+I started running this project with oracle, because i knew it from university, but there are downsides to using it compared to other databases like postgres. I am currently thinking of eventually changing to postgres, but that a concern for the future once i might be limited be XE limits, or run into something very specific.
+Note to self: Migrate early if you do, before too late.
+
+### Database table structure
+
+See [DB Schema](./database/DatabaseModelling.md##session_log-session_exercise-and-exercise_set).
