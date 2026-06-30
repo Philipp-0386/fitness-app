@@ -6,3 +6,5 @@ This part of the documentation will focus on the spring backend structre. Curren
   and their relationships (User, Workout, Exercise, Set, etc.)
 - [Core infrastructure](./backend_core_infrastructure_class_diagram.uxf) —
   backend concerns such as JWT authentication and the Spring Security component structure
+
+(Note to myself: Once digrams are finished, include .png copies in documentation)
