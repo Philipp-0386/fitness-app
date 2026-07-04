@@ -4,7 +4,7 @@ This file documents the database modelling.
 
 ## Current State
 
-Currently the database only consists of a `user` table relevant for auth.
+Auth tables (`roles`, `userdata`) plus the core domain tables below (`exercise`, `muscle_group`, `exercise_musclegroup`, `workout_plan`, `workout_exercise`, `session_log`, `session_exercise`, `exercise_set`) are created via [db/src/main.sql](../../db/src/main.sql). No JPA entities/repositories exist for the domain tables yet.
 
 ## Planning
 
