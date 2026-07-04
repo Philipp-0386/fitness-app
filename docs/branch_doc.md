@@ -19,6 +19,6 @@ Once that is complete, i might work on the following topics regarding authentica
 
 - long-lasting tokens
 
-## feat/database/coreInfrastructure
+## chore/database/coreInfrastructure
 
 This branch sets up the core domain database infrastructure planned in [DatabaseModelling.md](./database/DatabaseModelling.md): the `exercise`, `muscle_group`, `exercise_musclegroup`, `workout_plan`, `workout_exercise`, `session_log`, `session_exercise` and `exercise_set` tables, added as SQL DDL to [db/src/main.sql](../db/src/main.sql) (no JPA entities/repositories yet).
