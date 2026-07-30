@@ -25,7 +25,7 @@ This project has nothing to do with my studies and is a side project I'm plannin
 
 # Setup Guide 
 
-(Reference Point: 15.04.2025 and prior)
+(Reference Point: 15.04.2026 and prior)
 
 ## Overview: 
 - Oracle Database
