@@ -110,3 +110,66 @@ Note: Session creation lazy vs eager?
 - **Optional**: `rest_seconds_after`, `notes`
 - **Audit**: `created_at`, `updated_at`
 - **Unique**: `(session_exercise_id, set_number)`
+
+## Open Points
+
+Reviewed on 03.08.2026 against the feature goals in [domain_notes.md](../domain_notes.md). None of the following is implemented yet; this section exists so the gaps are recorded rather than rediscovered later.
+
+The core tracking flow itself holds up: `session_log` → `session_exercise` → `exercise_set` covers logging, and the deliberate decoupling from `workout_plan` (see above) delivers what it promises — freestyle sessions, spontaneous exercises, and plan edits that do not corrupt history.
+
+### Missing: bodyweight tracking
+
+`domain_notes.md` lists a bodyweight tracker under Core and historical bodyweight progression under Analytics, but there is no table for it. Needs a `bodyweight_log` (user, value, measured_at) before either feature is possible.
+
+### Missing: load type on `exercise`
+
+For pull-ups or dips it is currently undecidable whether `exercise_set.weight_kg` means added weight or total weight. This blocks the 1RM and volume-per-muscle-group analytics: a bodyweight set stored with `weight_kg = NULL` counts as zero volume.
+
+Suggested: a `load_type` column on `exercise` (`EXTERNAL` / `BODYWEIGHT` / `BODYWEIGHT_PLUS` / `ASSISTED`). Turning that into real numbers additionally requires the bodyweight at the time of the session, so this point and the one above should be implemented together.
+
+### Missing: routine layer above `workout_plan`
+
+`workout_plan` models a single training day (`day_type`). The weekly programme / multi-week plans from `domain_notes.md` have no representation: a PPL split is currently just a loose set of unrelated plans, without ordering, weekday assignment or week cycle. This requires a new table (e.g. `routine` plus an assignment table), not an extra column.
+
+Deliberately deferred for now.
+
+### Missing: delete story for sessions
+
+`exercise` and `workout_plan` use soft deletes (`deleted_at`); the three session tables do not, and no foreign key declares `ON DELETE CASCADE`. Deleting a mislogged session therefore fails unless `exercise_set` and `session_exercise` rows are removed manually first.
+
+Cascade is semantically correct here — a set has no meaning without its session — and this is the only place in the schema where it is appropriate.
+
+### Constraint: `exercise` name uniqueness
+
+`exercise.name` has no uniqueness constraint, so duplicate standard exercises can be created. The right constraint is not a global one but `UNIQUE (owner_user_id, name)`: Oracle enforces uniqueness on a composite unique index as soon as not all indexed columns are NULL, so standard exercises (`owner_user_id IS NULL`) stay unique among themselves while each user can still define their own variant of an existing name.
+
+### Tradeoff: wide `exercise_set` table
+
+Strength columns (`reps`, `weight_kg`, `rpe`) and cardio columns (`duration_seconds`, `distance_meters`, `avg_heart_rate`) live in one table, all nullable, with no check enforcing a coherent combination. This is the pragmatic choice — table-per-type and EAV are both worse here — but nothing currently prevents a set with both `reps` and `distance_meters`. A guard would have to consider `exercise.exercise_type`, which is not reachable from a row-level check on `exercise_set`.
+
+### Tradeoff: `day_type` as a CHECK constraint
+
+`PUSH` / `PULL` / `LEGS` / `CUSTOM` is committed to one style of split; Upper/Lower, Full Body or Arms days all collapse into `CUSTOM`. Since every extension means a schema change, a free-text label or a lookup table (like `muscle_group`) would be more flexible.
+
+### Index candidates
+
+Primary keys and unique constraints already cover the hottest parent-to-child paths: `(plan_id, order_index)`, `(session_log_id, order_index)` and `(session_exercise_id, set_number)` each serve lookups by their leading column, and `muscle_group` is fully covered by its PK and unique name (21 rows — an index scan would not beat a full scan anyway).
+
+Remaining gaps:
+
+| Index | Reason |
+| --- | --- |
+| `exercise_musclegroup(muscle_group_id)` | The composite PK only serves the `exercise_id` direction; "which exercises train this muscle group" scans the whole join table |
+| `session_log(user_id, started_at DESC)` | "my recent sessions" — filter and sort in one index |
+| `session_exercise(exercise_id)` | The analytics path: per-exercise progression, 1RM, volume per muscle group |
+| `exercise(owner_user_id)` | "my custom exercises", plus the foreign key reason below |
+| `workout_plan(user_id)` | "my plans" |
+| `session_log(plan_id)`, `workout_exercise(exercise_id)` | Foreign key reason only |
+
+Structural reason beyond query speed: in Oracle, deleting a parent row (or updating its PK) takes a lock on the *entire* child table when the foreign key column is unindexed. Low practical risk in the current setup — soft deletes plus a reset script — but it is why "index every foreign key column" is the common Oracle default.
+
+Note that with the current mock data volume none of these will produce a measurable difference; the value right now is documenting the intended access paths.
+
+### Not planned
+
+Indexes on `deleted_at` or on low-cardinality status columns (`status`, `session_type`, `body_region`) — write cost without meaningful benefit.
