@@ -17,7 +17,7 @@ This project has nothing to do with my studies and is a side project I'm plannin
 
 # Tech Stack
 
-- Oracle Database 
+- PostgreSQL 17
 - Spring Boot 4.x
 - Next.js 16.x
 
@@ -25,18 +25,19 @@ This project has nothing to do with my studies and is a side project I'm plannin
 
 # Setup Guide 
 
-(Reference Point: 15.04.2026 and prior)
+(Reference Point: 09.09.2026 and prior)
 
 ## Overview: 
-- Oracle Database
+- PostgreSQL Database
 - Spring Backend
 - Next.js Frontend
 
 --
 
-## Oracle Database:
+## PostgreSQL Database:
 - Configure Docker Compose by adding secrets based on: db/.env.example.
-- The database user "fitness_user" is created and used by the application.
+- The postgres image creates the database and the application user from those variables on first start; no extra grant script is needed.
+- Run db/src/main.sql against that database to (re)create the schema and load the mock data. The script drops all tables first, so it is a reset, not a migration.
 
 --
 
