@@ -11,3 +11,13 @@
   --color-accent: #8338ec;
   /* states (hover, active, etc.) with color-mix() */
 }
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--color-background);
+  color: var(--color-text-primary);
+}

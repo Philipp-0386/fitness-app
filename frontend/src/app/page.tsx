@@ -1,17 +1,12 @@
-import Link from 'next/link';
+import { redirect } from 'next/navigation';
 
-export default function Home() {
-  return (
-    <div>
-      <h1>Home Page</h1>
-      <ul>
-        <li>
-          <Link href="/signup">SignUp</Link>
-        </li>
-        <li>
-          <Link href="/login">Login</Link>
-        </li>
-      </ul>
-    </div>
-  );
+import { GuestHome } from '@/features/home';
+import { isAuthenticated } from '@/shared/auth/session';
+
+export default async function HomePage() {
+  if (await isAuthenticated()) {
+    redirect('/dashboard');
+  }
+
+  return <GuestHome />;
 }
