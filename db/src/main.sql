@@ -145,17 +145,17 @@ CREATE TABLE exercise_set (
 INSERT INTO roles (name) VALUES ('USER');
 INSERT INTO roles (id, name) VALUES (0, 'ADMIN');
 
--- userdata (all password hashes are bcrypt of 'password')
+-- userdata (all password hashes are bcrypt of 'password', cost 10)
 INSERT INTO userdata (username, email, password_hashed, first_name, last_name, date_of_birth, role_id)
-VALUES ('admin', 'admin@fitness.local', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'Ada', 'Admin', DATE '1988-03-12', 0);
+VALUES ('admin', 'admin@fitness.local', '$2a$10$N9qo8uLOickgx2ZMRZoMye8fOsiTWZqYtkxvXkKm8BMzjT7t/vIdq', 'Ada', 'Admin', DATE '1988-03-12', 0);
 INSERT INTO userdata (username, email, password_hashed, first_name, last_name, date_of_birth, role_id)
-VALUES ('philipp', 'philipp@fitness.local', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'Philipp', 'Ringelkamp', DATE '1999-07-24', 1);
+VALUES ('philipp', 'philipp@fitness.local', '$2a$10$N9qo8uLOickgx2ZMRZoMye8fOsiTWZqYtkxvXkKm8BMzjT7t/vIdq', 'Philipp', 'Ringelkamp', DATE '1999-07-24', 1);
 INSERT INTO userdata (username, email, password_hashed, first_name, last_name, date_of_birth, role_id)
-VALUES ('lena_lifts', 'lena@fitness.local', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'Lena', 'Brandt', DATE '1995-11-05', 1);
+VALUES ('lena_lifts', 'lena@fitness.local', '$2a$10$N9qo8uLOickgx2ZMRZoMye8fOsiTWZqYtkxvXkKm8BMzjT7t/vIdq', 'Lena', 'Brandt', DATE '1995-11-05', 1);
 INSERT INTO userdata (username, email, password_hashed, first_name, last_name, date_of_birth, role_id)
-VALUES ('marco', 'marco@fitness.local', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'Marco', 'Keller', DATE '1992-01-19', 1);
+VALUES ('marco', 'marco@fitness.local', '$2a$10$N9qo8uLOickgx2ZMRZoMye8fOsiTWZqYtkxvXkKm8BMzjT7t/vIdq', 'Marco', 'Keller', DATE '1992-01-19', 1);
 INSERT INTO userdata (username, email, password_hashed, first_name, last_name, date_of_birth, role_id)
-VALUES ('sina', 'sina@fitness.local', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'Sina', 'Vogt', DATE '2001-09-30', 1);
+VALUES ('sina', 'sina@fitness.local', '$2a$10$N9qo8uLOickgx2ZMRZoMye8fOsiTWZqYtkxvXkKm8BMzjT7t/vIdq', 'Sina', 'Vogt', DATE '2001-09-30', 1);
 
 -- muscle_group
 INSERT INTO muscle_group (name, body_region) VALUES ('Chest', 'UPPER');
