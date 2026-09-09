@@ -1,6 +1,13 @@
-import { SignUpForm } from '@/features/signup/index';
+import { redirect } from 'next/navigation';
 
-export default function SignUpPage() {
+import { SignUpForm } from '@/features/signup/index';
+import { isAuthenticated } from '@/shared/auth/session';
+
+export default async function SignUpPage() {
+  if (await isAuthenticated()) {
+    redirect('/dashboard');
+  }
+
   return (
     <div>
       <h1>Sign Up Test Page</h1>

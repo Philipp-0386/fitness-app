@@ -46,7 +46,9 @@ export default function LoginForm() {
     setIsSubmitting(true);
     try {
       await login({ username: form.username, password: form.password });
-      router.push('/');
+      // Replace instead of push: the login form must not stay in the history stack.
+      router.replace('/dashboard');
+      router.refresh();
     } catch (error) {
       if (error instanceof ApiError) {
         if (error.code === 'INVALID_CREDENTIALS') {

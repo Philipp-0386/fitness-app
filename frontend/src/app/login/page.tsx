@@ -1,6 +1,13 @@
-import { LoginForm } from '@/features/login/index';
+import { redirect } from 'next/navigation';
 
-export default function LoginPage() {
+import { LoginForm } from '@/features/login/index';
+import { isAuthenticated } from '@/shared/auth/session';
+
+export default async function LoginPage() {
+  if (await isAuthenticated()) {
+    redirect('/dashboard');
+  }
+
   return (
     <div>
       <h1>Log In</h1>
