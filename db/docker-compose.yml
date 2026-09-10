@@ -1,10 +1,12 @@
-services: 
-  oracle-db:
-    image: gvenzl/oracle-free
+services:
+  postgres-db:
+    image: postgres:17
     environment:
-        ORACLE_PASSWORD: ${ORACLE_PASSWORD}
-        APP_USER: ${APP_USER}  
-        APP_USER_PASSWORD: ${APP_USER_PASSWORD}
+        POSTGRES_DB: ${POSTGRES_DB}
+        POSTGRES_USER: ${POSTGRES_USER}
+        POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
-      - 1521:1521
-      - 5500:5500
+      - 5432:5432
+    volumes:
+      # Runs only on first initialisation of an empty data directory
+      - ./src/main.sql:/docker-entrypoint-initdb.d/main.sql:ro

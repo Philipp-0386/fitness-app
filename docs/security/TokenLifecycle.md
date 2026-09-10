@@ -64,16 +64,16 @@ Only **refresh tokens** are persisted and therefore revocable.
 
 The refresh token is stored **hashed** (never in plaintext) — on a DB leak the token is worthless.
 
-Proposal (Oracle syntax, consistent with the existing tables):
+Proposal (Postgres syntax, consistent with the existing tables):
 
 ```sql
 CREATE TABLE refresh_token (
-    id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    user_id NUMBER NOT NULL,
-    token_hash VARCHAR2(64) NOT NULL UNIQUE,   -- SHA-256 hex of the refresh token
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    token_hash VARCHAR(64) NOT NULL UNIQUE,     -- SHA-256 hex of the refresh token
     expires_at TIMESTAMP NOT NULL,
     revoked_at TIMESTAMP,                       -- NULL = active
-    replaced_by NUMBER,                         -- rotation: successor token (self-FK)
+    replaced_by BIGINT,                         -- rotation: successor token (self-FK)
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     CONSTRAINT fk_refresh_token_user FOREIGN KEY (user_id) REFERENCES userdata(id),
     CONSTRAINT fk_refresh_token_replaced FOREIGN KEY (replaced_by) REFERENCES refresh_token(id)

@@ -5,7 +5,7 @@ spring:
     url: ${DB_URL}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
-    driver-class-name: oracle.jdbc.OracleDriver
+    driver-class-name: org.postgresql.Driver
 
   jpa:
     open-in-view: false
@@ -15,7 +15,7 @@ spring:
     properties:
       hibernate:
         format_sql: true
-        hibernate.dialect: org.hibernate.dialect.OracleDialect
+        hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
 
 app:
   jwt:
