@@ -4,7 +4,7 @@ This documentation will be dynamically adjusted. The only purpose it serves is b
 
 ---
 
-## Planning
+## Setup and base auth (WIP)
 
 Note: These phases are not necessarily to be in order, nor are they fully closed within themselves or completely exclusive to each other. They act more as a conceptual blocks of tasks, while also creating some sort of timeline. For a more accurate display of continuity and exclusivity i would refer the github issues and milestones.
 
@@ -36,9 +36,21 @@ Note: These phases are not necessarily to be in order, nor are they fully closed
   - Reuse-Detection
   - (maybe) cleanup (@scheduled)
 
-- ## Phase 3: Domain relevant implementations
+## Domain relevant implementations (partially started)
 
-  **TODO**, after class diagram
+**TODO**, after class diagram
+
+## Git Workflow (not started)
+
+Implement git workflow similiar (Note: SWT2 project)
+
+## Postgres migration (done)
+
+Migrate from oracle to postgres. (Notes below)
+
+## Single container root build (WIP)
+
+Allow the entire application in its current state to be ran from a single compose in the root folder. Maybe with prod and dev line later on if relevant/needed.
 
 ## Key Decisions
 
@@ -56,6 +68,7 @@ Initially I wanted to use sessions because spring security comes with deployable
 I started running this project with oracle, because i knew it from university, but there are downsides to using it compared to other databases like postgres. The switch to postgres happened on 09.09.2026: at that point the schema still lived in a single reset script, only two entities were mapped, and there were no native queries, so the migration was mostly a mechanical type rewrite instead of a real migration project.
 
 What changed:
+
 - Types: `VARCHAR2` to `VARCHAR`, `CLOB` to `TEXT`, `NUMBER` to `BIGINT` for ids and foreign keys, `INTEGER` for counters, `NUMERIC(p,s)` for decimals.
 - `DROP TABLE ... CASCADE CONSTRAINTS` to `DROP TABLE IF EXISTS ... CASCADE`; the reset script now also runs inside one explicit transaction.
 - `TO_DATE(...)` literals to ANSI `DATE 'YYYY-MM-DD'`.
