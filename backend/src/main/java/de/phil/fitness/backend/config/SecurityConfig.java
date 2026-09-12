@@ -46,6 +46,7 @@ public class SecurityConfig {
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/backend/auth/**").permitAll() //Note: ALL auth endpoints currently accessible/reachable
+                        .requestMatchers(HttpMethod.GET, "/actuator/health/**").permitAll() //Container healthcheck; exposes liveness state only, no details.
                         .anyRequest().authenticated())
                 .formLogin(form -> form.disable())
                 .httpBasic(httpBasic -> httpBasic.disable());

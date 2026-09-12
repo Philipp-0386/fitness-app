@@ -1,10 +1,15 @@
-# This is the general README file.
+# Fitness App
 
-In this project, my goal is to build the very basics of a fitness app. Later on it should ascend beyond a basic CRUD-App, with functionalities likes "1 max rep prediction/calculation".
+A backend-focused fitness tracking application, with the idea to go beyond a simple CRUD app by adding domain logic such as one-rep-max prediction. This is a personal side project i maintain besides uni.
 
-Looking at the tech stack, it is probably a bit overengineered, but the idea is to learn architecture, make design decisions, and understand how a potential web-app functions from top to bottom. Focus lies on the backend and database, but Next.js is used as a potential client to make us of that.
+Status: Early. Token based authentication is implemented, but still WIP. Core domain infrastructure exists within the database, but not accessible through the backend yet.
 
-This project has nothing to do with my studies and is a side project I'm planning to maintain.
+Current focus:
+
+- Migration to Postgres
+- Root image build
+
+For more [insights](././docs/general_planning.md)
 
 ---
 
@@ -23,38 +28,56 @@ This project has nothing to do with my studies and is a side project I'm plannin
 
 ---
 
-# Setup Guide 
+# Setup Guide
 
-(Reference Point: 09.09.2026 and prior)
+(Reference Point: 11.09.2026)
 
-## Overview: 
-- PostgreSQL Database
-- Spring Backend
-- Next.js Frontend
+Everything is defined in the root `compose.yaml`. Copy `.env.example` to `.env` and fill
+in the secrets first; all three services read from that single file.
+
+## Option A: full stack in Docker
+
+```
+docker compose --profile full up -d --build
+```
+
+Starts database, backend and frontend. The frontend is then reachable on
+http://localhost:3000, the backend on http://localhost:8080. No IntelliJ run
+configuration and no `npm run dev` needed.
+
+Startup order is enforced: the backend waits for the database healthcheck (`ddl-auto:
+validate` fails if the schema is missing), the frontend waits for
+`/actuator/health` on the backend.
+
+## Option B: database only (IntelliJ workflow)
+
+```
+docker compose up -d
+```
+
+Without `--profile full` only the `db` service starts; backend and frontend are run
+from IntelliJ / `npm run dev` as before. Note that those read their own
+`backend/.env` and `frontend/.env.local`, which must stay in sync with the root `.env`.
+
+## Database notes
+
+- `db/src/main.sql` is mounted into `/docker-entrypoint-initdb.d` and runs **once**, when
+  the `pgdata` volume is created. It is a reset script, not a migration.
+- After schema changes, re-seed with `docker compose down -v` followed by `up`.
+- To reset without recreating the container:
+  `docker exec -i fitness-app-db-1 psql -U <POSTGRES_USER> -d <POSTGRES_DB> -v ON_ERROR_STOP=1 < db/src/main.sql`
+
+## Networking
+
+Inside the compose network, services address each other by service name, not localhost:
+`jdbc:postgresql://db:5432/...` and `http://backend:8080`. Both are injected by
+`compose.yaml`, so the images stay environment-independent.
+
+## Logs
+
+Backend logs go to stdout (`docker compose logs -f backend`) and additionally to the
+`backend-logs` volume, because `application.yaml` configures a file appender.
 
 --
 
-## PostgreSQL Database:
-- Configure Docker Compose by adding secrets based on: db/.env.example.
-- The postgres image creates the database and the application user from those variables on first start; no extra grant script is needed.
-- db/src/main.sql is mounted into /docker-entrypoint-initdb.d and runs automatically whenever a fresh container is created, so `docker compose up` gives you a schema with mock data.
-- Because there is no named volume, `docker compose down` discards the data and the next `up` reseeds from scratch. To reset without recreating the container, run the script manually:
-  `docker exec -i db-postgres-db-1 psql -U <POSTGRES_USER> -d <POSTGRES_DB> -v ON_ERROR_STOP=1 < db/src/main.sql`
-- The script drops all tables first, so it is a reset, not a migration.
-
---
-
-## Spring Backend:
-- The backend is managed by IntelliJ.
-- Database access is configured using environment variables inside IntelliJ.
-- The application is automatically built and run via IntelliJ runtime.
-
-Note: Dependency changes might require **manual Maven reload**.
-
---
-
-## Nextjs:
-- Run the development server using: npm run dev
-
-
-
+Note: Dependency changes might require **manual Maven reload** in IntelliJ.

@@ -141,7 +141,7 @@ Cascade is semantically correct here — a set has no meaning without its sessio
 
 ### Constraint: `exercise` name uniqueness
 
-`exercise.name` has no uniqueness constraint, so duplicate standard exercises can be created. The right constraint is not a global one but `UNIQUE (owner_user_id, name)`: Oracle enforces uniqueness on a composite unique index as soon as not all indexed columns are NULL, so standard exercises (`owner_user_id IS NULL`) stay unique among themselves while each user can still define their own variant of an existing name.
+`exercise.name` has no uniqueness constraint, so duplicate standard exercises can be created. The intent is not a global constraint but a per-owner one, so that each user can define their own variant of an existing name. A plain `UNIQUE (owner_user_id, name)` does not fully express that in Postgres: NULLs are treated as distinct there, so it would still allow duplicate standard exercises (`owner_user_id IS NULL`). Two constraints are needed instead — `UNIQUE (owner_user_id, name)` for custom exercises, plus a partial index `CREATE UNIQUE INDEX ... ON exercise (name) WHERE owner_user_id IS NULL` for the standard ones. More explicit than the Oracle equivalent, and the partial index states the rule directly instead of relying on NULL semantics.
 
 ### Tradeoff: wide `exercise_set` table
 
@@ -166,7 +166,7 @@ Remaining gaps:
 | `workout_plan(user_id)` | "my plans" |
 | `session_log(plan_id)`, `workout_exercise(exercise_id)` | Foreign key reason only |
 
-Structural reason beyond query speed: in Oracle, deleting a parent row (or updating its PK) takes a lock on the *entire* child table when the foreign key column is unindexed. Low practical risk in the current setup — soft deletes plus a reset script — but it is why "index every foreign key column" is the common Oracle default.
+The Oracle-specific reason for indexing every foreign key column no longer applies: Oracle takes a lock on the *entire* child table when a parent row is deleted and the foreign key column is unindexed, Postgres only takes row-level locks. What remains is the ordinary performance reason — Postgres still has to scan the whole child table to verify that no referencing rows exist on a parent delete or PK update, and the query paths in the table above are the actual justification.
 
 Note that with the current mock data volume none of these will produce a measurable difference; the value right now is documenting the intended access paths.
 
