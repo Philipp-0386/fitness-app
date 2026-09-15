@@ -48,7 +48,7 @@ Implement git workflow similiar (Note: SWT2 project)
 
 Migrate from oracle to postgres. (Notes below)
 
-## Single container root build (WIP)
+## Single container root build (done)
 
 Allow the entire application in its current state to be ran from a single compose in the root folder. Maybe with prod and dev line later on if relevant/needed.
 
@@ -66,16 +66,6 @@ Initially I wanted to use sessions because spring security comes with deployable
 ### Oracle vs Postgres (migrated 09.09.2026)
 
 I started running this project with oracle, because i knew it from university, but there are downsides to using it compared to other databases like postgres. The switch to postgres happened on 09.09.2026: at that point the schema still lived in a single reset script, only two entities were mapped, and there were no native queries, so the migration was mostly a mechanical type rewrite instead of a real migration project.
-
-What changed:
-
-- Types: `VARCHAR2` to `VARCHAR`, `CLOB` to `TEXT`, `NUMBER` to `BIGINT` for ids and foreign keys, `INTEGER` for counters, `NUMERIC(p,s)` for decimals.
-- `DROP TABLE ... CASCADE CONSTRAINTS` to `DROP TABLE IF EXISTS ... CASCADE`; the reset script now also runs inside one explicit transaction.
-- `TO_DATE(...)` literals to ANSI `DATE 'YYYY-MM-DD'`.
-- The Oracle admin grant script is gone entirely; the postgres image creates the application user and its database on its own.
-- Identity columns stayed as they were: postgres supports `GENERATED ALWAYS/BY DEFAULT AS IDENTITY` with the same syntax.
-
-The entities needed no changes, but postgres is stricter about column types than oracle was, because oracle mapped both `Integer` and `Long` onto `NUMBER`. `roles.id` and `userdata.role_id` are therefore `INTEGER` (the `Role` entity uses `Integer`), while every other id is `BIGINT`. `ddl-auto: validate` catches that class of mismatch at startup.
 
 ### Database table structure
 
