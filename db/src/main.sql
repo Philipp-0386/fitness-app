@@ -149,7 +149,7 @@ INSERT INTO roles (id, name) VALUES (0, 'ADMIN');
 INSERT INTO userdata (username, email, password_hashed, first_name, last_name, date_of_birth, role_id)
 VALUES ('admin', 'admin@fitness.local', '$2a$10$N9qo8uLOickgx2ZMRZoMye8fOsiTWZqYtkxvXkKm8BMzjT7t/vIdq', 'Ada', 'Admin', DATE '1988-03-12', 0);
 INSERT INTO userdata (username, email, password_hashed, first_name, last_name, date_of_birth, role_id)
-VALUES ('philipp', 'philipp@fitness.local', '$2a$10$N9qo8uLOickgx2ZMRZoMye8fOsiTWZqYtkxvXkKm8BMzjT7t/vIdq', 'Philipp', 'Ringelkamp', DATE '1999-07-24', 1);
+VALUES ('max', 'max@fitness.local', '$2a$10$N9qo8uLOickgx2ZMRZoMye8fOsiTWZqYtkxvXkKm8BMzjT7t/vIdq', 'Max', 'Mustermann', DATE '1999-07-24', 1);
 INSERT INTO userdata (username, email, password_hashed, first_name, last_name, date_of_birth, role_id)
 VALUES ('lena_lifts', 'lena@fitness.local', '$2a$10$N9qo8uLOickgx2ZMRZoMye8fOsiTWZqYtkxvXkKm8BMzjT7t/vIdq', 'Lena', 'Brandt', DATE '1995-11-05', 1);
 INSERT INTO userdata (username, email, password_hashed, first_name, last_name, date_of_birth, role_id)
