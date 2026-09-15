@@ -6,8 +6,8 @@ Status: Early. Token based authentication is implemented, but still WIP. Core do
 
 Current focus:
 
-- Migration to Postgres
-- Root image build
+- Laying out core frontend look
+- Making basic backend endpoints available
 
 For more [insights](././docs/general_planning.md)
 
