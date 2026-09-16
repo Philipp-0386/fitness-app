@@ -11,7 +11,9 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
@@ -19,7 +21,10 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import javax.crypto.spec.SecretKeySpec;
 
+import de.phil.fitness.backend.auth.AccessTokenTypeValidator;
 import de.phil.fitness.backend.auth.JwtProperties;
+import de.phil.fitness.backend.auth.RestAccessDeniedHandler;
+import de.phil.fitness.backend.auth.RestAuthenticationEntryPoint;
 
 @Configuration
 public class SecurityConfig {
@@ -34,19 +39,30 @@ public class SecurityConfig {
     /**
      * Defines the security filter chain for the application, configuring CORS, CSRF, session management, and request authorization.
      * @param http HttpSecurity object used to configure the security settings for HTTP requests.
+     * @param authenticationEntryPoint Writes the shared error body when a request carries no valid token.
+     * @param accessDeniedHandler Writes the shared error body when the filter chain refuses an authenticated request.
      * @return SecurityFilterChain that defines the security configuration for the application.
      * @throws Exception if there is an issue configuring the security settings.
      */
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http,
+                                                   RestAuthenticationEntryPoint authenticationEntryPoint,
+                                                   RestAccessDeniedHandler accessDeniedHandler) throws Exception {
         http
                 .cors(cors -> cors.configurationSource(corsConfiguration()))
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
+                .oauth2ResourceServer(oauth2 -> oauth2
+                        .jwt(Customizer.withDefaults())
+                        .authenticationEntryPoint(authenticationEntryPoint)
+                        .accessDeniedHandler(accessDeniedHandler))
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(authenticationEntryPoint)
+                        .accessDeniedHandler(accessDeniedHandler))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/backend/auth/**").permitAll() //Note: ALL auth endpoints currently accessible/reachable
                         .requestMatchers(HttpMethod.GET, "/actuator/health/**").permitAll() //Container healthcheck; exposes liveness state only, no details.
+                        .requestMatchers("/error").permitAll() //Error dispatch is a forwarded request; gating it turns every 4xx into an empty 401.
                         .anyRequest().authenticated())
                 .formLogin(form -> form.disable())
                 .httpBasic(httpBasic -> httpBasic.disable());
@@ -57,7 +73,8 @@ public class SecurityConfig {
     /**
      * Configures the JwtDecoder bean for decoding JWT tokens using a secret key specified in the JwtProperties.
      * @param jwtProperties JwtProperties object that contains the secret key used for decoding JWT tokens.
-     * @return  JwtDecoder that is configured to decode JWT tokens using the specified secret key and HMAC SHA-512 algorithm.
+     * @return  JwtDecoder that is configured to decode JWT tokens using the specified secret key and HMAC SHA-512 algorithm,
+     *          rejecting anything that is not an access token.
      */
     @Bean
     public JwtDecoder jwtDecoder(JwtProperties jwtProperties) {
@@ -65,9 +82,15 @@ public class SecurityConfig {
                 jwtProperties.secret().getBytes(),
                 "HmacSHA512"); //Important: Algorithm needs to match to (automatically) chosen algorithm based on key.
 
-        return NimbusJwtDecoder.withSecretKey(key)
+        NimbusJwtDecoder decoder = NimbusJwtDecoder.withSecretKey(key)
                 .macAlgorithm(org.springframework.security.oauth2.jose.jws.MacAlgorithm.HS512)
                 .build();
+
+        decoder.setJwtValidator(new DelegatingOAuth2TokenValidator<>(
+                JwtValidators.createDefault(),
+                new AccessTokenTypeValidator()));
+
+        return decoder;
     }
 
     /**

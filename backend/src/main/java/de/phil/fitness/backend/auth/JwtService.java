@@ -12,6 +12,12 @@ import javax.crypto.SecretKey;
 
 @Service
 public class JwtService {
+
+    /** Claim that distinguishes an access token from a refresh token. */
+    public static final String TOKEN_TYPE_CLAIM = "type";
+    public static final String TOKEN_TYPE_ACCESS = "access";
+    public static final String TOKEN_TYPE_REFRESH = "refresh";
+
     private final JwtProperties jwtProperties;
     private final SecretKey key;
 
@@ -28,7 +34,7 @@ public class JwtService {
                 .subject(userId)
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(expiry))
-                .claim("type", "access")
+                .claim(TOKEN_TYPE_CLAIM, TOKEN_TYPE_ACCESS)
                 .signWith(key)
                 .compact();
     }
@@ -41,7 +47,7 @@ public class JwtService {
                 .subject(userId)
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(expiry))
-                .claim("type", "refresh")
+                .claim(TOKEN_TYPE_CLAIM, TOKEN_TYPE_REFRESH)
                 .signWith(key)
                 .compact();
     }

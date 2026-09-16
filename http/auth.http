@@ -1,0 +1,147 @@
+### Auth probes
+#
+# REST Client (humao.rest-client). Send the login in section 1 first.
+# Background: docs/backend architecture/ErrorHandling.md, docs/security/TokenLifecycle.md
+#
+# Preconditions: docker compose --profile full up -d, seed data from db/src/main.sql
+# (all seeded users have the password 'password')
+
+@host = http://localhost:8080
+@username = max
+@password = password
+
+###############################################################################
+# 1  Baseline
+###############################################################################
+
+### Health endpoint, public
+GET {{host}}/actuator/health
+
+### Login
+# @name login
+POST {{host}}/backend/auth/login
+Content-Type: application/json
+
+{
+  "username": "{{username}}",
+  "password": "{{password}}"
+}
+
+### Protected endpoint, valid access token -> 200
+GET {{host}}/backend/test
+Authorization: Bearer {{login.response.body.$.accessToken}}
+
+### Protected endpoint returning user data -> 200
+GET {{host}}/backend/smoketest/users
+Authorization: Bearer {{login.response.body.$.accessToken}}
+
+###############################################################################
+# 2  Error responses
+###############################################################################
+
+### Wrong password -> 401 INVALID_CREDENTIALS
+POST {{host}}/backend/auth/login
+Content-Type: application/json
+
+{
+  "username": "{{username}}",
+  "password": "definitely-not-the-password"
+}
+
+### Unknown user -> 401 INVALID_CREDENTIALS, identical body
+POST {{host}}/backend/auth/login
+Content-Type: application/json
+
+{
+  "username": "does-not-exist",
+  "password": "{{password}}"
+}
+
+### Malformed body on a public endpoint -> 400 INVALID_JSON
+POST {{host}}/backend/auth/login
+Content-Type: application/json
+
+{ "username": "max", "password": }
+
+### Registered email -> 409 EMAIL_ALREADY_EXISTS
+POST {{host}}/backend/auth/signup
+Content-Type: application/json
+
+{
+  "username": "brand-new-name",
+  "email": "max@fitness.local",
+  "password": "password",
+  "firstName": "Test",
+  "lastName": "User",
+  "dateOfBirth": "1995-01-01"
+}
+
+### Taken username -> 409 USERNAME_ALREADY_TAKEN
+POST {{host}}/backend/auth/signup
+Content-Type: application/json
+
+{
+  "username": "max",
+  "email": "brand-new-address@fitness.local",
+  "password": "password",
+  "firstName": "Test",
+  "lastName": "User",
+  "dateOfBirth": "1995-01-01"
+}
+
+###############################################################################
+# 3  Token type enforcement (gap 2, closed)
+###############################################################################
+
+### Refresh token as bearer -> 401 UNAUTHENTICATED
+GET {{host}}/backend/test
+Authorization: Bearer {{login.response.body.$.refreshToken}}
+
+### Refresh token against user data -> 401 UNAUTHENTICATED
+GET {{host}}/backend/smoketest/users
+Authorization: Bearer {{login.response.body.$.refreshToken}}
+
+###############################################################################
+# 4  Rejected tokens
+###############################################################################
+
+### No Authorization header -> 401 UNAUTHENTICATED
+GET {{host}}/backend/test
+
+### Malformed token -> 401 UNAUTHENTICATED
+GET {{host}}/backend/test
+Authorization: Bearer not-a-jwt
+
+### Valid shape, foreign signature -> 401 UNAUTHENTICATED
+GET {{host}}/backend/test
+Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIyIiwidHlwZSI6ImFjY2VzcyIsImV4cCI6NDA3MDkwODgwMH0.aGVsbG8tdGhpcy1zaWduYXR1cmUtaXMtbm90LXZhbGlk
+
+###############################################################################
+# 5  Unmapped paths (gap: /error forward, closed)
+###############################################################################
+
+### Unknown path, no token -> 404 RESOURCE_NOT_FOUND
+POST {{host}}/backend/auth/nonexistent
+Content-Type: application/json
+
+{}
+
+### Unknown path, valid token -> identical 404
+GET {{host}}/backend/test/nonexistent
+Authorization: Bearer {{login.response.body.$.accessToken}}
+
+###############################################################################
+# 6  Not implemented (gaps 1 and 6)
+###############################################################################
+
+### Refresh the access token -> 404, no handler mapped
+POST {{host}}/backend/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "{{login.response.body.$.refreshToken}}"
+}
+
+### Log out server-side -> 404, no handler mapped
+POST {{host}}/backend/auth/logout
+Authorization: Bearer {{login.response.body.$.accessToken}}
