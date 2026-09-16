@@ -130,11 +130,10 @@ export default function UserForm() {
   }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    if (isSubmitting) return;
     e.preventDefault();
+    if (isSubmitting) return;
     setFieldErrors({});
     setGeneralErrors(null);
-    setIsSubmitting(true);
 
     const allTouched: Touched = {
       username: true,
@@ -153,6 +152,7 @@ export default function UserForm() {
       return;
     }
 
+    setIsSubmitting(true);
     const request = mapFormToPayload(form);
     let result: SuccessfulSignUpResponse | null = null;
     try {
@@ -169,6 +169,9 @@ export default function UserForm() {
         router.push('/');
       }, 2500);
     } catch (error) {
+      // Only re-enable on failure; on success the button stays locked until the redirect.
+      setIsSubmitting(false);
+
       if (error instanceof ApiError) {
         const uiError = evaluateApiError(error);
         setGeneralErrors(uiError.generalError);
@@ -177,8 +180,6 @@ export default function UserForm() {
       }
 
       setGeneralErrors('An unexpected error occurred. Please try again later.');
-    } finally {
-      setIsSubmitting(false);
     }
   }
 
