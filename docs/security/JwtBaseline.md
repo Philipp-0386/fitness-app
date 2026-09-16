@@ -150,6 +150,7 @@ http
         .requestMatchers(HttpMethod.POST, "/backend/auth/**").permitAll()
         .requestMatchers(HttpMethod.GET, "/actuator/health/**").permitAll()
         .requestMatchers("/error").permitAll()
+        .requestMatchers(HttpMethod.GET, "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
         .anyRequest().authenticated())
     .formLogin(form -> form.disable())
     .httpBasic(httpBasic -> httpBasic.disable());
