@@ -1,5 +1,7 @@
 # Branch Documentation (DEPRECATED)
 
+Note: This file is currently unused. I may revive it in the future, if there are enough active branches being worked on, but currently there is no need.
+
 This file documents the purpose of each branch.
 
 ## backend/feature/jwt-expansion

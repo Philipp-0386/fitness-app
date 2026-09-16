@@ -1,11 +1,13 @@
 # Token Lifecycle & Security Planning
 
+**Disclaimer**: This document is originally AI generated while i was planning early on how auth could be implemented in the future.
+
 This document plans the evolution of the JWT authentication from **one-time token issuance
 at login** towards a **full token lifecycle** (refresh, rotation, revocation).
 
 Related docs:
-- [DatabaseModelling.md](../database/DatabaseModelling.md) — DB schema (the `refresh_token` table is added here)
-- [BackendModelling.md](../backend%20architecture/BackendModelling.md) — backend structure, incl. the *Core infrastructure* diagram for JWT/Spring Security
+- [DatabaseModelling.md](../database/DatabaseModelling.md): DB schema (the `refresh_token` table is added here)
+- [BackendModelling.md](../backend%20architecture/BackendModelling.md): backend structure, incl. the *Core infrastructure* diagram for JWT/Spring Security
 - Schema source: [db/src/main.sql](../../db/src/main.sql)
 
 ---
