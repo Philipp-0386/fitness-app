@@ -26,14 +26,30 @@ no persistence, and therefore no way to renew or revoke tokens.
 
 ### Known gaps
 
-| # | Gap | Impact |
-|---|-----|--------|
-| 1 | No `/backend/auth/refresh` endpoint | Refresh token is useless; re-login required after 15 min |
-| 2 | Token type (`type` claim) not enforced | Refresh token is accepted as a valid access token on protected endpoints |
-| 3 | No persistence of refresh tokens | No revocation possible; JWTs are valid until expiry |
-| 4 | No token rotation | No theft/reuse detection |
-| 5 | No `jti` claim | Individual access tokens cannot be revoked via a denylist |
-| 6 | No logout endpoint | Session cannot be terminated server-side |
+| # | Gap | Impact | Status |
+|---|-----|--------|--------|
+| 1 | No `/backend/auth/refresh` endpoint | Refresh token is useless; re-login required after 15 min | open |
+| 2 | Token type (`type` claim) not enforced | Refresh token is accepted as a valid access token on protected endpoints | **closed** |
+| 3 | No persistence of refresh tokens | No revocation possible; JWTs are valid until expiry | open |
+| 4 | No token rotation | No theft/reuse detection | open |
+| 5 | No `jti` claim | Individual access tokens cannot be revoked via a denylist | open, likely unnecessary |
+| 6 | No logout endpoint | Session cannot be terminated server-side | open |
+
+### Gap 2 — how it was closed
+
+[AccessTokenTypeValidator](../../backend/src/main/java/de/phil/fitness/backend/auth/AccessTokenTypeValidator.java)
+rejects every token whose `type` claim is not `access`. It is chained behind
+`JwtValidators.createDefault()` on the `NimbusJwtDecoder`, so the standard signature and expiry
+checks stay in place. The claim values are constants on `JwtService`, so issuing and validating
+cannot drift apart.
+
+Before the validator existed, the 7-day refresh token returned `200` with the full user list on
+`/backend/smoketest/users`. Both cases are kept as probes in
+[http/auth.http](../../http/auth.http) and [http/exercises.http](../../http/exercises.http).
+
+**Consequence for step 4:** the refresh endpoint cannot validate its token through the resource
+server, because that path now rejects `type=refresh` by design. It has to verify the token itself
+(jjwt, in the service). Step 2 below listed this as an alternative; it is now the required route.
 
 ---
 
