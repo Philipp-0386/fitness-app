@@ -1,10 +1,15 @@
 package de.phil.fitness.backend.common;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -117,6 +122,30 @@ public class GlobalExceptionHandler {
                         "INVALID_JSON",
                         "Request body contains invalid JSON",
                         req.getRequestURI()
+                ));
+    }
+
+    /**
+     * Handles request bodies that violate bean validation constraints.
+     * @param ex The exception object thrown
+     * @return Returns a {@link ResponseEntity} containing key information regarding the exception,
+     *         with one message per rejected field
+     */
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleValidationFailed(MethodArgumentNotValidException ex, HttpServletRequest req) {
+        Map<String, String> fieldErrors = new LinkedHashMap<>();
+        for (FieldError error : ex.getBindingResult().getFieldErrors()) {
+            // A field can violate several constraints; reporting the first one is enough for the client.
+            fieldErrors.putIfAbsent(error.getField(), error.getDefaultMessage());
+        }
+        log.warn("Rejected invalid request body. path={} fields={}", req.getRequestURI(), fieldErrors.keySet());
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(
+                        "VALIDATION_FAILED",
+                        "Request body contains invalid fields",
+                        req.getRequestURI(),
+                        fieldErrors
                 ));
     }
 
