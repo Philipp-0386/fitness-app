@@ -1,0 +1,115 @@
+### Exercise catalog
+#
+# Requires the REST Client extension (humao.rest-client).
+# Send one of the logins in section 1 first - every request below reads its token
+# from that named response.
+#
+# Preconditions:
+#   docker compose --profile full up -d
+#   seed data from db/src/main.sql
+#
+# Seeded ownership (63 global entries plus one per user):
+#   user 2 max        -> 'Slow Tempo Push-Up'
+#   user 3 lena_lifts -> 'Zone 2 Treadmill Run'
+#   user 4 marco      -> one own exercise
+#   user 5 sina       -> one own exercise, soft deleted (deleted_at set)
+
+@host = http://localhost:8080
+
+###############################################################################
+# 1  Logins
+###############################################################################
+
+### Log in as max
+# @name loginMax
+POST {{host}}/backend/auth/login
+Content-Type: application/json
+
+{
+  "username": "max",
+  "password": "password"
+}
+
+### Log in as lena_lifts
+# @name loginLena
+POST {{host}}/backend/auth/login
+Content-Type: application/json
+
+{
+  "username": "lena_lifts",
+  "password": "password"
+}
+
+### Log in as sina, whose own exercise is soft deleted
+# @name loginSina
+POST {{host}}/backend/auth/login
+Content-Type: application/json
+
+{
+  "username": "sina",
+  "password": "password"
+}
+
+###############################################################################
+# 2  The catalog is user-scoped
+###############################################################################
+# Same endpoint, different token, different result. This is what the whole auth
+# setup buys: ownership is decided server-side, never by the client.
+
+### max -> 64 entries, one of them "Slow Tempo Push-Up" with "custom": true
+GET {{host}}/backend/exercises
+Authorization: Bearer {{loginMax.response.body.$.accessToken}}
+
+### lena_lifts -> also 64, but her own entry is "Zone 2 Treadmill Run"
+GET {{host}}/backend/exercises
+Authorization: Bearer {{loginLena.response.body.$.accessToken}}
+
+### sina -> 63, because her own exercise carries a deleted_at
+# Proves the soft delete filter, not just the ownership filter.
+GET {{host}}/backend/exercises
+Authorization: Bearer {{loginSina.response.body.$.accessToken}}
+
+###############################################################################
+# 3  Access control
+###############################################################################
+
+### No token -> 401 UNAUTHENTICATED
+GET {{host}}/backend/exercises
+
+### Refresh token instead of an access token -> 401 UNAUTHENTICATED
+# Regression test for the token type validator; see http/auth.http section 3.
+GET {{host}}/backend/exercises
+Authorization: Bearer {{loginMax.response.body.$.refreshToken}}
+
+###############################################################################
+# 4  To-Do/WIP
+###############################################################################
+# Kept here so the gaps stay visible while the frontend is built against this.
+
+### Detail view of a single exercise -> 404 RESOURCE_NOT_FOUND (verified)
+# The list omits the instructions field; it belongs in a detail response.
+GET {{host}}/backend/exercises/1
+Authorization: Bearer {{loginMax.response.body.$.accessToken}}
+
+### Filtering by type -> silently ignored, all 64 come back (verified)
+# Worth knowing before the frontend starts relying on it.
+GET {{host}}/backend/exercises?exerciseType=CARDIO
+Authorization: Bearer {{loginMax.response.body.$.accessToken}}
+
+### Filtering by muscle group -> also ignored; the join table is not mapped yet
+GET {{host}}/backend/exercises?muscleGroupId=3
+Authorization: Bearer {{loginMax.response.body.$.accessToken}}
+
+### Creating a custom exercise -> 405, no write endpoint exists
+# Note the body: 405 still comes from Spring's error dispatch, so it carries
+# {timestamp,status,error,path} rather than the ErrorResponse shape every other
+# error uses. A handler for HttpRequestMethodNotSupportedException would fix it.
+POST {{host}}/backend/exercises
+Authorization: Bearer {{loginMax.response.body.$.accessToken}}
+Content-Type: application/json
+
+{
+  "name": "My Own Movement",
+  "exerciseType": "STRENGTH",
+  "description": "Added from the REST client."
+}
