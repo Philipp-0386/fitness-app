@@ -22,11 +22,11 @@ public class SignUpMapper {
      */
     public User mapRequestToUserEntity(SignUpRequest sur) {
         User user = new User();
-        user.setUsername(sur.getUsername());
-        user.setEmail(sur.getEmail());
-        user.setFirstName(sur.getFirstName());
-        user.setLastName(sur.getLastName());
-        user.setDateOfBirth(sur.getDateOfBirth());
+        user.setUsername(sur.username());
+        user.setEmail(sur.email());
+        user.setFirstName(sur.firstName());
+        user.setLastName(sur.lastName());
+        user.setDateOfBirth(sur.dateOfBirth());
         return user;
     }
 

@@ -42,20 +42,20 @@ public class SignUpService {
      */
     public SignUpResponse createUser(SignUpRequest dto) {
         log.debug("User creation initiated");
-        if(userRepository.existsByEmail(dto.getEmail())) {
+        if(userRepository.existsByEmail(dto.email())) {
             throw new EmailAlreadyExistsException(
                     "User with this email already registered!");
         }
-        if(userRepository.existsByUsername(dto.getUsername())) {
+        if(userRepository.existsByUsername(dto.username())) {
             throw new UsernameAlreadyTaken(
-                    "Username "+ dto.getUsername() +" already taken!"
+                    "Username "+ dto.username() +" already taken!"
             );
         }
         Role defaultRole = roleRepository.findById(1L)
                 .orElseThrow(() -> new DefaultRoleNotFoundException("Default role not found during user creation!"));
         User userEntity = signUpMapper.mapRequestToUserEntity(dto);
         userEntity.setRole(defaultRole);
-        userEntity.setPasswordHashed(passwordEncoder.encode(dto.getPassword()));
+        userEntity.setPasswordHashed(passwordEncoder.encode(dto.password()));
         User savedUser = userRepository.save(userEntity);
         log.info("User creation successful. userId={}", savedUser.getId());
         return signUpMapper.mapUserEntityToResponse(savedUser);
