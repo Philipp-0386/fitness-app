@@ -1,4 +1,4 @@
-# Branch Documentation
+# Branch Documentation (DEPRECATED)
 
 This file documents the purpose of each branch.
 
