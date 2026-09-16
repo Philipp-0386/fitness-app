@@ -63,6 +63,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/backend/auth/**").permitAll() //Note: ALL auth endpoints currently accessible/reachable
                         .requestMatchers(HttpMethod.GET, "/actuator/health/**").permitAll() //Container healthcheck; exposes liveness state only, no details.
                         .requestMatchers("/error").permitAll() //Error dispatch is a forwarded request; gating it turns every 4xx into an empty 401.
+                        .requestMatchers(HttpMethod.GET, "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll() //API docs; only served when springdoc is enabled, 404 otherwise.
                         .anyRequest().authenticated())
                 .formLogin(form -> form.disable())
                 .httpBasic(httpBasic -> httpBasic.disable());

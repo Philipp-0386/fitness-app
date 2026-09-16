@@ -23,6 +23,14 @@ app:
     access-token-expiration-minutes: 15
     refresh-token-expiration-days: 7
 
+springdoc:
+  api-docs:
+    enabled: ${API_DOCS_ENABLED:false}    # exposes the full api
+  swagger-ui:
+    enabled: ${API_DOCS_ENABLED:false}
+  paths-to-match: /backend/**
+  paths-to-exclude: /backend/test/**, /backend/smoketest/** 
+
 logging:
   file:
     name: logs/fitness-app.log
