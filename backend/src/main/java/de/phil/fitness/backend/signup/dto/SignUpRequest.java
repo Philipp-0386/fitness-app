@@ -4,22 +4,16 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import de.phil.fitness.backend.user.model.Role;
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.validation.constraints.*;
 
 /**
  * Simple DTO responsible for carrying user's data.
  */
-@Getter
-@Setter
-public class SignUpRequest {
-    private final Integer id = null;
-    private String username;
-    private String email;
-    private String password;
-    private String firstName;
-    private String lastName;
-    private LocalDate dateOfBirth;
-    private final Role role = null;
-    private LocalDateTime createdAt;
-}
+public record SignUpRequest (
+    @NotBlank @Size(min=3, max=32) String username,
+    @NotBlank @Email @Size(max=64) String email,
+    @NotBlank @Size(min=8, max=72) String password,
+    @Size(max=24) String firstName,
+    @Size(max=24) String lastName,
+    @NotNull @Past LocalDate dateOfBirth
+) {}

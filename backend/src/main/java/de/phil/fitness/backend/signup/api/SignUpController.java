@@ -1,5 +1,6 @@
 package de.phil.fitness.backend.signup.api;
 
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,7 +29,7 @@ public class SignUpController {
      */
     @PostMapping("/signup")
     //Frontend hinweis: yyyy-MM-dd für dateOfBirth angeben (input date type)
-    public SignUpResponse root(@RequestBody SignUpRequest request) {
+    public SignUpResponse root(@Valid @RequestBody SignUpRequest request) {
         return signUpService.createUser(request);
     }
 }
