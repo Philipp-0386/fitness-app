@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import de.phil.fitness.backend.exercise.dto.ExerciseResponse;
 import de.phil.fitness.backend.exercise.mapper.ExerciseMapper;
 import de.phil.fitness.backend.exercise.repository.ExerciseRepository;
+import de.phil.fitness.backend.exercise.exception.ExerciseNotFoundException;
 
 /**
  * Read access to the exercise catalog.
@@ -35,5 +36,18 @@ public class ExerciseService {
                 .stream()
                 .map(exerciseMapper::toResponse)
                 .toList();
+    }
+
+    /**
+     *
+     * @param userId
+     * @param exerciseId
+     * @return
+     */
+    @Transactional(readOnly = true)
+    public ExerciseResponse findExerciseById(Long userId, Long exerciseId) {
+        return exerciseRepository.findAvailableById(userId, exerciseId)
+                .map(exerciseMapper::toResponse)
+                .orElseThrow(() -> new ExerciseNotFoundException("The exercise with id=" + exerciseId + " can not be found"));
     }
 }

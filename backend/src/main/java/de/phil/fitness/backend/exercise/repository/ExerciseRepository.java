@@ -1,6 +1,7 @@
 package de.phil.fitness.backend.exercise.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -25,4 +26,18 @@ public interface ExerciseRepository extends JpaRepository<Exercise, Long> {
             ORDER BY e.name ASC
             """)
     List<Exercise> findAvailableTo(@Param("userId") Long userId);
+
+    /**
+     * Returns specific exercise by its id, if the user requesting is either owner or the exercise is part of the global catalog.
+     * @param userId User requesting the exercise
+     * @param id Exercise id
+     * @return singular exercise
+     */
+    @Query("""
+        SELECT e FROM Exercise e
+        WHERE e.id = :id 
+            AND e.deletedAt IS NULL 
+            AND (e.ownerUserId IS NULL OR e.ownerUserId = :userId)
+        """)
+    Optional<Exercise> findAvailableById(@Param("userId") Long userId,  @Param("id") Long id);
 }

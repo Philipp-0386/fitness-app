@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -46,5 +47,15 @@ public class ExerciseController {
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     public ResponseEntity<List<ExerciseResponse>> getExercises() {
         return ResponseEntity.ok(exerciseService.findAvailable(currentUser.currentUserId()));
+    }
+
+    /**
+     * Returns exercise with certain id if available for the current user.
+     * @param id exercise id
+     * @return the specific exercise
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<ExerciseResponse> getExerciseById(@PathVariable Long id) {
+        return ResponseEntity.ok(exerciseService.findExerciseById(currentUser.currentUserId(), id));
     }
 }

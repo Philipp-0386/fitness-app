@@ -3,6 +3,7 @@ package de.phil.fitness.backend.common;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import de.phil.fitness.backend.exercise.exception.ExerciseNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -165,6 +166,25 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(
                         "RESOURCE_NOT_FOUND",
                         "No resource exists at this path",
+                        req.getRequestURI()
+                ));
+    }
+
+    /**
+     *
+     *
+     * @param ex
+     * @param req
+     * @return
+     */
+    @ExceptionHandler(ExerciseNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleExerciseNotFound(ExerciseNotFoundException ex, HttpServletRequest req) {
+        log.warn("Exercise not found with id={}", ex.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(new ErrorResponse(
+                        "EXERCISE_NOT_FOUND",
+                        "",
                         req.getRequestURI()
                 ));
     }
