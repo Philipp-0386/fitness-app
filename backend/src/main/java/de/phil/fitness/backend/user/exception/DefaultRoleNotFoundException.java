@@ -1,4 +1,4 @@
-package de.phil.fitness.backend.signup.exception;
+package de.phil.fitness.backend.user.exception;
 
 /**
  * Thrown when user creation process fails due to the default role not being accessible.

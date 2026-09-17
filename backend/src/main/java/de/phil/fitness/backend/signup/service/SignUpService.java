@@ -2,18 +2,14 @@ package de.phil.fitness.backend.signup.service;
 
 import de.phil.fitness.backend.signup.dto.SignUpRequest;
 import de.phil.fitness.backend.signup.dto.SignUpResponse;
-import de.phil.fitness.backend.signup.exception.DefaultRoleNotFoundException;
 import de.phil.fitness.backend.signup.exception.EmailAlreadyExistsException;
 import de.phil.fitness.backend.signup.exception.UsernameAlreadyTaken;
 import de.phil.fitness.backend.signup.mapper.SignUpMapper;
-import de.phil.fitness.backend.user.model.Role;
 import de.phil.fitness.backend.user.model.User;
-import de.phil.fitness.backend.user.repository.RoleRepository;
-import de.phil.fitness.backend.user.repository.UserRepository;
+import de.phil.fitness.backend.user.service.UserService;
 
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 /**
@@ -23,16 +19,12 @@ import org.springframework.stereotype.Service;
 @Transactional
 @Slf4j
 public class SignUpService {
-    private final UserRepository userRepository;
-    private final RoleRepository roleRepository;
+    private final UserService userService;
     private final SignUpMapper signUpMapper;
-    private final PasswordEncoder passwordEncoder;
 
-    public SignUpService(UserRepository userRepo, RoleRepository roleRepo, SignUpMapper mapper, PasswordEncoder passwordEncoder) {
-        this.userRepository = userRepo;
-        this.roleRepository = roleRepo;
+    public SignUpService(UserService userService, SignUpMapper mapper) {
+        this.userService = userService;
         this.signUpMapper = mapper;
-        this.passwordEncoder = passwordEncoder;
     }
 
     /**
@@ -42,21 +34,17 @@ public class SignUpService {
      */
     public SignUpResponse createUser(SignUpRequest dto) {
         log.debug("User creation initiated");
-        if(userRepository.existsByEmail(dto.email())) {
+        if(userService.existsByEmail(dto.email())) {
             throw new EmailAlreadyExistsException(
                     "User with this email already registered!");
         }
-        if(userRepository.existsByUsername(dto.username())) {
+        if(userService.existsByUsername(dto.username())) {
             throw new UsernameAlreadyTaken(
                     "Username "+ dto.username() +" already taken!"
             );
         }
-        Role defaultRole = roleRepository.findById(1L)
-                .orElseThrow(() -> new DefaultRoleNotFoundException("Default role not found during user creation!"));
         User userEntity = signUpMapper.mapRequestToUserEntity(dto);
-        userEntity.setRole(defaultRole);
-        userEntity.setPasswordHashed(passwordEncoder.encode(dto.password()));
-        User savedUser = userRepository.save(userEntity);
+        User savedUser = userService.createUser(userEntity, dto.password());
         log.info("User creation successful. userId={}", savedUser.getId());
         return signUpMapper.mapUserEntityToResponse(savedUser);
     }

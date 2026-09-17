@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import de.phil.fitness.backend.auth.exception.AccessDeniedException;
-import de.phil.fitness.backend.signup.exception.DefaultRoleNotFoundException;
+import de.phil.fitness.backend.user.exception.DefaultRoleNotFoundException;
 import de.phil.fitness.backend.signup.exception.EmailAlreadyExistsException;
 import de.phil.fitness.backend.signup.exception.UsernameAlreadyTaken;
 import jakarta.servlet.http.HttpServletRequest;
