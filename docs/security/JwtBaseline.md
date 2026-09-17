@@ -57,7 +57,7 @@ In this repo: [JwtProperties.java](../../backend/src/main/java/de/phil/fitness/b
 POST /backend/auth/login  { username, password }
         │
         ├─ invalid body (malformed JSON / @Valid fails) ──> 400 INVALID_JSON / VALIDATION_FAILED
-        ├─ UserRepository.findByUsername  ──> not found ──> BadCredentialsException
+        ├─ UserService.findByUsername     ──> not found ──> BadCredentialsException
         ├─ PasswordEncoder.matches(raw, hash) ──> false ──> BadCredentialsException
         │        (same exception for both: no hint whether the user exists)
         │        ──> 401 INVALID_CREDENTIALS (controller advice)
