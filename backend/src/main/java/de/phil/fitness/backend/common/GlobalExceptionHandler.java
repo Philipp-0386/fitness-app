@@ -3,7 +3,6 @@ package de.phil.fitness.backend.common;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import de.phil.fitness.backend.exercise.exception.ExerciseNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -15,6 +14,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import de.phil.fitness.backend.auth.exception.AccessDeniedException;
+import de.phil.fitness.backend.exercise.exception.ExerciseNotFoundException;
 import de.phil.fitness.backend.user.exception.DefaultRoleNotFoundException;
 import de.phil.fitness.backend.signup.exception.EmailAlreadyExistsException;
 import de.phil.fitness.backend.signup.exception.UsernameAlreadyTaken;
@@ -171,20 +171,23 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Handles the case of an exercise not being available to the requesting user. Either because under the given exerciseId
+     * there simply is no exercise listed, because it is soft deleted, or because the requesting user is not the owner,
+     * and therefore not allowed to access it.
      *
-     *
-     * @param ex
-     * @param req
-     * @return
+     * <p>All of those causes deliberately share this response: a 403 for the unowned case would confirm to a caller
+     * that an exercise with that id exists.
+     * @param ex The exception object thrown
+     * @return Returns a {@link ResponseEntity} containing key information regarding the exception
      */
     @ExceptionHandler(ExerciseNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleExerciseNotFound(ExerciseNotFoundException ex, HttpServletRequest req) {
-        log.warn("Exercise not found with id={}", ex.getMessage());
+        log.warn("Exercise not available to caller. path={} {}", req.getRequestURI(), ex.getMessage());
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
                 .body(new ErrorResponse(
                         "EXERCISE_NOT_FOUND",
-                        "",
+                        "No exercise with this id is available",
                         req.getRequestURI()
                 ));
     }

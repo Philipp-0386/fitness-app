@@ -55,6 +55,13 @@ public class ExerciseController {
      * @return the specific exercise
      */
     @GetMapping("/{id}")
+    @Operation(summary = "Get a single exercise by id", description = "Returns the exercise with the given id, "
+            + "provided it is part of the global catalog or owned by the requesting user.")
+    @ApiResponse(responseCode = "200", description = "The requested exercise")
+    @ApiResponse(responseCode = "401", description = "UNAUTHENTICATED: missing, invalid or expired access token, or a refresh token",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    @ApiResponse(responseCode = "404", description = "EXERCISE_NOT_FOUND: no exercise with this id is available to the caller",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     public ResponseEntity<ExerciseResponse> getExerciseById(@PathVariable Long id) {
         return ResponseEntity.ok(exerciseService.findExerciseById(currentUser.currentUserId(), id));
     }
