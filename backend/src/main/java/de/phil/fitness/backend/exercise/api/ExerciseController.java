@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -46,5 +47,22 @@ public class ExerciseController {
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     public ResponseEntity<List<ExerciseResponse>> getExercises() {
         return ResponseEntity.ok(exerciseService.findAvailable(currentUser.currentUserId()));
+    }
+
+    /**
+     * Returns exercise with certain id if available for the current user.
+     * @param id exercise id
+     * @return the specific exercise
+     */
+    @GetMapping("/{id}")
+    @Operation(summary = "Get a single exercise by id", description = "Returns the exercise with the given id, "
+            + "provided it is part of the global catalog or owned by the requesting user.")
+    @ApiResponse(responseCode = "200", description = "The requested exercise")
+    @ApiResponse(responseCode = "401", description = "UNAUTHENTICATED: missing, invalid or expired access token, or a refresh token",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    @ApiResponse(responseCode = "404", description = "EXERCISE_NOT_FOUND: no exercise with this id is available to the caller",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    public ResponseEntity<ExerciseResponse> getExerciseById(@PathVariable Long id) {
+        return ResponseEntity.ok(exerciseService.findExerciseById(currentUser.currentUserId(), id));
     }
 }

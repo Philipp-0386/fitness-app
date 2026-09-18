@@ -15,12 +15,14 @@
 #   user 5 sina       -> one own exercise, soft deleted (deleted_at set)
 
 @host = http://localhost:8080
-
+@frontend = http://localhost:3000
+###############################################################################
 ###############################################################################
 # 1  Logins
 ###############################################################################
+###############################################################################
 
-### Log in as max
+### 1.1  Log in as max
 # @name loginMax
 POST {{host}}/backend/auth/login
 Content-Type: application/json
@@ -30,7 +32,7 @@ Content-Type: application/json
   "password": "password"
 }
 
-### Log in as lena_lifts
+### 1.2  Log in as lena_lifts
 # @name loginLena
 POST {{host}}/backend/auth/login
 Content-Type: application/json
@@ -40,7 +42,7 @@ Content-Type: application/json
   "password": "password"
 }
 
-### Log in as sina, whose own exercise is soft deleted
+### 1.3  Log in as sina (exercise is soft deleted)
 # @name loginSina
 POST {{host}}/backend/auth/login
 Content-Type: application/json
@@ -51,56 +53,137 @@ Content-Type: application/json
 }
 
 ###############################################################################
+###############################################################################
 # 2  The catalog is user-scoped
 ###############################################################################
+###############################################################################
+
 # Same endpoint, different token, different result. This is what the whole auth
 # setup buys: ownership is decided server-side, never by the client.
 
-### max -> 64 entries, one of them "Slow Tempo Push-Up" with "custom": true
+### 2.1  max -> 64 entries, one of them "Slow Tempo Push-Up" with "custom": true
 GET {{host}}/backend/exercises
 Authorization: Bearer {{loginMax.response.body.$.accessToken}}
 
-### lena_lifts -> also 64, but her own entry is "Zone 2 Treadmill Run"
+### 2.2  lena_lifts -> also 64, but her own entry is "Zone 2 Treadmill Run"
 GET {{host}}/backend/exercises
 Authorization: Bearer {{loginLena.response.body.$.accessToken}}
 
-### sina -> 63, because her own exercise carries a deleted_at
+### 2.3  sina -> 63, because her own exercise carries a deleted_at
 # Proves the soft delete filter, not just the ownership filter.
 GET {{host}}/backend/exercises
 Authorization: Bearer {{loginSina.response.body.$.accessToken}}
 
 ###############################################################################
+###############################################################################
 # 3  Access control
 ###############################################################################
+###############################################################################
 
-### No token -> 401 UNAUTHENTICATED
+### 3.1  No token -> 401 UNAUTHENTICATED
 GET {{host}}/backend/exercises
 
-### Refresh token instead of an access token -> 401 UNAUTHENTICATED
-# Regression test for the token type validator; see http/auth.http section 3.
+### 3.2  Refresh token instead of an access token -> 401 UNAUTHENTICATED
+# Test for the token type validator (see http/auth.http section 3)
 GET {{host}}/backend/exercises
 Authorization: Bearer {{loginMax.response.body.$.refreshToken}}
 
 ###############################################################################
-# 4  To-Do/WIP
 ###############################################################################
-# Kept here so the gaps stay visible while the frontend is built against this.
+# 4  Detail view of a single exercise
+###############################################################################
+###############################################################################
 
-### Detail view of a single exercise -> 404 RESOURCE_NOT_FOUND (verified)
-# The list omits the instructions field; it belongs in a detail response.
+# Seeded ids: 1-63 global, 64 max, 65 lena_lifts, 66 marco,
+# 67 sina (soft deleted).
+
+### 4.1  A global exercise -> 200, "custom": false
+# Visible to every user because owner_user_id is NULL.
 GET {{host}}/backend/exercises/1
 Authorization: Bearer {{loginMax.response.body.$.accessToken}}
 
-### Filtering by type -> silently ignored, all 64 come back (verified)
+### 4.2  max reads his own exercise -> 200 "Slow Tempo Push-Up", "custom": true
+GET {{host}}/backend/exercises/64
+Authorization: Bearer {{loginMax.response.body.$.accessToken}}
+
+### 4.3  lena_lifts reads her own exercise -> 200 "Zone 2 Treadmill Run"
+GET {{host}}/backend/exercises/65
+Authorization: Bearer {{loginLena.response.body.$.accessToken}}
+
+###############################################################################
+###############################################################################
+# 5  The detail view is ownership scoped
+###############################################################################
+###############################################################################
+
+# The three requests below must return an identical body. Any difference between
+# them would tell a caller which ids exist behind exercises they cannot read.
+
+### 5.1  max asks for lena's exercise -> 404 EXERCISE_NOT_FOUND
+# Deliberately not 403: a 403 would confirm that id 65 exists.
+GET {{host}}/backend/exercises/65
+Authorization: Bearer {{loginMax.response.body.$.accessToken}}
+
+### 5.2  sina asks for her own, soft deleted exercise -> 404 EXERCISE_NOT_FOUND
+# She is the owner, so this covers the deleted_at filter rather than ownership.
+GET {{host}}/backend/exercises/67
+Authorization: Bearer {{loginSina.response.body.$.accessToken}}
+
+### 5.3  An id that was never seeded -> 404 EXERCISE_NOT_FOUND
+GET {{host}}/backend/exercises/999999
+Authorization: Bearer {{loginMax.response.body.$.accessToken}}
+
+###############################################################################
+###############################################################################
+# 6  Detail view access control and malformed paths
+###############################################################################
+###############################################################################
+
+### 6.1  No token -> 401 UNAUTHENTICATED
+# The filter chain rejects the request before the controller is reached.
+GET {{host}}/backend/exercises/1
+
+### 6.2  Refresh token instead of an access token -> 401 UNAUTHENTICATED
+GET {{host}}/backend/exercises/1
+Authorization: Bearer {{loginMax.response.body.$.refreshToken}}
+
+### 6.3  Non-numeric id -> 400, but NOT in the ErrorResponse shape
+# /{id} matches and only the conversion to Long fails, so this is a
+# MethodArgumentTypeMismatchException with no handler of ours behind it.
+GET {{host}}/backend/exercises/abc
+Authorization: Bearer {{loginMax.response.body.$.accessToken}}
+
+### 6.4  Trailing slash -> 404 RESOURCE_NOT_FOUND, not EXERCISE_NOT_FOUND
+# Spring 6 no longer matches a trailing slash, so no handler is found at all.
+GET {{host}}/backend/exercises/1/
+Authorization: Bearer {{loginMax.response.body.$.accessToken}}
+
+### 6.5  A negative id -> 404 EXERCISE_NOT_FOUND
+# Long parses fine, the query simply finds nothing.
+GET {{host}}/backend/exercises/-1
+Authorization: Bearer {{loginMax.response.body.$.accessToken}}
+
+###############################################################################
+###############################################################################
+# 7  To-Do/WIP
+###############################################################################
+###############################################################################
+# Kept here so the gaps stay visible while the frontend is built against this.
+
+### 7.1  The detail view still returns the list shape (verified)
+# instructions and the muscle groups are not exposed yet; both belong in a
+# dedicated ExerciseDetailResponse. Section 4 covers what is served today.
+
+### 7.2  Filtering by type -> silently ignored, all 64 come back (verified)
 # Worth knowing before the frontend starts relying on it.
 GET {{host}}/backend/exercises?exerciseType=CARDIO
 Authorization: Bearer {{loginMax.response.body.$.accessToken}}
 
-### Filtering by muscle group -> also ignored; the join table is not mapped yet
+### 7.3  Filtering by muscle group -> also ignored; the join table is not mapped yet
 GET {{host}}/backend/exercises?muscleGroupId=3
 Authorization: Bearer {{loginMax.response.body.$.accessToken}}
 
-### Creating a custom exercise -> 405, no write endpoint exists
+### 7.4  Creating a custom exercise -> 405, no write endpoint exists
 # Note the body: 405 still comes from Spring's error dispatch, so it carries
 # {timestamp,status,error,path} rather than the ErrorResponse shape every other
 # error uses. A handler for HttpRequestMethodNotSupportedException would fix it.
@@ -113,3 +196,37 @@ Content-Type: application/json
   "exerciseType": "STRENGTH",
   "description": "Added from the REST client."
 }
+
+###############################################################################
+# 8  Resetting tokens
+###############################################################################
+# There is no request that clears the tokens of this file. Every request above
+# carries its own token, read from the login response it names, so there is no
+# ambient session to end:
+#
+#   * To replace a token, send its login in section 1 again - the named response
+#     is overwritten.
+#   * To drop all of them, reload the VS Code window; the response variables
+#     live in memory only.
+#   * A token cannot be revoked server-side yet. /backend/auth/logout does not
+#     exist (see http/auth.http section 6), so every token issued stays valid
+#     until it expires: 15 minutes for access, 7 days for refresh.
+#
+# What can be cleared is the browser session behind the frontend routes.
+
+### 8.1  Clear the frontend cookies -> 200 {"success": true}
+# Deletes access_token and refresh_token for the browser, which is what
+# /exercises and /dashboard read. Requires the frontend on port 3000.
+POST {{frontend}}/api/logout
+
+### 8.2  Which user does a token belong to?
+# No whoami endpoint exists. The catalog answers it indirectly: the entry with
+# "custom": true is the caller's own. Swap the login name to check another one.
+GET {{host}}/backend/exercises
+Authorization: Bearer {{loginMax.response.body.$.accessToken}}
+
+### 8.3  An empty token -> 401 UNAUTHENTICATED
+# What a cleared token would look like on the wire. Useful to confirm that a 200
+# above really came from a token and not from a gap in the filter chain.
+GET {{host}}/backend/exercises
+Authorization: Bearer
