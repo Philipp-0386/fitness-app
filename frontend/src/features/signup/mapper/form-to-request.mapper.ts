@@ -1,7 +1,7 @@
-import { FormData } from '../types/form.types';
+import { SignUpFormValues } from '../types/form.types';
 import { SignUpPayload } from '../types/api.types';
 
-export function mapFormToPayload(form: FormData): SignUpPayload {
+export function mapFormToPayload(form: SignUpFormValues): SignUpPayload {
   return {
     username: form.username.trim(),
     email: form.email.trim(),

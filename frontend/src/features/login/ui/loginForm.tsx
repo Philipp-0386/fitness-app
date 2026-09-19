@@ -1,22 +1,22 @@
 'use client';
 
 import { useState } from 'react';
-import { login } from '../api/login.api';
+import { login } from '../client/login.client';
 import { ApiError } from '@/shared/api/errors/api-error';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff } from 'lucide-react';
 
 import styles from './longForm.module.css';
 
-type FormData = {
+type LoginFormValues = {
   username: string;
   password: string;
 };
 
-type FormError = Partial<Record<keyof FormData, string>>;
+type FormError = Partial<Record<keyof LoginFormValues, string>>;
 
 export default function LoginForm() {
-  const [form, setForm] = useState<FormData>({ username: '', password: '' });
+  const [form, setForm] = useState<LoginFormValues>({ username: '', password: '' });
   const [generalError, setGeneralError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<FormError>({});
   const [isSubmitting, setIsSubmitting] = useState(false);

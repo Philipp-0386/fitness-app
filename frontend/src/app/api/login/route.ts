@@ -45,12 +45,13 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  // Mirrors the backend ErrorResponse record.
   type BackendErrorResponse = {
-    status: number;
     code: string;
     message: string;
     path: string | null;
-    fieldErrors: { field: string; message: string }[] | null;
+    fieldErrors: Record<string, string> | null;
+    timestamp: string | null;
   };
 
   if (!response.ok) {

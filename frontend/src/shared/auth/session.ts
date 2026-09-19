@@ -1,6 +1,7 @@
 import 'server-only';
 
 import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 
 export type Session = {
   username: string | null;
@@ -24,6 +25,33 @@ export async function getSession(): Promise<Session | null> {
 
 export async function isAuthenticated(): Promise<boolean> {
   return (await getSession()) !== null;
+}
+
+/**
+ * The gate for a protected page: returns the session, or redirects to the login page.
+ *
+ * Server side only, and it never returns null - so a page can use the session right away
+ * instead of narrowing it first.
+ */
+export async function requireSession(): Promise<Session> {
+  const session = await getSession();
+
+  if (!session) {
+    redirect('/login');
+  }
+
+  return session;
+}
+
+/**
+ * The gate for a page that only makes sense while logged out, such as login and sign-up.
+ *
+ * Redirects to the dashboard when a session exists, and does nothing otherwise.
+ */
+export async function redirectIfAuthenticated(): Promise<void> {
+  if (await isAuthenticated()) {
+    redirect('/dashboard');
+  }
 }
 
 function readSubjectClaim(token: string): string | null {
