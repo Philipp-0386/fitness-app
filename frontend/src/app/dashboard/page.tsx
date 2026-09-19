@@ -1,14 +1,8 @@
-import { redirect } from 'next/navigation';
-
 import { UserHome } from '@/features/home';
-import { getSession } from '@/shared/auth/session';
+import { requireSession } from '@/shared/auth/session';
 
 export default async function DashboardPage() {
-  const session = await getSession();
-
-  if (!session) {
-    redirect('/login');
-  }
+  const session = await requireSession();
 
   return <UserHome username={session.username} />;
 }
