@@ -1,7 +1,11 @@
-import { SignUpPayload } from '../types/api.types';
 import { ApiError } from '@/shared/api/errors/api-error';
-import { SuccessfulSignUpResponse } from '../types/api.types';
+import { SignUpPayload, SuccessfulSignUpResponse } from '../types/api.types';
 
+/**
+ * Posts the sign-up payload to our own route handler, from the browser.
+ *
+ * Client side, mirroring the login flow.
+ */
 export async function signUp(payload: SignUpPayload): Promise<SuccessfulSignUpResponse> {
   const response = await fetch('/api/signup', {
     method: 'POST',

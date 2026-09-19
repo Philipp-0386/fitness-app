@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { FormData } from '../types/form.types';
-import { signUp } from '../api/signUp.api';
+import { SignUpFormValues } from '../types/form.types';
+import { signUp } from '../client/sign-up.client';
 import { mapFormToPayload } from '../mapper/form-to-request.mapper';
 import { ApiError } from '@/shared/api/errors/api-error';
 import { evaluateApiError } from './api-error-evaluate';
@@ -13,12 +13,12 @@ import { Eye, EyeOff } from 'lucide-react';
 
 import styles from './signUpForm.module.css';
 
-type FormError = Partial<Record<keyof FormData, string>>;
+type FormError = Partial<Record<keyof SignUpFormValues, string>>;
 
-type Touched = Partial<Record<keyof FormData, boolean>>;
+type Touched = Partial<Record<keyof SignUpFormValues, boolean>>;
 
 export default function UserForm() {
-  const [form, setForm] = useState<FormData>({
+  const [form, setForm] = useState<SignUpFormValues>({
     username: '',
     email: '',
     password: '',
@@ -37,7 +37,7 @@ export default function UserForm() {
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const { name, value } = e.target;
-    const fieldName = name as keyof FormData;
+    const fieldName = name as keyof SignUpFormValues;
 
     const updatedForm = {
       ...form,
@@ -57,9 +57,9 @@ export default function UserForm() {
   }
 
   function validateField(
-    name: keyof FormData,
+    name: keyof SignUpFormValues,
     value: string,
-    currentForm: FormData,
+    currentForm: SignUpFormValues,
   ): string | undefined {
     switch (name) {
       case 'username':
@@ -101,7 +101,7 @@ export default function UserForm() {
 
   function handleBlur(e: React.FocusEvent<HTMLInputElement>) {
     const { name, value } = e.target;
-    const fieldName = name as keyof FormData;
+    const fieldName = name as keyof SignUpFormValues;
 
     setTouched((prev) => ({
       ...prev,
@@ -116,10 +116,10 @@ export default function UserForm() {
     }));
   }
 
-  function validateFinal(currentForm: FormData = form): FormError {
+  function validateFinal(currentForm: SignUpFormValues = form): FormError {
     const newErrors: FormError = {};
 
-    (Object.keys(currentForm) as (keyof FormData)[]).forEach((field) => {
+    (Object.keys(currentForm) as (keyof SignUpFormValues)[]).forEach((field) => {
       const error = validateField(field, currentForm[field], currentForm);
       if (error) {
         newErrors[field] = error;
