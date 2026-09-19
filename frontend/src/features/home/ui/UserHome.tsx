@@ -32,7 +32,7 @@ const shortcuts = [
     icon: Dumbbell,
     title: 'Exercises',
     text: 'Browse the exercise catalog.',
-    href: '/',
+    href: './exercises',
   },
   {
     icon: LineChart,
