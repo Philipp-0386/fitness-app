@@ -29,7 +29,6 @@ springdoc:
   swagger-ui:
     enabled: ${API_DOCS_ENABLED:false}
   paths-to-match: /backend/**
-  paths-to-exclude: /backend/test/**, /backend/smoketest/** 
 
 logging:
   file:

@@ -16,7 +16,7 @@ Every error the API produces carries the same body, defined by
 {
   "code": "UNAUTHENTICATED",
   "message": "Authentication is required to access this resource",
-  "path": "/backend/test",
+  "path": "/backend/exercises",
   "fieldErrors": null,
   "timestamp": "2026-09-15T23:48:06.262185877Z"
 }
