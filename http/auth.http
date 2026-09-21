@@ -28,11 +28,7 @@ Content-Type: application/json
 }
 
 ### Protected endpoint, valid access token -> 200
-GET {{host}}/backend/test
-Authorization: Bearer {{login.response.body.$.accessToken}}
-
-### Protected endpoint returning user data -> 200
-GET {{host}}/backend/smoketest/users
+GET {{host}}/backend/exercises
 Authorization: Bearer {{login.response.body.$.accessToken}}
 
 ###############################################################################
@@ -94,11 +90,7 @@ Content-Type: application/json
 ###############################################################################
 
 ### Refresh token as bearer -> 401 UNAUTHENTICATED
-GET {{host}}/backend/test
-Authorization: Bearer {{login.response.body.$.refreshToken}}
-
-### Refresh token against user data -> 401 UNAUTHENTICATED
-GET {{host}}/backend/smoketest/users
+GET {{host}}/backend/exercises
 Authorization: Bearer {{login.response.body.$.refreshToken}}
 
 ###############################################################################
@@ -106,14 +98,14 @@ Authorization: Bearer {{login.response.body.$.refreshToken}}
 ###############################################################################
 
 ### No Authorization header -> 401 UNAUTHENTICATED
-GET {{host}}/backend/test
+GET {{host}}/backend/exercises
 
 ### Malformed token -> 401 UNAUTHENTICATED
-GET {{host}}/backend/test
+GET {{host}}/backend/exercises
 Authorization: Bearer not-a-jwt
 
 ### Valid shape, foreign signature -> 401 UNAUTHENTICATED
-GET {{host}}/backend/test
+GET {{host}}/backend/exercises
 Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIyIiwidHlwZSI6ImFjY2VzcyIsImV4cCI6NDA3MDkwODgwMH0.aGVsbG8tdGhpcy1zaWduYXR1cmUtaXMtbm90LXZhbGlk
 
 ###############################################################################
@@ -127,7 +119,9 @@ Content-Type: application/json
 {}
 
 ### Unknown path, valid token -> identical 404
-GET {{host}}/backend/test/nonexistent
+# Deliberately not /backend/exercises/nonexistent (that one reaches the by-id handler and
+# fails on the argument type instead of on the missing mapping)
+GET {{host}}/backend/nonexistent
 Authorization: Bearer {{login.response.body.$.accessToken}}
 
 ###############################################################################

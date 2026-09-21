@@ -45,8 +45,8 @@ rejects every token whose `type` claim is not `access`. It is chained behind
 checks stay in place. The claim values are constants on `JwtService`, so issuing and validating
 cannot drift apart.
 
-Before the validator existed, the 7-day refresh token returned `200` with the full user list on
-`/backend/smoketest/users`. Both cases are kept as probes in
+Before the validator existed, the 7-day refresh token returned `200` on any protected endpoint.
+The probe used to run against `/backend/smoketest/users`, which no longer exists. It now runs against `/backend/exercises`. Both cases are kept as probes in
 [http/auth.http](../../http/auth.http) and [http/exercises.http](../../http/exercises.http).
 
 **Consequence for step 4:** the refresh endpoint cannot validate its token through the resource
