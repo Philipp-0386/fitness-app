@@ -14,7 +14,8 @@ Note: These phases are not necessarily to be in order, nor are they fully closed
   - Setup Oracle database, Spring and Nextjs separately
   - Connect database to Spring (environment variables)
   - Create DB entries of user (and roles) to be displayed by nextjs (-> smoketest)
-  - [Smoketest](../backend/src/main/java/de/phil/fitness/backend/smoketest/) contains successful smoketest (as of pre-jwt implementation and rework, not tested since) #
+  - The smoketest itself (backend `smoketest` and `testrouting` packages, frontend `app/smoketest`)
+    was removed once a real slice covering the the same ground.
 
 - Phase 1: Signup and Logins (done, but phase 2.1 mentions token relevant points)
   - add simple frontend sign up and login pages, and parse data correctly into database
