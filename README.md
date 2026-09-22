@@ -2,12 +2,14 @@
 
 A backend-focused fitness tracking application, with the idea to go beyond a simple CRUD app by adding domain logic such as one-rep-max prediction. This is a personal side project i maintain besides uni.
 
-Status: Early. Token based authentication is implemented, but still WIP. Core domain infrastructure exists within the database, but not accessible through the backend yet.
+Status:
+A lot of ground work has been done, to begin with domain driven implementations. Token based authentication is implemented, but still WIP. Core domain model exists within the database, but most of it is not accessible through the backend yet. I am currently working on implementing the exercise slice.
 
 Current focus:
 
-- Laying out core frontend look
-- Making basic backend endpoints available
+- Token refresh endpoint
+- Implementing `exercise` endpoints
+- Laying out core frontend look (design planning)
 
 For more [insights](././docs/general_planning.md)
 
