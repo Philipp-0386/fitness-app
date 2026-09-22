@@ -4,6 +4,15 @@ This documentation will be dynamically adjusted. The only purpose it serves is b
 
 ---
 
+## What now?
+
+The current goal is to finish these tasks:
+
+- Add refresh endpoint
+- Implement `exercise` slice completely (backend)
+- Start on frontend implementation for `exercise` slice (frontend)
+- Incooperate userful tests for already existing code (auth, bean val, etc.)
+
 ## Relevant Points
 
 ### Setup and base auth (WIP, Phase 1 and 2 done)
@@ -51,24 +60,16 @@ I have already started implementing the exercise slice. The idea is, to have _th
 
 ### Git Workflow (WIP)
 
-Currenlty base CI exists running backend and frontend test builds. 
+Currenlty base CI exists running backend and frontend test builds.
 Drift between mapped (backend) entites and database entities prohibited. `Validate` runs match of main.sql database vs mapped entities during test-runtime.
-
-### Postgres migration (done)
-
-Migrate from oracle to postgres. (Notes below)
-
-### Single container root build (done)
-
-Allow the entire application in its current state to be ran from a **single compose in the root folder**. Maybe with prod and dev line later on if relevant/needed.
 
 ### Tests (not started)
 
-Implement tests verfiying request checks and authorization behaviour.
+Implement tests verfiying request checks and authorization behaviour. Ideally i had already done this for auth and some bean validations.
 
 ### Api error handling (idea)
 
-As of now, i use custom codes within the response body of error handling. The frontend reacts to the codes rather than the pure http-code. I may change the way the frontend reacts to error responses. Current not sure what to, or how exaclty.
+As of now, i use custom codes within the response body of error handling. The frontend reacts to the codes rather than the pure http-code. I may change the way the frontend reacts to error responses. Currently not sure what goal structure i have in mind.
 
 ### Jackson 2 and 3 on the same classpath (addressed 22.09.2026)
 
