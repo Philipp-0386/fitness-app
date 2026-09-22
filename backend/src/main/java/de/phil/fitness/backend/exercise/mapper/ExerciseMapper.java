@@ -1,12 +1,13 @@
 package de.phil.fitness.backend.exercise.mapper;
 
+import de.phil.fitness.backend.exercise.dto.ExerciseRequest;
 import org.springframework.stereotype.Component;
 
 import de.phil.fitness.backend.exercise.dto.ExerciseResponse;
 import de.phil.fitness.backend.exercise.model.Exercise;
 
 /**
- * Maps {@link Exercise} entities to their response representation.
+ * Maps {@link Exercise} entities to their response representation, and vice versa.
  */
 @Component
 public class ExerciseMapper {
@@ -23,5 +24,15 @@ public class ExerciseMapper {
                 exercise.getDescription(),
                 exercise.getOwnerUserId() != null
         );
+    }
+
+    public Exercise mapRequestToExerciseEntity(ExerciseRequest req, Long userId) {
+        Exercise exercise = new Exercise();
+        exercise.setOwnerUserId(userId);
+        exercise.setName(req.name());
+        //exercise.setExerciseType();
+        exercise.setDescription(req.description());
+        exercise.setInstructions(req.instructions());
+        return exercise;
     }
 }

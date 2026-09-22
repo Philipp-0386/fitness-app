@@ -2,11 +2,9 @@ package de.phil.fitness.backend.exercise.api;
 
 import java.util.List;
 
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -17,6 +15,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import de.phil.fitness.backend.auth.CurrentUser;
 import de.phil.fitness.backend.common.ErrorResponse;
 import de.phil.fitness.backend.exercise.dto.ExerciseResponse;
+import de.phil.fitness.backend.exercise.dto.ExerciseRequest;
 import de.phil.fitness.backend.exercise.service.ExerciseService;
 
 /**
@@ -50,7 +49,7 @@ public class ExerciseController {
     }
 
     /**
-     * Returns exercise with certain id if available for the current user.
+     * Returns exercise with certain id if available for the authenticated user.
      * @param id exercise id
      * @return the specific exercise
      */
@@ -64,5 +63,10 @@ public class ExerciseController {
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     public ResponseEntity<ExerciseResponse> getExerciseById(@PathVariable Long id) {
         return ResponseEntity.ok(exerciseService.findExerciseById(currentUser.currentUserId(), id));
+    }
+
+    @PostMapping("/new")
+    public ResponseEntity<ExerciseResponse> createExercise(@Valid @RequestBody ExerciseRequest req) {
+        return ResponseEntity.created(exerciseService.createNewExercise(req, currentUser.currentUserId()));
     }
 }
