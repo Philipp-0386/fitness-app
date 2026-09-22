@@ -49,9 +49,10 @@ I have already started implementing the exercise slice. The idea is, to have _th
 - implementing tests
 - start on frontend relevant tasks
 
-### Git Workflow (not started)
+### Git Workflow (WIP)
 
-Implement git workflow similiar (Note: SWT2 project)
+Currenlty base CI exists running backend and frontend test builds. 
+Drift between mapped (backend) entites and database entities prohibited. `Validate` runs match of main.sql database vs mapped entities during test-runtime.
 
 ### Postgres migration (done)
 
