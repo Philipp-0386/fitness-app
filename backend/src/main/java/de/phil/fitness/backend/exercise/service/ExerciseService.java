@@ -55,9 +55,15 @@ public class ExerciseService {
                 .orElseThrow(() -> new ExerciseNotFoundException("The exercise with id=" + exerciseId + " can not be found"));
     }
 
+    /**
+     * Stores a new exercise owned by the requesting user.
+     * @param req the submitted exercise
+     * @param userId id of the user the exercise is created for
+     * @return the persisted exercise, including its generated id
+     */
     @Transactional
     public ExerciseResponse createNewExercise(ExerciseRequest req, Long userId) {
         Exercise newExercise = exerciseMapper.mapRequestToExerciseEntity(req, userId);
-        return null;
+        return exerciseMapper.toResponse(exerciseRepository.save(newExercise));
     }
 }

@@ -26,11 +26,16 @@ public class ExerciseMapper {
         );
     }
 
+    /**
+     * @param req the submitted exercise
+     * @param userId id of the user the new exercise belongs to
+     * @return a transient entity (timestamps are assigned on persist)
+     */
     public Exercise mapRequestToExerciseEntity(ExerciseRequest req, Long userId) {
         Exercise exercise = new Exercise();
         exercise.setOwnerUserId(userId);
         exercise.setName(req.name());
-        //exercise.setExerciseType();
+        exercise.setExerciseType(req.exerciseType());
         exercise.setDescription(req.description());
         exercise.setInstructions(req.instructions());
         return exercise;

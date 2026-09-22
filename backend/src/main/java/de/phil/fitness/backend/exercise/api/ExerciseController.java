@@ -1,10 +1,12 @@
 package de.phil.fitness.backend.exercise.api;
 
+import java.net.URI;
 import java.util.List;
 
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -65,8 +67,26 @@ public class ExerciseController {
         return ResponseEntity.ok(exerciseService.findExerciseById(currentUser.currentUserId(), id));
     }
 
+    /**
+     * Creates an exercise owned by the authenticated user.
+     * @param req the exercise to create
+     * @return the created exercise, with its location in the {@code Location} header
+     */
     @PostMapping("/new")
+    @Operation(summary = "Create an own exercise", description = "Stores a new exercise visible only to the "
+            + "requesting user. The global catalog cannot be extended through this endpoint.")
+    @ApiResponse(responseCode = "201", description = "The created exercise")
+    @ApiResponse(responseCode = "400", description = "VALIDATION_FAILED: a field is missing, too long or, for "
+            + "exerciseType, not one of STRENGTH, CARDIO, MOBILITY",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    @ApiResponse(responseCode = "401", description = "UNAUTHENTICATED: missing, invalid or expired access token, or a refresh token",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     public ResponseEntity<ExerciseResponse> createExercise(@Valid @RequestBody ExerciseRequest req) {
-        return ResponseEntity.created(exerciseService.createNewExercise(req, currentUser.currentUserId()));
+        ExerciseResponse created = exerciseService.createNewExercise(req, currentUser.currentUserId());
+        URI location = ServletUriComponentsBuilder.fromCurrentContextPath()
+                .path("/backend/exercises/{id}")
+                .buildAndExpand(created.id())
+                .toUri();
+        return ResponseEntity.created(location).body(created);
     }
 }
