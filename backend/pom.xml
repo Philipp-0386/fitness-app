@@ -90,6 +90,23 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!--
+            Jackson exists twice here: Spring Boot 4 imports both jackson BOMs
+            (jackson-2-bom.version and jackson-bom.version), binds request bodies with Jackson 3
+            (tools.jackson.*), and leaves the 2.x line for jjwt-jackson and, transitively, springdoc.
+            Neither can be dropped, so the two coexist and never interact at runtime.
+        -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
         <!-- 3.0.x targets Spring Boot 4.0.x; 3.1.x is built against Boot 4.1 -->
         <dependency>
             <groupId>org.springdoc</groupId>

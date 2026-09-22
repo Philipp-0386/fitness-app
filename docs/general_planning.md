@@ -70,6 +70,12 @@ Implement tests verfiying request checks and authorization behaviour.
 
 As of now, i use custom codes within the response body of error handling. The frontend reacts to the codes rather than the pure http-code. I may change the way the frontend reacts to error responses. Current not sure what to, or how exaclty.
 
+### Jackson 2 and 3 on the same classpath (addressed 22.09.2026)
+
+Both Jackson lines sit on the classpath permanently: Spring Boot 4 binds bodies with Jackson 3,
+while jjwt and springdoc pull in Jackson 2. Boot plans for this, and the two never interact at
+runtime, so the dependency graph was never the problem. The build now keeps the 2.x packages off the compile classpath so the wrong import fails instead of silently doing nothing.
+
 ## Key Decisions
 
 ### JWT > Sessions
