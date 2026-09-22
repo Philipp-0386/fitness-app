@@ -165,40 +165,151 @@ Authorization: Bearer {{loginMax.response.body.$.accessToken}}
 
 ###############################################################################
 ###############################################################################
-# 7  To-Do/WIP
+# 7  Creating an own exercise
 ###############################################################################
 ###############################################################################
-# Kept here so the gaps stay visible while the frontend is built against this.
 
-### 7.1  The detail view still returns the list shape (verified)
-# instructions and the muscle groups are not exposed yet; both belong in a
-# dedicated ExerciseDetailResponse. Section 4 covers what is served today.
+# Note: these requests write. Every send adds a row, so the ids below move.
+# The path is /exercises/new rather than a POST on /exercises.
 
-### 7.2  Filtering by type -> silently ignored, all 64 come back (verified)
-# Worth knowing before the frontend starts relying on it.
-GET {{host}}/backend/exercises?exerciseType=CARDIO
-Authorization: Bearer {{loginMax.response.body.$.accessToken}}
-
-### 7.3  Filtering by muscle group -> also ignored; the join table is not mapped yet
-GET {{host}}/backend/exercises?muscleGroupId=3
-Authorization: Bearer {{loginMax.response.body.$.accessToken}}
-
-### 7.4  Creating a custom exercise -> 405, no write endpoint exists
-# Note the body: 405 still comes from Spring's error dispatch, so it carries
-# {timestamp,status,error,path} rather than the ErrorResponse shape every other
-# error uses. A handler for HttpRequestMethodNotSupportedException would fix it.
-POST {{host}}/backend/exercises
+### 7.1  max creates one -> 201, "custom": true, Location header on the new id
+# @name createExercise
+POST {{host}}/backend/exercises/new
 Authorization: Bearer {{loginMax.response.body.$.accessToken}}
 Content-Type: application/json
 
 {
   "name": "My Own Movement",
   "exerciseType": "STRENGTH",
-  "description": "Added from the REST client."
+  "description": "Added from the REST client.",
+  "instructions": "Perform slowly, three sets of eight."
+}
+
+### 7.2  Read it back -> 200, same body as the create returned
+GET {{host}}/backend/exercises/{{createExercise.response.body.$.id}}
+Authorization: Bearer {{loginMax.response.body.$.accessToken}}
+
+### 7.3  It belongs to max alone -> lena gets 404 EXERCISE_NOT_FOUND
+GET {{host}}/backend/exercises/{{createExercise.response.body.$.id}}
+Authorization: Bearer {{loginLena.response.body.$.accessToken}}
+
+###############################################################################
+###############################################################################
+# 8  The type cannot be forged
+###############################################################################
+###############################################################################
+
+# The frontend (ideally) offers three options in a dropdown. That is convenience, not a
+# guarantee.
+#
+# exerciseType is bound as an enum, so an unknown value fails during
+# deserialization, before bean val ever runs. The handler turns that into
+# the same VALIDATION_FAILED shape every other rejected field uses.
+
+### 8.1  A type outside the enum -> 400 VALIDATION_FAILED
+# fieldErrors: { "exerciseType": "must be one of: STRENGTH, CARDIO, MOBILITY" }
+POST {{host}}/backend/exercises/new
+Authorization: Bearer {{loginMax.response.body.$.accessToken}}
+Content-Type: application/json
+
+{
+  "name": "Forged Type",
+  "exerciseType": "YOGA"
+}
+
+### 8.2  Right value, wrong case -> 400, Jackson is case sensitive here
+POST {{host}}/backend/exercises/new
+Authorization: Bearer {{loginMax.response.body.$.accessToken}}
+Content-Type: application/json
+
+{
+  "name": "Lowercase Type",
+  "exerciseType": "strength"
+}
+
+### 8.3  Not even a string -> 400, same field error
+POST {{host}}/backend/exercises/new
+Authorization: Bearer {{loginMax.response.body.$.accessToken}}
+Content-Type: application/json
+
+{
+  "name": "Numeric Type",
+  "exerciseType": 42
+}
+
+### 8.4  The field is missing -> 400, but from @NotNull rather than Jackson
+# null deserializes fine
+POST {{host}}/backend/exercises/new
+Authorization: Bearer {{loginMax.response.body.$.accessToken}}
+Content-Type: application/json
+
+{
+  "name": "No Type At All"
+}
+
+### 8.5  Blank name -> 400 VALIDATION_FAILED on "name"
+POST {{host}}/backend/exercises/new
+Authorization: Bearer {{loginMax.response.body.$.accessToken}}
+Content-Type: application/json
+
+{
+  "name": "   ",
+  "exerciseType": "CARDIO"
+}
+
+### 8.6  name beyond 128 characters -> 400, caught before the column would reject it
+POST {{host}}/backend/exercises/new
+Authorization: Bearer {{loginMax.response.body.$.accessToken}}
+Content-Type: application/json
+
+{
+  "name": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+  "exerciseType": "CARDIO"
+}
+
+### 8.7  Truncated JSON -> 400 INVALID_JSON, not VALIDATION_FAILED
+# The body never becomes an object, so there is no field to blame.
+POST {{host}}/backend/exercises/new
+Authorization: Bearer {{loginMax.response.body.$.accessToken}}
+Content-Type: application/json
+
+{ "name": "Broken", "exerciseType":
+
+### 8.8  No token -> 401 UNAUTHENTICATED, body is never parsed
+POST {{host}}/backend/exercises/new
+Content-Type: application/json
+
+{
+  "name": "Anonymous Movement",
+  "exerciseType": "STRENGTH"
 }
 
 ###############################################################################
-# 8  Resetting tokens
+###############################################################################
+# 9  To-Do/WIP
+###############################################################################
+###############################################################################
+# Kept here so the gaps stay visible while the frontend is built against this.
+
+### 9.1  The detail view still returns the list shape (verified)
+# instructions and the muscle groups are not exposed yet; both belong in a
+# dedicated ExerciseDetailResponse. Section 4 covers what is served today.
+
+### 9.2  The create path is /exercises/new, not a POST on /exercises
+# The collection path is the REST convention and is what this file assumed
+# before the endpoint existed.
+
+### 9.3  Filtering by type -> silently ignored, all 64 come back (verified)
+# Worth knowing before the frontend starts relying on it. !!!
+GET {{host}}/backend/exercises?exerciseType=CARDIO
+Authorization: Bearer {{loginMax.response.body.$.accessToken}}
+
+### 9.4  Filtering by muscle group -> also ignored; the join table is not mapped yet
+GET {{host}}/backend/exercises?muscleGroupId=3
+Authorization: Bearer {{loginMax.response.body.$.accessToken}}
+
+###############################################################################
+# 10  Resetting tokens
 ###############################################################################
 # There is no request that clears the tokens of this file. Every request above
 # carries its own token, read from the login response it names, so there is no
@@ -214,18 +325,18 @@ Content-Type: application/json
 #
 # What can be cleared is the browser session behind the frontend routes.
 
-### 8.1  Clear the frontend cookies -> 200 {"success": true}
+### 10.1  Clear the frontend cookies -> 200 {"success": true}
 # Deletes access_token and refresh_token for the browser, which is what
 # /exercises and /dashboard read. Requires the frontend on port 3000.
 POST {{frontend}}/api/logout
 
-### 8.2  Which user does a token belong to?
+### 10.2  Which user does a token belong to?
 # No whoami endpoint exists. The catalog answers it indirectly: the entry with
 # "custom": true is the caller's own. Swap the login name to check another one.
 GET {{host}}/backend/exercises
 Authorization: Bearer {{loginMax.response.body.$.accessToken}}
 
-### 8.3  An empty token -> 401 UNAUTHENTICATED
+### 10.3  An empty token -> 401 UNAUTHENTICATED
 # What a cleared token would look like on the wire. Useful to confirm that a 200
 # above really came from a token and not from a gap in the filter chain.
 GET {{host}}/backend/exercises

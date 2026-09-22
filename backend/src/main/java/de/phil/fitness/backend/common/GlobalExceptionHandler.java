@@ -1,25 +1,28 @@
 package de.phil.fitness.backend.common;
 
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.web.servlet.resource.NoResourceFoundException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import de.phil.fitness.backend.auth.exception.AccessDeniedException;
 import de.phil.fitness.backend.exercise.exception.ExerciseNotFoundException;
-import de.phil.fitness.backend.user.exception.DefaultRoleNotFoundException;
 import de.phil.fitness.backend.signup.exception.EmailAlreadyExistsException;
 import de.phil.fitness.backend.signup.exception.UsernameAlreadyTaken;
+import de.phil.fitness.backend.user.exception.DefaultRoleNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import tools.jackson.databind.exc.InvalidFormatException;
 /**
  * Handles exceptions globally.
  */
@@ -111,11 +114,32 @@ public class GlobalExceptionHandler {
      *
      * <p>Without this the request falls through to Spring's error dispatch, which answers in a
      * different shape than the rest of the API.
+     *
+     * <p>A value outside an enum fails here rather than in bean validation, because deserialization
+     * runs first. It is reported as a field error so that the client sees the same shape it gets for
+     * every other rejected field.
      * @param ex The exception object thrown
      * @return Returns a {@link ResponseEntity} containing key information regarding the exception
      */
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponse> handleUnreadableBody(HttpMessageNotReadableException ex, HttpServletRequest req) {
+        if (ex.getCause() instanceof InvalidFormatException cause && cause.getTargetType().isEnum()) {
+            String field = cause.getPath().isEmpty()
+                    ? "unknown"
+                    : cause.getPath().get(cause.getPath().size() - 1).getPropertyName();
+            String allowed = Arrays.stream(cause.getTargetType().getEnumConstants())
+                    .map(Object::toString)
+                    .collect(Collectors.joining(", "));
+            log.warn("Rejected unknown enum value. path={} field={}", req.getRequestURI(), field);
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(new ErrorResponse(
+                            "VALIDATION_FAILED",
+                            "Request body contains invalid fields",
+                            req.getRequestURI(),
+                            Map.of(field, "must be one of: " + allowed)
+                    ));
+        }
         log.warn("Rejected unreadable request body. path={} {}", req.getRequestURI(), ex.getMessage());
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)

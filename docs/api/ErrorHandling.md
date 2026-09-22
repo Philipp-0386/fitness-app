@@ -28,17 +28,17 @@ The frontend mirrors this shape in
 
 ### Codes in use
 
-| Code                     | Status | Raised by                                                                                               |
-| ------------------------ | ------ | ------------------------------------------------------------------------------------------------------- |
-| `INVALID_CREDENTIALS`    | 401    | `BadCredentialsException` from `LoginService`                                                           |
-| `EMAIL_ALREADY_EXISTS`   | 409    | sign-up                                                                                                 |
-| `USERNAME_ALREADY_TAKEN` | 409    | sign-up                                                                                                 |
-| `DEFAULT_ROLE_NOT_FOUND` | 500    | sign-up, missing seed data                                                                              |
-| `UNAUTHENTICATED`        | 401    | security filter chain, no valid access token                                                            |
-| `ACCESS_DENIED`          | 403    | ownership checks, and the filter chain                                                                  |
-| `INVALID_JSON`           | 400    | unparseable request body                                                                                |
-| `VALIDATION_FAILED`      | 400    | bean validation on a `@Valid` request body; `fieldErrors` maps each rejected field to its first message |
-| `RESOURCE_NOT_FOUND`     | 404    | no handler mapped to the path                                                                           |
+| Code                     | Status | Raised by                                                                                                                            |
+| ------------------------ | ------ | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `INVALID_CREDENTIALS`    | 401    | `BadCredentialsException` from `LoginService`                                                                                        |
+| `EMAIL_ALREADY_EXISTS`   | 409    | sign-up                                                                                                                              |
+| `USERNAME_ALREADY_TAKEN` | 409    | sign-up                                                                                                                              |
+| `DEFAULT_ROLE_NOT_FOUND` | 500    | sign-up, missing seed data                                                                                                           |
+| `UNAUTHENTICATED`        | 401    | security filter chain, no valid access token                                                                                         |
+| `ACCESS_DENIED`          | 403    | ownership checks, and the filter chain                                                                                               |
+| `INVALID_JSON`           | 400    | unparseable request body                                                                                                             |
+| `VALIDATION_FAILED`      | 400    | bean validation on a `@Valid` request body, and a value outside an enum; `fieldErrors` maps each rejected field to its first message |
+| `RESOURCE_NOT_FOUND`     | 404    | no handler mapped to the path                                                                                                        |
 
 ---
 
@@ -67,6 +67,26 @@ An unmapped path produces a 404 that Spring **forwards to `/error`**. That forwa
 request.
 
 Problem that existed: Non existent endpoint handling gave same error as unauthorized access attempts.
+
+---
+
+## Enum fields fail before validation
+
+A request DTO binds a closed set of values as an enum rather than a `String`, so the frontend
+offering three options in a dropdown is convenience while the backend still enforces it.
+
+| Sent for `exerciseType`      | Fails in   | Code                |
+| ---------------------------- | ---------- | ------------------- |
+| `"STRENGTH"`                 | -          | -                   |
+| `"YOGA"`, `"strength"`, `42` | Jackson    | `VALIDATION_FAILED` |
+| missing, `null`              | `@NotNull` | `VALIDATION_FAILED` |
+
+(Jackson is case sensitive here)
+
+The first row of failures arrives as an `InvalidFormatException` wrapped in
+`HttpMessageNotReadableException`. `handleUnreadableBody` picks those out and reports them as a field error rather than `INVALID_JSON`, so the client sees one shape no matter which layer rejected the field. A body that is not parseable JSON at all still yields `INVALID_JSON`, because there are no fields.
+
+The `CHECK` constraint on `exercise.exercise_type` in [main.sql](../../db/src/main.sql) is ideally never reached.
 
 ---
 

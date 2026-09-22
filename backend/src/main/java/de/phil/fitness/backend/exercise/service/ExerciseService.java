@@ -5,7 +5,9 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import de.phil.fitness.backend.exercise.model.Exercise;
 import de.phil.fitness.backend.exercise.dto.ExerciseResponse;
+import de.phil.fitness.backend.exercise.dto.ExerciseRequest;
 import de.phil.fitness.backend.exercise.exception.ExerciseNotFoundException;
 import de.phil.fitness.backend.exercise.mapper.ExerciseMapper;
 import de.phil.fitness.backend.exercise.repository.ExerciseRepository;
@@ -51,5 +53,17 @@ public class ExerciseService {
         return exerciseRepository.findAvailableById(userId, exerciseId)
                 .map(exerciseMapper::toResponse)
                 .orElseThrow(() -> new ExerciseNotFoundException("The exercise with id=" + exerciseId + " can not be found"));
+    }
+
+    /**
+     * Stores a new exercise owned by the requesting user.
+     * @param req the submitted exercise
+     * @param userId id of the user the exercise is created for
+     * @return the persisted exercise, including its generated id
+     */
+    @Transactional
+    public ExerciseResponse createNewExercise(ExerciseRequest req, Long userId) {
+        Exercise newExercise = exerciseMapper.mapRequestToExerciseEntity(req, userId);
+        return exerciseMapper.toResponse(exerciseRepository.save(newExercise));
     }
 }

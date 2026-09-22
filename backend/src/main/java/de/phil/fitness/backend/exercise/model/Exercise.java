@@ -9,6 +9,8 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
@@ -56,5 +58,17 @@ public class Exercise {
     private LocalDateTime deletedAt;
 
     public Exercise() {
+    }
+
+    @PrePersist
+    public void setTimestampsOnCreate() {
+        LocalDateTime now = LocalDateTime.now();
+        this.createdAt = now;
+        this.updatedAt = now;
+    }
+
+    @PreUpdate
+    public void setTimestampOnUpdate() {
+        this.updatedAt = LocalDateTime.now();
     }
 }
