@@ -23,28 +23,7 @@ jobs:
       run:
         working-directory: backend
 
-    services:
-      postgres:
-        image: postgres:17
-        env:
-          POSTGRES_DB: fitness
-          POSTGRES_USER: ci
-          POSTGRES_PASSWORD: ci
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U ci -d fitness"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 12
-
-    env:
-      DB_URL: jdbc:postgresql://localhost:5432/fitness
-      DB_USERNAME: ci
-      DB_PASSWORD: ci
-      # Throwaway value (HS512 needs at least 64 bytes)
-      JWT_SECRET: ci-only-secret-not-used-outside-this-workflow-padded-to-64-bytes
-      SPRING_PROFILES_ACTIVE: dev
+    # No postgres service and no env: the tests start their own container via Testcontainers and carry their own config
 
     steps:
       - uses: actions/checkout@v4

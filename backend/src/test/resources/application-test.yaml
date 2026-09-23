@@ -1,0 +1,9 @@
+# Throwaway values for the test context
+
+app:
+  jwt:
+    secret: test-only-secret-never-used-outside-the-test-suite-padded-to-64b
+
+spring:
+  jpa:
+    show-sql: false
