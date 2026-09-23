@@ -10,6 +10,7 @@ Current focus:
 - Token refresh endpoint
 - Implementing `exercise` endpoints
 - Laying out core frontend look (design planning)
+- Working towards deployment
 
 For more [insights](././docs/general_planning.md)
 
