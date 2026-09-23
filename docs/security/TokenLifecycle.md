@@ -8,7 +8,7 @@ at login** towards a **full token lifecycle** (refresh, rotation, revocation).
 Related docs:
 - [DatabaseModelling.md](../database/DatabaseModelling.md): DB schema (the `refresh_token` table is added here)
 - [BackendModelling.md](../backend%20architecture/BackendModelling.md): backend structure, incl. the *Core infrastructure* diagram for JWT/Spring Security
-- Schema source: [db/src/main.sql](../../db/src/main.sql)
+- Schema source: [V1__schema.sql](../../backend/src/main/resources/db/migration/V1__schema.sql)
 
 ---
 
@@ -78,7 +78,7 @@ Only **refresh tokens** are persisted and therefore revocable.
 ## Steps (in this order)
 
 ### Step 1 — DB: `refresh_token` table
-*Extends [DatabaseModelling.md](../database/DatabaseModelling.md) and [db/src/main.sql](../../db/src/main.sql).*
+*Extends [DatabaseModelling.md](../database/DatabaseModelling.md). Since 23.09.2026 the schema belongs to Flyway, so this table arrives as a **new** migration (`V3__refresh_token.sql`) — [V1__schema.sql](../../backend/src/main/resources/db/migration/V1__schema.sql) is frozen and must not be edited.*
 
 The refresh token is stored **hashed** (never in plaintext) — on a DB leak the token is worthless.
 
