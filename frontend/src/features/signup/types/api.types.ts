@@ -4,7 +4,7 @@ export type SignUpPayload = {
   password: string;
   firstName: string;
   lastName: string;
-  dateOfBirth: string;
+  dateOfBirth?: string;
 };
 
 export type SuccessfulSignUpResponse = {
