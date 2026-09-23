@@ -77,6 +77,10 @@ Both Jackson lines sit on the classpath permanently: Spring Boot 4 binds bodies 
 while jjwt and springdoc pull in Jackson 2. Boot plans for this, and the two never interact at
 runtime, so the dependency graph was never the problem. The build now keeps the 2.x packages off the compile classpath so the wrong import fails instead of silently doing nothing.
 
+### Exercise empty list return case
+
+The global catalog should never be empty, meaning, if a user calls for all available exercises to have selection from, the returned list can never be empty. I should handle this case within the backend.
+
 ## Key Decisions
 
 ### JWT > Sessions
