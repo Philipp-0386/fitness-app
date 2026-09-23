@@ -10,8 +10,6 @@ services:
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
-      # Runs only on first initialisation of an empty data directory.
-      - ./db/src/main.sql:/docker-entrypoint-initdb.d/main.sql:ro
       - pgdata:/var/lib/postgresql/data
     healthcheck:
       # -h 127.0.0.1 forces a TCP check: during initdb the server listens on the
@@ -33,6 +31,7 @@ services:
       DB_PASSWORD: ${POSTGRES_PASSWORD}
       JWT_SECRET: ${JWT_SECRET}
       API_DOCS_ENABLED: ${API_DOCS_ENABLED:-false}
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
     ports:
       - "${BACKEND_PORT:-8080}:8080"
     volumes:

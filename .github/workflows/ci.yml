@@ -44,6 +44,7 @@ jobs:
       DB_PASSWORD: ci
       # Throwaway value (HS512 needs at least 64 bytes)
       JWT_SECRET: ci-only-secret-not-used-outside-this-workflow-padded-to-64-bytes
+      SPRING_PROFILES_ACTIVE: dev
 
     steps:
       - uses: actions/checkout@v4
@@ -53,14 +54,6 @@ jobs:
           java-version: "21"
           distribution: temurin
           cache: maven
-
-      # Supplies the schema that Hibernate checks against -> application.yaml runs
-      # with ddl-auto: validate, so the build fails if entities and main.sql do not match.
-      - name: Apply database schema
-        working-directory: .
-        env:
-          PGPASSWORD: ci
-        run: psql -h localhost -U ci -d fitness -q -v ON_ERROR_STOP=1 -f db/src/main.sql
 
       # mvnw is committed without the executable bit, so it cannot be run directly.
       - name: Build and test

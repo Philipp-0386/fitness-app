@@ -1,6 +1,6 @@
 package de.phil.fitness.backend.exercise.model;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -48,27 +48,27 @@ public class Exercise {
     private String instructions;
 
     @Column(name = "CREATED_AT", nullable = false)
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
     @Column(name = "UPDATED_AT", nullable = false)
-    private LocalDateTime updatedAt;
+    private Instant updatedAt;
 
     /** Soft delete marker; rows with a value set are excluded from every query. */
     @Column(name = "DELETED_AT")
-    private LocalDateTime deletedAt;
+    private Instant deletedAt;
 
     public Exercise() {
     }
 
     @PrePersist
     public void setTimestampsOnCreate() {
-        LocalDateTime now = LocalDateTime.now();
+        Instant now = Instant.now();
         this.createdAt = now;
         this.updatedAt = now;
     }
 
     @PreUpdate
     public void setTimestampOnUpdate() {
-        this.updatedAt = LocalDateTime.now();
+        this.updatedAt = Instant.now();
     }
 }
