@@ -61,7 +61,7 @@ I have already started implementing the exercise slice. The idea is, to have _th
 ### Git Workflow (WIP)
 
 Currenlty base CI exists running backend and frontend test builds.
-Drift between mapped (backend) entites and database entities prohibited. `Validate` runs match of main.sql database vs mapped entities during test-runtime.
+Drift between mapped (backend) entites and database entities prohibited. Since the Flyway switch (23.09.2026) CI no longer applies a schema script: the test context boots, Flyway migrates the empty database, and `validate` then checks the mapped entities against the migrated schema.
 
 ### Tests (not started)
 
@@ -97,3 +97,16 @@ Furthermore, this was partially done out of pure convenience after i have worked
 ### Database table structure
 
 See [DB Schema](./database/DatabaseModelling.md##session_log-session_exercise-and-exercise_set).
+
+### Schema freeze and Flyway (23.09.2026)
+
+`db/src/main.sql` was a drop-and-recreate reset script. The script was frozen into `V1__schema.sql` and Flyway took over. The freeze was the moment to apply everything that is free now and expensive later (Goal of PR #77):
+
+- `TIMESTAMP` → `TIMESTAMPTZ` on every timestamp column (entities moved from `LocalDateTime` to `Instant`)
+- `ON DELETE CASCADE` on `session_exercise -> session_log` and `exercise_set -> session_exercise`
+- Per-owner exercise name uniqueness, and a partial unique index for one active session per user.
+- `userdata.date_of_birth` is nullable: nothing reads it, and less personal data stored is less to protect.
+
+The seed was split at the same time. Reference data (roles, muscle groups, the global catalog) runs everywhere; the test users live in a separate Flyway location that only the `dev` profile activates. They all share the password `password` in a public repository, so a production database must never see them.
+
+Rollbacks are the cost side of this: with one instance migrating on startup, an old image can only be redeployed if the migration in between was additive. That is a rule to keep from the first migration on, not after the first incident.

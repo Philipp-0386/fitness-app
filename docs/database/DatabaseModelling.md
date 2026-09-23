@@ -4,7 +4,9 @@ This file documents the database modelling.
 
 ## Current State
 
-Auth tables (`roles`, `userdata`) plus the core domain tables below (`exercise`, `muscle_group`, `exercise_musclegroup`, `workout_plan`, `workout_exercise`, `session_log`, `session_exercise`, `exercise_set`) are created via [db/src/main.sql](../../db/src/main.sql). No JPA entities/repositories exist for the domain tables yet.
+Auth tables (`roles`, `userdata`) plus the core domain tables below (`exercise`, `muscle_group`, `exercise_musclegroup`, `workout_plan`, `workout_exercise`, `session_log`, `session_exercise`, `exercise_set`) are created by Flyway from [V1\_\_schema.sql](../../backend/src/main/resources/db/migration/V1__schema.sql). No JPA entities/repositories exist for the domain tables yet.
+
+Since the schema freeze on 23.09.2026 the migrations are the source of truth and this file describes the intent. `V1` is frozen, every change from here on is a new migration. All timestamp columns are `TIMESTAMPTZ`, the mapped entities use `Instant`.
 
 ## Planning
 
@@ -23,6 +25,7 @@ TODO: auto-generate targets from user's own training history (rep range preferen
 Once a user starts to track their workout, a `session_log` entry is created. Once a set is completed, this user's data will be stored in `exercise_set` entries. These entries reference `session_exercise` entries, and therefore grouping individual sets.
 
 Important: `session` and `workout` tables decoupled, and only related to each other through a referenced exercise. This allows sessions to be created without an existing `workout_plan`. This has a couple advantages:
+
 - Freestyle sessions without an existing `workout_plan`
 - Spontaneously adding exercises during a session without modifying the plan
 - Plan edits (renaming, reordering, replacing exercises) without corrupting historical sessions
@@ -91,7 +94,7 @@ Note: Session creation lazy vs eager?
 #### `session_exercise`
 
 - **PK**: `id`
-- **FK**: `session_log_id` → `session_log.id`, `exercise_id` → `exercise.id`
+- **FK**: `session_log_id` → `session_log.id` (`ON DELETE CASCADE`), `exercise_id` → `exercise.id`
 - **Required**: `order_index`, `status` (`PLANNED` / `COMPLETED` / `SKIPPED`)
 - **Optional**: `notes`
 - **Optional (target snapshots)**: `target_sets_snapshot`, `target_reps_min_snapshot`, `target_reps_max_snapshot`, `target_rpe_snapshot`
@@ -103,7 +106,7 @@ Note: Session creation lazy vs eager?
 #### `exercise_set`
 
 - **PK**: `id`
-- **FK**: `session_exercise_id` → `session_exercise.id`
+- **FK**: `session_exercise_id` → `session_exercise.id` (`ON DELETE CASCADE`)
 - **Required**: `set_number`
 - **Optional (strength)**: `reps`, `weight_kg`, `rpe`
 - **Optional (cardio)**: `duration_seconds`, `distance_meters`, `avg_heart_rate`
@@ -133,15 +136,30 @@ Suggested: a `load_type` column on `exercise` (`EXTERNAL` / `BODYWEIGHT` / `BODY
 
 Deliberately deferred for now.
 
-### Missing: delete story for sessions
+### ~~Missing: delete story for sessions~~ (done 23.09.2026, PR#77)
 
-`exercise` and `workout_plan` use soft deletes (`deleted_at`); the three session tables do not, and no foreign key declares `ON DELETE CASCADE`. Deleting a mislogged session therefore fails unless `exercise_set` and `session_exercise` rows are removed manually first.
+`exercise` and `workout_plan` use soft deletes (`deleted_at`); the three session tables do not, and no foreign key declared `ON DELETE CASCADE`. Deleting a mislogged session therefore failed unless `exercise_set` and `session_exercise` rows were removed manually first.
 
-Cascade is semantically correct here — a set has no meaning without its session — and this is the only place in the schema where it is appropriate.
+Cascade is semantically correct here, a set has no meaning without its session, and this is the only place in the schema where it is appropriate. It is now declared on `session_exercise -> session_log` and `exercise_set -> session_exercise` in `V1__schema.sql`.
 
-### Constraint: `exercise` name uniqueness
+### ~~Constraint: `exercise` name uniqueness~~ (done 23.09.2026, PR#77)
 
 `exercise.name` has no uniqueness constraint, so duplicate standard exercises can be created. The intent is not a global constraint but a per-owner one, so that each user can define their own variant of an existing name. A plain `UNIQUE (owner_user_id, name)` does not fully express that in Postgres: NULLs are treated as distinct there, so it would still allow duplicate standard exercises (`owner_user_id IS NULL`). Two constraints are needed instead — `UNIQUE (owner_user_id, name)` for custom exercises, plus a partial index `CREATE UNIQUE INDEX ... ON exercise (name) WHERE owner_user_id IS NULL` for the standard ones. More explicit than the Oracle equivalent, and the partial index states the rule directly instead of relying on NULL semantics.
+
+Implemented as:
+
+```sql
+CREATE UNIQUE INDEX uq_exercise_name ON exercise (owner_user_id, name)
+    NULLS NOT DISTINCT WHERE deleted_at IS NULL;
+```
+
+`WHERE deleted_at IS NULL` frees a name again after a soft delete. An index rather than a constraint, because Postgres has no partial `UNIQUE` constraint.
+
+### ~~Constraint: one active session per user~~ (done 23.09.2026, PR#77)
+
+`CREATE UNIQUE INDEX uq_session_log_active ON session_log (user_id) WHERE status = 'IN_PROGRESS';`
+
+A domain rule rather than an access path. The service checks it first to produce a usable error message, but the index is what closes the race between check and insert, for example on a double tap. _Currently_ nothing makes use of this.
 
 ### Tradeoff: wide `exercise_set` table
 
@@ -157,18 +175,22 @@ Primary keys and unique constraints already cover the hottest parent-to-child pa
 
 Remaining gaps:
 
-| Index | Reason |
-| --- | --- |
-| `exercise_musclegroup(muscle_group_id)` | The composite PK only serves the `exercise_id` direction; "which exercises train this muscle group" scans the whole join table |
-| `session_log(user_id, started_at DESC)` | "my recent sessions" — filter and sort in one index |
-| `session_exercise(exercise_id)` | The analytics path: per-exercise progression, 1RM, volume per muscle group |
-| `exercise(owner_user_id)` | "my custom exercises", plus the foreign key reason below |
-| `workout_plan(user_id)` | "my plans" |
-| `session_log(plan_id)`, `workout_exercise(exercise_id)` | Foreign key reason only |
+| Index                                                   | Reason                                                                                                                         |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `exercise_musclegroup(muscle_group_id)`                 | The composite PK only serves the `exercise_id` direction; "which exercises train this muscle group" scans the whole join table |
+| `session_log(user_id, started_at DESC)`                 | "my recent sessions" — filter and sort in one index                                                                            |
+| `session_exercise(exercise_id)`                         | The analytics path: per-exercise progression, 1RM, volume per muscle group                                                     |
+| `exercise(owner_user_id)`                               | "my custom exercises", plus the foreign key reason below                                                                       |
+| `workout_plan(user_id)`                                 | "my plans"                                                                                                                     |
+| `session_log(plan_id)`, `workout_exercise(exercise_id)` | Foreign key reason only                                                                                                        |
 
-The Oracle-specific reason for indexing every foreign key column no longer applies: Oracle takes a lock on the *entire* child table when a parent row is deleted and the foreign key column is unindexed, Postgres only takes row-level locks. What remains is the ordinary performance reason — Postgres still has to scan the whole child table to verify that no referencing rows exist on a parent delete or PK update, and the query paths in the table above are the actual justification.
+The Oracle-specific reason for indexing every foreign key column no longer applies: Oracle takes a lock on the _entire_ child table when a parent row is deleted and the foreign key column is unindexed, Postgres only takes row-level locks. What remains is the ordinary performance reason — Postgres still has to scan the whole child table to verify that no referencing rows exist on a parent delete or PK update, and the query paths in the table above are the actual justification.
 
 Note that with the current mock data volume none of these will produce a measurable difference; the value right now is documenting the intended access paths.
+
+**Still candidates after the schema freeze on 23.09.2026, deliberately not created.** They serve queries that do not exist yet, and an index picked before its query is a guess. Each belongs in the migration that ships the slice querying it. Adding one later is cheap: `CREATE INDEX CONCURRENTLY`, in a migration marked `-- executeInTransaction=false`.
+
+`exercise(owner_user_id)` drops off the list entirely. `uq_exercise_name` leads with that column and already serves both access paths.
 
 ### Not planned
 

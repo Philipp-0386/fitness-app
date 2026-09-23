@@ -1,7 +1,7 @@
 package de.phil.fitness.backend.user.model;
 
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 import org.hibernate.annotations.DynamicInsert;
 
@@ -42,7 +42,7 @@ public class User {
     @Column(name = "LAST_NAME", length = 24)
     private String lastName;
 
-    @Column(name = "DATE_OF_BIRTH", nullable = false)
+    @Column(name = "DATE_OF_BIRTH")
     private LocalDate dateOfBirth;
 
     @ManyToOne
@@ -50,13 +50,13 @@ public class User {
     private Role role;
 
     @Column(name = "CREATED_AT", nullable = false)
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
     public User() {
     }
 
     @PrePersist
     public void setCreatedAt() {
-        this.createdAt = LocalDateTime.now();
+        this.createdAt = Instant.now();
     }
 }

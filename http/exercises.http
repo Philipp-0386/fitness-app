@@ -6,7 +6,7 @@
 #
 # Preconditions:
 #   docker compose --profile full up -d
-#   seed data from db/src/main.sql
+#   test users seeded by the dev Flyway location (SPRING_PROFILES_ACTIVE=dev)
 #
 # Seeded ownership (63 global entries plus one per user):
 #   user 2 max        -> 'Slow Tempo Push-Up'

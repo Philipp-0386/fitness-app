@@ -32,7 +32,7 @@ For more [insights](././docs/general_planning.md)
 
 # Setup Guide
 
-(Reference Point: 11.09.2026)
+(Reference Point: 23.09.2026)
 
 Everything is defined in the root `compose.yaml`. Copy `.env.example` to `.env` and fill
 in the secrets first; all three services read from that single file.
@@ -47,9 +47,9 @@ Starts database, backend and frontend. The frontend is then reachable on
 http://localhost:3000, the backend on http://localhost:8080. No IntelliJ run
 configuration and no `npm run dev` needed.
 
-Startup order is enforced: the backend waits for the database healthcheck (`ddl-auto:
-validate` fails if the schema is missing), the frontend waits for
-`/actuator/health` on the backend.
+Startup order is enforced: the backend waits for the database healthcheck, then
+migrates the schema with Flyway before `ddl-auto: validate` checks the entities
+against it. The frontend waits for `/actuator/health` on the backend.
 
 ## Option B: database only (IntelliJ workflow)
 
@@ -61,13 +61,25 @@ Without `--profile full` only the `db` service starts; backend and frontend are 
 from IntelliJ / `npm run dev` as before. Note that those read their own
 `backend/.env` and `frontend/.env.local`, which must stay in sync with the root `.env`.
 
+The IntelliJ run configuration needs `SPRING_PROFILES_ACTIVE=dev`. Without it the
+backend migrates the schema and the reference data, but no test users — so there is
+nothing to log in with.
+
 ## Database notes
 
-- `db/src/main.sql` is mounted into `/docker-entrypoint-initdb.d` and runs **once**, when
-  the `pgdata` volume is created. It is a reset script, not a migration.
-- After schema changes, re-seed with `docker compose down -v` followed by `up`.
-- To reset without recreating the container:
-  `docker exec -i fitness-app-db-1 psql -U <POSTGRES_USER> -d <POSTGRES_DB> -v ON_ERROR_STOP=1 < db/src/main.sql`
+The schema is owned by Flyway and migrates itself when the backend starts. The
+migrations live in `backend/src/main/resources/db/` — see the README there for the
+layout and the rules.
+
+- The database container starts empty. Nothing is mounted into
+  `/docker-entrypoint-initdb.d` anymore.
+- Test users (`max`, `lena_lifts`,  etc., all with the password `password`) come from
+  the `dev` Flyway location and require `SPRING_PROFILES_ACTIVE=dev`.
+  `compose.yaml` sets that by default; a deployed environment must not.
+- Reset: `docker compose down -v` followed by `up`. Dropping the `pgdata` volume is
+  the reset — the next startup migrates from scratch.
+- Schema changes are new migration files. Editing a migration that has already run
+  makes Flyway refuse to start.
 
 ## Networking
 

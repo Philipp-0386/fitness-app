@@ -91,7 +91,7 @@ export default function UserForm() {
         if (!value.trim()) return 'Last name is required';
         return undefined;
       case 'dateOfBirth':
-        if (!value.trim()) return 'Date of birth is required';
+        if (!value.trim()) return undefined;
         const date = new Date(value);
         if (isNaN(date.getTime())) return 'Date of birth must be a valid date';
         return undefined;
@@ -283,7 +283,7 @@ export default function UserForm() {
           )}
         </div>
         <div className={styles.inputBlock}>
-          <label>Date of Birth:</label>
+          <label>Date of Birth (optional):</label>
           <input
             type="date"
             name="dateOfBirth"

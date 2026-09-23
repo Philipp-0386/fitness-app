@@ -1,0 +1,7 @@
+# Development and CI profile. Activated via SPRING_PROFILES_ACTIVE=dev.
+
+spring:
+  flyway:
+    locations: classpath:db/migration,classpath:db/dev
+    # Required because the dev seed sits at V9001 and precedes every later migration.
+    out-of-order: true

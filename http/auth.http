@@ -3,7 +3,9 @@
 # REST Client (humao.rest-client). Send the login in section 1 first.
 # Background: docs/backend architecture/ErrorHandling.md, docs/security/TokenLifecycle.md
 #
-# Preconditions: docker compose --profile full up -d, seed data from db/src/main.sql
+# Preconditions: docker compose --profile full up -d
+# The test users are set by the dev Flyway location, which needs
+# SPRING_PROFILES_ACTIVE=dev (compose.yaml sets it by default).
 # (all seeded users have the password 'password')
 
 @host = http://localhost:8080
