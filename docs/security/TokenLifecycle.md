@@ -6,15 +6,16 @@ This document plans the evolution of the JWT authentication from **one-time toke
 at login** towards a **full token lifecycle** (refresh, rotation, revocation).
 
 Related docs:
+
 - [DatabaseModelling.md](../database/DatabaseModelling.md): DB schema (the `refresh_token` table is added here)
-- [BackendModelling.md](../backend%20architecture/BackendModelling.md): backend structure, incl. the *Core infrastructure* diagram for JWT/Spring Security
-- Schema source: [V1__schema.sql](../../backend/src/main/resources/db/migration/V1__schema.sql)
+- [BackendModelling.md](../backend%20architecture/BackendModelling.md): backend structure, incl. the _Core infrastructure_ diagram for JWT/Spring Security
+- Schema source: [V1\_\_schema.sql](../../backend/src/main/resources/db/migration/V1__schema.sql)
 
 ---
 
 ## Current State
 
-`login` issues an **access token** (JWT, HS512, 15 min) and a **refresh token**
+`login` issues an **access token** (JWT, HS512, 2h) and a **refresh token**
 (JWT, 7 days) and returns both in the response body
 ([LoginService.java](../../backend/src/main/java/de/phil/fitness/backend/login/service/LoginService.java)).
 Validation is stateless via `oauth2ResourceServer.jwt(...)`
@@ -23,19 +24,19 @@ Validation is stateless via `oauth2ResourceServer.jwt(...)`
 Config: `app.jwt` in [application.yaml](../../backend/src/main/resources/application.yaml)
 (`access-token-expiration-minutes: 15`, `refresh-token-expiration-days: 7`).
 
-**Core problem:** tokens can only be issued *once, at login*. There is no refresh endpoint,
+**Core problem:** tokens can only be issued _once, at login_. There is no refresh endpoint,
 no persistence, and therefore no way to renew or revoke tokens.
 
 ### Known gaps
 
-| # | Gap | Impact | Status |
-|---|-----|--------|--------|
-| 1 | No `/backend/auth/refresh` endpoint | Refresh token is useless; re-login required after 15 min | open |
-| 2 | Token type (`type` claim) not enforced | Refresh token is accepted as a valid access token on protected endpoints | **closed** |
-| 3 | No persistence of refresh tokens | No revocation possible; JWTs are valid until expiry | open |
-| 4 | No token rotation | No theft/reuse detection | open |
-| 5 | No `jti` claim | Individual access tokens cannot be revoked via a denylist | open, likely unnecessary |
-| 6 | No logout endpoint | Session cannot be terminated server-side | open |
+| #   | Gap                                    | Impact                                                                   | Status                   |
+| --- | -------------------------------------- | ------------------------------------------------------------------------ | ------------------------ |
+| 1   | No `/backend/auth/refresh` endpoint    | Refresh token is useless; re-login required after 2h                     | open                     |
+| 2   | Token type (`type` claim) not enforced | Refresh token is accepted as a valid access token on protected endpoints | **closed**               |
+| 3   | No persistence of refresh tokens       | No revocation possible; JWTs are valid until expiry                      | open                     |
+| 4   | No token rotation                      | No theft/reuse detection                                                 | open                     |
+| 5   | No `jti` claim                         | Individual access tokens cannot be revoked via a denylist                | open, likely unnecessary |
+| 6   | No logout endpoint                     | Session cannot be terminated server-side                                 | open                     |
 
 ### Gap 2 — how it was closed
 
@@ -78,7 +79,8 @@ Only **refresh tokens** are persisted and therefore revocable.
 ## Steps (in this order)
 
 ### Step 1 — DB: `refresh_token` table
-*Extends [DatabaseModelling.md](../database/DatabaseModelling.md). Since 23.09.2026 the schema belongs to Flyway, so this table arrives as a **new** migration (`V3__refresh_token.sql`) — [V1__schema.sql](../../backend/src/main/resources/db/migration/V1__schema.sql) is frozen and must not be edited.*
+
+_Extends [DatabaseModelling.md](../database/DatabaseModelling.md). Since 23.09.2026 the schema belongs to Flyway, so this table arrives as a **new** migration (`V3__refresh_token.sql`) — [V1\_\_schema.sql](../../backend/src/main/resources/db/migration/V1__schema.sql) is frozen and must not be edited._
 
 The refresh token is stored **hashed** (never in plaintext) — on a DB leak the token is worthless.
 
@@ -107,16 +109,20 @@ Modelling note for DatabaseModelling.md:
 > - **Audit**: `created_at`
 
 ### Step 2 — Enforce token type (gap 2)
+
 A `JwtAuthenticationConverter` / validator that requires `type=access` on protected endpoints.
 The refresh token (`type=refresh`) must **only** be accepted at the refresh endpoint.
 Alternative: validate the refresh token separately (not through the resource server).
 
 ### Step 3 — Persist on login
+
 `LoginService` stores the hash + `expires_at` of the refresh token in `refresh_token` when issuing it.
 New JPA entity `RefreshToken` + `RefreshTokenRepository`.
 
 ### Step 4 — Refresh endpoint + rotation (gaps 1 & 4)
+
 `POST /backend/auth/refresh`:
+
 1. Verify the refresh token (signature, `type=refresh`, not expired).
 2. Look up the hash in the DB → must exist, `revoked_at IS NULL`, not expired.
 3. Issue a new access **and** refresh token.
@@ -124,6 +130,7 @@ New JPA entity `RefreshToken` + `RefreshTokenRepository`.
 5. **Reuse detection:** if an already revoked/replaced token is presented again → revoke the entire chain (`user_id`) (suspected theft).
 
 ### Step 5 — Logout (gap 6)
+
 `POST /backend/auth/logout`: marks the provided refresh token (or all of the user's tokens) as revoked.
 
 Because the refresh token now travels as an ambient cookie (see decisions below), these cookie-authenticated
@@ -133,10 +140,12 @@ Options: enable CSRF selectively for these endpoints only, or `SameSite=Strict` 
 Logout offers two variants: revoke only the current refresh token (this device) or all of the user's tokens (all devices).
 
 ### Step 6 (optional) — `jti` + access-token denylist (gap 5)
+
 Only needed if access tokens must be invalidated immediately (before expiry). With a 15-min lifetime this is
 usually unnecessary. If required: add a `jti` claim in `JwtService` + a denylist table/cache check.
 
 ### Step 7 — Scheduled cleanup
+
 `@Scheduled` job (e.g. daily): `DELETE FROM refresh_token WHERE expires_at < now` and
 `revoked_at < now - 30 days`. Active and recently revoked tokens are retained for reuse detection.
 
@@ -144,9 +153,9 @@ usually unnecessary. If required: add a `jti` claim in `JwtService` + a denylist
 
 ## Decisions Made
 
-| Topic | Decision | Consequence for the implementation |
-|-------|----------|-----------------------------------|
-| **Token transport** | Refresh token as **HttpOnly+Secure cookie** (access token in client memory) | Set the cookie via the Next.js BFF route; **CSRF must be handled**, since `csrf.disable()` is currently set (see Step 5). Use `SameSite=Strict`, restrict `Path` to the refresh/logout endpoint. |
-| **Cleanup** | **Scheduled job**: delete expired rows, keep revoked ones for a retention window (e.g. 30 days) | Own Step 7 (`@Scheduled` cleanup). Reuse detection stays possible within the audit window. |
-| **Multi-device** | **Multiple active refresh tokens per user** (per device/session) | `refresh_token` stays 1:n to `userdata` (table already supports this). Logout distinguishes "this device" vs. "all devices". |
-| **Signature scheme** | **Keep HMAC (HS512)** | No change. Switch to RSA/EC only once the auth and resource servers are separated. |
+| Topic                | Decision                                                                                        | Consequence for the implementation                                                                                                                                                               |
+| -------------------- | ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Token transport**  | Refresh token as **HttpOnly+Secure cookie** (access token in client memory)                     | Set the cookie via the Next.js BFF route; **CSRF must be handled**, since `csrf.disable()` is currently set (see Step 5). Use `SameSite=Strict`, restrict `Path` to the refresh/logout endpoint. |
+| **Cleanup**          | **Scheduled job**: delete expired rows, keep revoked ones for a retention window (e.g. 30 days) | Own Step 7 (`@Scheduled` cleanup). Reuse detection stays possible within the audit window.                                                                                                       |
+| **Multi-device**     | **Multiple active refresh tokens per user** (per device/session)                                | `refresh_token` stays 1:n to `userdata` (table already supports this). Logout distinguishes "this device" vs. "all devices".                                                                     |
+| **Signature scheme** | **Keep HMAC (HS512)**                                                                           | No change. Switch to RSA/EC only once the auth and resource servers are separated.                                                                                                               |
