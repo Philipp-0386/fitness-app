@@ -114,3 +114,17 @@ See [DB Schema](./database/DatabaseModelling.md##session_log-session_exercise-an
 The seed was split at the same time. Reference data (roles, muscle groups, the global catalog) runs everywhere; the test users live in a separate Flyway location that only the `dev` profile activates. They all share the password `password` in a public repository, so a production database must never see them.
 
 Rollbacks are the cost side of this: with one instance migrating on startup, an old image can only be redeployed if the migration in between was additive. That is a rule to keep from the first migration on, not after the first incident.
+
+### Basic deployment (24.09.2026)
+
+The app is deployed at https://fit.ringelkamp.dev. The setup is minimal: one server, the existing compose stack plus a `compose.prod.yaml` overlay, and Caddy in front for TLS. There is no CI/CD pipeline yet -> deploying means pulling on the server and rebuilding the images.
+
+The production database gets two real accounts instead of the dev test users. They are set by a repeatable Flyway migration in the `prod` location, so production keeps a strictly increasing version history without `out-of-order`.
+
+Open points:
+
+- Automated deployment (build and roll out from CI)
+- Database backups for the `pgdata` volume
+- Log retention and monitoring beyond `docker compose logs`
+
+For a detailed look at the deployment status and [everything surrounding deployment](/docs/deployment.md)
