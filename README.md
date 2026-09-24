@@ -10,7 +10,8 @@ Current focus:
 - Token refresh endpoint
 - Implementing `exercise` endpoints
 - Laying out core frontend look (design planning)
-- Working towards deployment
+
+A basic deployment is live at https://fit.ringelkamp.dev (since 24.09.2026).
 
 For more [insights](././docs/general_planning.md)
 
@@ -81,6 +82,31 @@ layout and the rules.
   the reset — the next startup migrates from scratch.
 - Schema changes are new migration files. Editing a migration that has already run
   makes Flyway refuse to start.
+
+## Deployment
+
+The production stack runs on a single server from the same `compose.yaml`, extended by
+`compose.prod.yaml`:
+
+- `SPRING_PROFILES_ACTIVE=prod`, so the dev test users are never loaded.
+- No app ports are published. Caddy (`Caddyfile`) is the only entry point on 80/443,
+  terminates TLS with an automatic certificate and proxies to the frontend.
+- The server's `.env` sets `COMPOSE_FILE=compose.yaml:compose.prod.yaml`, so the usual
+  `docker compose --profile full up -d --build` starts the prod stack.
+
+The `prod` profile seeds two accounts (`admin` and one regular user) from the `prod`
+Flyway location. Their bcrypt hashes come from `SEED_ADMIN_PASSWORD_HASH` and
+`SEED_USER_PASSWORD_HASH` in `.env`; compose refuses to start without them. Details in
+the README under `backend/src/main/resources/db/`.
+
+To run the prod configuration locally (fresh volume required, Caddy left out):
+
+```
+docker compose --profile full down -v
+docker compose -f compose.yaml -f compose.override.yaml -f compose.prod.yaml --profile full up -d --build db backend frontend
+```
+
+For more [details](/docs/deployment.md).
 
 ## Networking
 
