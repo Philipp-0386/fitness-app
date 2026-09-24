@@ -6,6 +6,7 @@ import { Toaster } from 'sonner';
 import { SiteFooter, WipBanner } from '@/shared/layout';
 import { WIP_BANNER_COOKIE, WIP_BANNER_VERSION } from '@/shared/site';
 import './globals.css';
+import styles from './layout.module.css';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -35,7 +36,7 @@ export default async function RootLayout({
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         {!isBannerDismissed && <WipBanner />}
-        {children}
+        <div className={styles.content}>{children}</div>
         <SiteFooter />
         <Toaster richColors position="top-right" />
       </body>
