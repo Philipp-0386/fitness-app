@@ -23,9 +23,6 @@ export default function UserForm() {
     email: '',
     password: '',
     confirmPassword: '',
-    firstName: '',
-    lastName: '',
-    dateOfBirth: '',
   });
   const [generalErrors, setGeneralErrors] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<FormError>({});
@@ -84,17 +81,6 @@ export default function UserForm() {
         if (!value.trim()) return 'Please confirm your password';
         if (value !== currentForm.password) return 'Passwords do not match';
         return undefined;
-      case 'firstName':
-        if (!value.trim()) return 'First name is required';
-        return undefined;
-      case 'lastName':
-        if (!value.trim()) return 'Last name is required';
-        return undefined;
-      case 'dateOfBirth':
-        if (!value.trim()) return undefined;
-        const date = new Date(value);
-        if (isNaN(date.getTime())) return 'Date of birth must be a valid date';
-        return undefined;
     }
     return undefined;
   }
@@ -140,9 +126,6 @@ export default function UserForm() {
       email: true,
       password: true,
       confirmPassword: true,
-      firstName: true,
-      lastName: true,
-      dateOfBirth: true,
     };
     setTouched(allTouched);
 
@@ -254,45 +237,6 @@ export default function UserForm() {
           </div>
           {touched.confirmPassword && fieldErrors.confirmPassword && (
             <p className={styles.fieldError}>{fieldErrors.confirmPassword}</p>
-          )}
-        </div>
-        <div className={styles.inputBlock}>
-          <label>First Name:</label>
-          <input
-            type="text"
-            name="firstName"
-            value={form.firstName}
-            onChange={handleChange}
-            onBlur={handleBlur}
-          />
-          {touched.firstName && fieldErrors.firstName && (
-            <p className={styles.fieldError}>{fieldErrors.firstName}</p>
-          )}
-        </div>
-        <div className={styles.inputBlock}>
-          <label>Last Name:</label>
-          <input
-            type="text"
-            name="lastName"
-            value={form.lastName}
-            onChange={handleChange}
-            onBlur={handleBlur}
-          />
-          {touched.lastName && fieldErrors.lastName && (
-            <p className={styles.fieldError}>{fieldErrors.lastName}</p>
-          )}
-        </div>
-        <div className={styles.inputBlock}>
-          <label>Date of Birth (optional):</label>
-          <input
-            type="date"
-            name="dateOfBirth"
-            value={form.dateOfBirth}
-            onChange={handleChange}
-            onBlur={handleBlur}
-          />
-          {touched.dateOfBirth && fieldErrors.dateOfBirth && (
-            <p className={styles.fieldError}>{fieldErrors.dateOfBirth}</p>
           )}
         </div>
         <div className={styles.errorBox}>
