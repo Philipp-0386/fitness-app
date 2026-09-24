@@ -68,10 +68,7 @@ Content-Type: application/json
 {
   "username": "brand-new-name",
   "email": "max@fitness.local",
-  "password": "password",
-  "firstName": "Test",
-  "lastName": "User",
-  "dateOfBirth": "1995-01-01"
+  "password": "password"
 }
 
 ### Taken username -> 409 USERNAME_ALREADY_TAKEN
@@ -81,10 +78,7 @@ Content-Type: application/json
 {
   "username": "max",
   "email": "brand-new-address@fitness.local",
-  "password": "password",
-  "firstName": "Test",
-  "lastName": "User",
-  "dateOfBirth": "1995-01-01"
+  "password": "password"
 }
 
 ###############################################################################
