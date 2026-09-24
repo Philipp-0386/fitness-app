@@ -1,7 +1,6 @@
 package de.phil.fitness.backend.user.model;
 
 import java.time.Instant;
-import java.time.LocalDate;
 
 import org.hibernate.annotations.DynamicInsert;
 
@@ -35,15 +34,6 @@ public class User {
 
     @Column(name = "EMAIL", nullable = false, unique = true, length = 64)
     private String email;
-
-    @Column(name = "FIRST_NAME", length = 24)
-    private String firstName;
-
-    @Column(name = "LAST_NAME", length = 24)
-    private String lastName;
-
-    @Column(name = "DATE_OF_BIRTH")
-    private LocalDate dateOfBirth;
 
     @ManyToOne
     @JoinColumn(name = "ROLE_ID", nullable = false)

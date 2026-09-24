@@ -109,11 +109,21 @@ See [DB Schema](./database/DatabaseModelling.md##session_log-session_exercise-an
 - `TIMESTAMP` → `TIMESTAMPTZ` on every timestamp column (entities moved from `LocalDateTime` to `Instant`)
 - `ON DELETE CASCADE` on `session_exercise -> session_log` and `exercise_set -> session_exercise`
 - Per-owner exercise name uniqueness, and a partial unique index for one active session per user.
-- `userdata.date_of_birth` is nullable: nothing reads it, and less personal data stored is less to protect.
+- `userdata.date_of_birth` is nullable: nothing reads it, and less personal data stored is less to protect. Removed from `V1` again, see below.
 
 The seed was split at the same time. Reference data (roles, muscle groups, the global catalog) runs everywhere; the test users live in a separate Flyway location that only the `dev` profile activates. They all share the password `password` in a public repository, so a production database must never see them.
 
 Rollbacks are the cost side of this: with one instance migrating on startup, an old image can only be redeployed if the migration in between was additive. That is a rule to keep from the first migration on, not after the first incident.
+
+### No personal fields on the account (24.09.2026)
+
+`first_name`, `last_name` and `date_of_birth` are gone from `userdata`, the sign-up request and response, and the sign-up form.
+
+The columns were removed from `V1__schema.sql` directly instead of a drop migration. There is no user data worth keeping yet, so every database (local and server) is reset.
+
+The date of birth comes back with the energy requirement calculator (kcal calc), once there is a feature that reads it.
+
+The `USERNAME_ALREADY_TAKEN` message is generic now ("Username already taken!"), like `EMAIL_ALREADY_EXISTS`, so the requested username no longer ends up in the log or the error body.
 
 ### Basic deployment (24.09.2026)
 

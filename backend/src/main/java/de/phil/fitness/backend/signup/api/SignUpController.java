@@ -37,7 +37,7 @@ public class SignUpController {
      * @return Returns {@link SignUpResponse} object after successful creation process
      */
     @PostMapping("/signup")
-    @Operation(summary = "Create an account", description = "dateOfBirth is expected as yyyy-MM-dd. Does not log the user in.")
+    @Operation(summary = "Create an account", description = "Does not log the user in.")
     @ApiResponse(responseCode = "200", description = "Account created")
     @ApiResponse(responseCode = "400", description = "INVALID_JSON or VALIDATION_FAILED",
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
@@ -45,7 +45,6 @@ public class SignUpController {
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     @ApiResponse(responseCode = "500", description = "DEFAULT_ROLE_NOT_FOUND (missing seed data)",
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
-    //Frontend hinweis: yyyy-MM-dd für dateOfBirth angeben (input date type)
     public SignUpResponse root(@Valid @RequestBody SignUpRequest request) {
         return signUpService.createUser(request);
     }
