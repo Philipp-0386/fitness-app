@@ -33,7 +33,7 @@ public class LoginController {
     }
 
     @PostMapping("/login")
-    @Operation(summary = "Log in", description = "Returns a 15 min access token and a 7 day refresh token. "
+    @Operation(summary = "Log in", description = "Returns a 2h access token and a 7 day refresh token. "
             + "Unknown user and wrong password produce the identical response.")
     @ApiResponse(responseCode = "200", description = "Credentials valid")
     @ApiResponse(responseCode = "400", description = "INVALID_JSON or VALIDATION_FAILED",
