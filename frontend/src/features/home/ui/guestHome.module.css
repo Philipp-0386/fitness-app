@@ -1,5 +1,5 @@
 .page {
-  min-height: 100vh;
+  flex: 1;
   padding: 64px 24px 80px;
   display: flex;
   flex-direction: column;
