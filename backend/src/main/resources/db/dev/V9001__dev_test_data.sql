@@ -1,16 +1,16 @@
 -- Test users and the data owned by them. Development and CI only (dev profile).
 
 -- userdata (all password hashes are bcrypt of 'password', cost 10)
-INSERT INTO userdata (username, email, password_hashed, first_name, last_name, date_of_birth, role_id)
-VALUES ('admin', 'admin@fitness.local', '$2a$10$N9qo8uLOickgx2ZMRZoMye8fOsiTWZqYtkxvXkKm8BMzjT7t/vIdq', 'Ada', 'Admin', DATE '1988-03-12', 0);
-INSERT INTO userdata (username, email, password_hashed, first_name, last_name, date_of_birth, role_id)
-VALUES ('max', 'max@fitness.local', '$2a$10$N9qo8uLOickgx2ZMRZoMye8fOsiTWZqYtkxvXkKm8BMzjT7t/vIdq', 'Max', 'Mustermann', DATE '1999-07-24', 1);
-INSERT INTO userdata (username, email, password_hashed, first_name, last_name, date_of_birth, role_id)
-VALUES ('lena_lifts', 'lena@fitness.local', '$2a$10$N9qo8uLOickgx2ZMRZoMye8fOsiTWZqYtkxvXkKm8BMzjT7t/vIdq', 'Lena', 'Brandt', DATE '1995-11-05', 1);
-INSERT INTO userdata (username, email, password_hashed, first_name, last_name, date_of_birth, role_id)
-VALUES ('marco', 'marco@fitness.local', '$2a$10$N9qo8uLOickgx2ZMRZoMye8fOsiTWZqYtkxvXkKm8BMzjT7t/vIdq', 'Marco', 'Keller', DATE '1992-01-19', 1);
-INSERT INTO userdata (username, email, password_hashed, first_name, last_name, date_of_birth, role_id)
-VALUES ('sina', 'sina@fitness.local', '$2a$10$N9qo8uLOickgx2ZMRZoMye8fOsiTWZqYtkxvXkKm8BMzjT7t/vIdq', 'Sina', 'Vogt', DATE '2001-09-30', 1);
+INSERT INTO userdata (username, email, password_hashed, role_id)
+VALUES ('admin', 'admin@fitness.local', '$2a$10$N9qo8uLOickgx2ZMRZoMye8fOsiTWZqYtkxvXkKm8BMzjT7t/vIdq', 0);
+INSERT INTO userdata (username, email, password_hashed, role_id)
+VALUES ('max', 'max@fitness.local', '$2a$10$N9qo8uLOickgx2ZMRZoMye8fOsiTWZqYtkxvXkKm8BMzjT7t/vIdq', 1);
+INSERT INTO userdata (username, email, password_hashed, role_id)
+VALUES ('lena_lifts', 'lena@fitness.local', '$2a$10$N9qo8uLOickgx2ZMRZoMye8fOsiTWZqYtkxvXkKm8BMzjT7t/vIdq', 1);
+INSERT INTO userdata (username, email, password_hashed, role_id)
+VALUES ('marco', 'marco@fitness.local', '$2a$10$N9qo8uLOickgx2ZMRZoMye8fOsiTWZqYtkxvXkKm8BMzjT7t/vIdq', 1);
+INSERT INTO userdata (username, email, password_hashed, role_id)
+VALUES ('sina', 'sina@fitness.local', '$2a$10$N9qo8uLOickgx2ZMRZoMye8fOsiTWZqYtkxvXkKm8BMzjT7t/vIdq', 1);
 
 -- custom exercises
 INSERT INTO exercise (owner_user_id, name, exercise_type, description, instructions) VALUES ((SELECT id FROM userdata WHERE username = 'max'), 'Slow Tempo Push-Up', 'STRENGTH', 'Custom push-up variation with a 4 second eccentric.', 'Lower for four seconds, pause briefly at the bottom, press up explosively.');

@@ -192,13 +192,12 @@ class AuthTests {
                                 {
                                   "username": "max",
                                   "email": "brand-new-address@fitness.local",
-                                  "password": "Password1",
-                                  "firstName": "Test",
-                                  "lastName": "User"
+                                  "password": "Password1"
                                 }
                                 """))
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.code").value("USERNAME_ALREADY_TAKEN"));
+                .andExpect(jsonPath("$.code").value("USERNAME_ALREADY_TAKEN"))
+                .andExpect(jsonPath("$.message").value("Username already taken!"));
     }
 
     @Test
@@ -211,9 +210,7 @@ class AuthTests {
                                 {
                                   "username": "brand-new-name",
                                   "email": "max@fitness.local",
-                                  "password": "Password1",
-                                  "firstName": "Test",
-                                  "lastName": "User"
+                                  "password": "Password1"
                                 }
                                 """))
                 .andExpect(status().isConflict())
@@ -242,21 +239,19 @@ class AuthTests {
 
     @Test
     @Transactional
-    @DisplayName("sign-up succeeds without a date of birth")
-    void signUpWithoutDateOfBirthSucceeds() throws Exception {
+    @DisplayName("sign-up succeeds with username, email and password only")
+    void signUpWithRequiredFieldsSucceeds() throws Exception {
         mockMvc.perform(post("/backend/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
-                                  "username": "no-birthday",
-                                  "email": "no-birthday@fitness.local",
-                                  "password": "Password1",
-                                  "firstName": "Test",
-                                  "lastName": "User"
+                                  "username": "new-user",
+                                  "email": "new-user@fitness.local",
+                                  "password": "Password1"
                                 }
                                 """))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.username").value("no-birthday"));
+                .andExpect(jsonPath("$.username").value("new-user"));
     }
 
     private String codeAndMessageOf(String body) {

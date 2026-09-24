@@ -12,9 +12,6 @@ CREATE TABLE userdata (
     username VARCHAR(32) UNIQUE NOT NULL,
     email VARCHAR(64) UNIQUE NOT NULL,
     password_hashed VARCHAR(128) NOT NULL,
-    first_name VARCHAR(24),
-    last_name VARCHAR(24),
-    date_of_birth DATE,
     role_id INTEGER DEFAULT 1 NOT NULL,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
     CONSTRAINT fk_userdata_role FOREIGN KEY (role_id) REFERENCES roles(id)

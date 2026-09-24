@@ -2,11 +2,11 @@
 -- Repeatable and idempotent
 
 -- userdata
-INSERT INTO userdata (username, email, password_hashed, first_name, last_name, date_of_birth, role_id)
-VALUES ('admin', 'admin@fitness.local', '${seed_admin_password_hash}', 'Arda', 'Admin', DATE '1988-03-12', 0)
+INSERT INTO userdata (username, email, password_hashed, role_id)
+VALUES ('admin', 'admin@fitness.local', '${seed_admin_password_hash}', 0)
 ON CONFLICT (username) DO NOTHING;
-INSERT INTO userdata (username, email, password_hashed, first_name, last_name, date_of_birth, role_id)
-VALUES ('luca', 'luca@fitness.local', '${seed_user_password_hash}', 'Luca', 'Lakritz', DATE '1999-07-24', 1)
+INSERT INTO userdata (username, email, password_hashed, role_id)
+VALUES ('luca', 'luca@fitness.local', '${seed_user_password_hash}', 1)
 ON CONFLICT (username) DO NOTHING;
 
 -- custom exercises

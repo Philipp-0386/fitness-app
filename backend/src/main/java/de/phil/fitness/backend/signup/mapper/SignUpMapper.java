@@ -24,9 +24,6 @@ public class SignUpMapper {
         User user = new User();
         user.setUsername(sur.username());
         user.setEmail(sur.email());
-        user.setFirstName(sur.firstName());
-        user.setLastName(sur.lastName());
-        user.setDateOfBirth(sur.dateOfBirth());
         return user;
     }
 
@@ -39,8 +36,6 @@ public class SignUpMapper {
         SignUpResponse res = new SignUpResponse();
         res.setUsername(user.getUsername());
         res.setEmail(user.getEmail());
-        res.setFirstName(user.getFirstName());
-        res.setLastName(user.getLastName());
         return res;
     }
 }

@@ -40,8 +40,7 @@ public class SignUpService {
         }
         if(userService.existsByUsername(dto.username())) {
             throw new UsernameAlreadyTaken(
-                    "Username "+ dto.username() +" already taken!"
-            );
+                    "Username already taken!");
         }
         User userEntity = signUpMapper.mapRequestToUserEntity(dto);
         User savedUser = userService.createUser(userEntity, dto.password());
