@@ -5,3 +5,8 @@ spring:
     locations: classpath:db/migration,classpath:db/dev
     # Required because the dev seed sits at V9001 and precedes every later migration.
     out-of-order: true
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true

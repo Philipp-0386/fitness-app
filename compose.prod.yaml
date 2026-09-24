@@ -1,0 +1,26 @@
+# Production overlay: no published app ports, Caddy terminates TLS.
+# Used on the server via COMPOSE_FILE=compose.yaml:compose.prod.yaml
+services:
+  backend:
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SEED_ADMIN_PASSWORD_HASH: ${SEED_ADMIN_PASSWORD_HASH:?bcrypt hash for the seeded admin account}
+      SEED_USER_PASSWORD_HASH: ${SEED_USER_PASSWORD_HASH:?bcrypt hash for the seeded user account}
+
+  caddy:
+    profiles: ["full"]
+    image: caddy:2
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - frontend
+    restart: unless-stopped
+
+volumes:
+  caddy_data:
+  caddy_config:

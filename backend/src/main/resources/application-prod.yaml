@@ -1,0 +1,8 @@
+# Production profile. Activated via SPRING_PROFILES_ACTIVE=prod (see compose.prod.yaml).
+
+spring:
+  flyway:
+    locations: classpath:db/migration,classpath:db/prod
+    placeholders:
+      "[seed_admin_password_hash]": ${SEED_ADMIN_PASSWORD_HASH}
+      "[seed_user_password_hash]": ${SEED_USER_PASSWORD_HASH}

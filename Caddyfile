@@ -1,0 +1,4 @@
+fit.ringelkamp.dev {
+    encode zstd gzip
+    reverse_proxy frontend:3000
+}
