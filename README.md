@@ -11,7 +11,7 @@ Current focus:
 - Implementing `exercise` endpoints
 - Laying out core frontend look (design planning)
 
-A basic deployment is live at https://fit.ringelkamp.dev (since 24.09.2026).
+A basic deployment at https://fit.ringelkamp.dev, but currently not online. #96
 
 For more [insights](././docs/general_planning.md)
 
