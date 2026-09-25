@@ -1,0 +1,78 @@
+### Account of the authenticated user (/backend/me)
+#
+# REST Client (humao.rest-client). Send the login in section 1 first - every request below
+# reads its token from that named response.
+#
+# Section 3 deletes 'sina' for good
+
+@host = http://localhost:8080
+
+###############################################################################
+# 1  Logins
+###############################################################################
+
+### 1.1  Log in as marco
+# @name loginMarco
+POST {{host}}/backend/auth/login
+Content-Type: application/json
+
+{
+  "username": "marco",
+  "password": "password"
+}
+
+### 1.2  Log in as sina (deleted in section 3)
+# @name loginSina
+POST {{host}}/backend/auth/login
+Content-Type: application/json
+
+{
+  "username": "sina",
+  "password": "password"
+}
+
+###############################################################################
+# 2  Read
+###############################################################################
+
+### 2.1  Own account -> 200 username, email, createdAt
+GET {{host}}/backend/me
+Authorization: Bearer {{loginMarco.response.body.$.accessToken}}
+
+### 2.2  No token -> 401 UNAUTHENTICATED
+GET {{host}}/backend/me
+
+###############################################################################
+# 3  Delete account (irreversible, see header)
+###############################################################################
+
+### 3.1  Wrong password -> 403 INVALID_PASSWORD, nothing deleted
+DELETE {{host}}/backend/me
+Authorization: Bearer {{loginSina.response.body.$.accessToken}}
+Content-Type: application/json
+
+{
+  "password": "definitely-not-the-password"
+}
+
+### 3.2  Correct password -> 204, account and owned data are gone (for good)
+DELETE {{host}}/backend/me
+Authorization: Bearer {{loginSina.response.body.$.accessToken}}
+Content-Type: application/json
+
+{
+  "password": "password"
+}
+
+### 3.3  Token issued before the deletion -> 401 UNAUTHENTICATED
+GET {{host}}/backend/me
+Authorization: Bearer {{loginSina.response.body.$.accessToken}}
+
+### 3.4  Login -> 401 INVALID_CREDENTIALS
+POST {{host}}/backend/auth/login
+Content-Type: application/json
+
+{
+  "username": "sina",
+  "password": "password"
+}

@@ -2,8 +2,8 @@
 
 How the backend reports failures, and how the responses look.
 
-Executable probes for everything described in [http/auth.http](../../http/auth.http)
-and [http/exercises.http](../../http/exercises.http).
+Executable probes for everything described in [http/auth.http](../../http/auth.http),
+[http/exercises.http](../../http/exercises.http) and [http/me.http](../../http/me.http).
 
 ---
 
@@ -34,8 +34,9 @@ The frontend mirrors this shape in
 | `EMAIL_ALREADY_EXISTS`   | 409    | sign-up                                                                                                                              |
 | `USERNAME_ALREADY_TAKEN` | 409    | sign-up                                                                                                                              |
 | `DEFAULT_ROLE_NOT_FOUND` | 500    | sign-up, missing seed data                                                                                                           |
-| `UNAUTHENTICATED`        | 401    | security filter chain, no valid access token                                                                                         |
+| `UNAUTHENTICATED`        | 401    | security filter chain, no valid access token; `UserNotFoundException` on `/backend/me` when the token's user was deleted             |
 | `ACCESS_DENIED`          | 403    | ownership checks, and the filter chain                                                                                               |
+| `INVALID_PASSWORD`       | 403    | `InvalidPasswordException` on `DELETE /backend/me`, wrong password; not 401, the session is still valid                              |
 | `INVALID_JSON`           | 400    | unparseable request body                                                                                                             |
 | `VALIDATION_FAILED`      | 400    | bean validation on a `@Valid` request body, and a value outside an enum; `fieldErrors` maps each rejected field to its first message |
 | `RESOURCE_NOT_FOUND`     | 404    | no handler mapped to the path                                                                                                        |
@@ -60,6 +61,10 @@ Both are registered twice in
 [SecurityConfig](../../backend/src/main/java/de/phil/fitness/backend/config/SecurityConfig.java):
 on `oauth2ResourceServer`, which brings its own entry point that would otherwise take precedence,
 and on `exceptionHandling` for everything else.
+
+`UNAUTHENTICATED` is the one code both paths produce. A token whose user was deleted still passes
+the filter chain (signature and expiry are valid), so `/backend/me` finds no user and the advice
+answers with 401 and body as the entry point.
 
 ### Why `/error` is permitted
 
@@ -86,7 +91,7 @@ offering three options in a dropdown is convenience while the backend still enfo
 The first row of failures arrives as an `InvalidFormatException` wrapped in
 `HttpMessageNotReadableException`. `handleUnreadableBody` picks those out and reports them as a field error rather than `INVALID_JSON`, so the client sees one shape no matter which layer rejected the field. A body that is not parseable JSON at all still yields `INVALID_JSON`, because there are no fields.
 
-The `CHECK` constraint on `exercise.exercise_type` in [V1__schema.sql](../../backend/src/main/resources/db/migration/V1__schema.sql) is ideally never reached.
+The `CHECK` constraint on `exercise.exercise_type` in [V1\_\_schema.sql](../../backend/src/main/resources/db/migration/V1__schema.sql) is ideally never reached.
 
 ---
 
@@ -101,4 +106,8 @@ The `CHECK` constraint on `exercise.exercise_type` in [V1__schema.sql](../../bac
 ## To-Do
 
 - `405 Method Not Allowed` still answers in Spring's default shape.
+- After an account deletion, only `/backend/me` rejects the old access token. Every other endpoint
+  accepts it until it expires (up to 2h): `GET /backend/exercises` answers 200, a write that
+  references the user fails on the foreign key with a 500. Closes with the token lifecycle
+  (revocation), or with a user lookup in `CurrentUser`.
 - Frontend handling overhaul (maybe)

@@ -50,7 +50,12 @@ export default function UserHome({ username }: UserHomeProps) {
           <p className={styles.eyebrow}>Welcome back</p>
           <h1 className={styles.title}>{username ?? 'Athlete'}</h1>
         </div>
-        <LogoutButton />
+        <div>
+          <Link href="/me" className={styles.logoutBtn}>
+            Account
+          </Link>{' '}
+          <LogoutButton />
+        </div>
       </header>
 
       <section className={styles.stats}>
