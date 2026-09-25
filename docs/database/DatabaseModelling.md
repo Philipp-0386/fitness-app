@@ -140,7 +140,15 @@ Deliberately deferred for now.
 
 `exercise` and `workout_plan` use soft deletes (`deleted_at`); the three session tables do not, and no foreign key declared `ON DELETE CASCADE`. Deleting a mislogged session therefore failed unless `exercise_set` and `session_exercise` rows were removed manually first.
 
-Cascade is semantically correct here, a set has no meaning without its session, and this is the only place in the schema where it is appropriate. It is now declared on `session_exercise -> session_log` and `exercise_set -> session_exercise` in `V1__schema.sql`.
+Cascade is semantically correct here, a set has no meaning without its session. It is now declared on `session_exercise -> session_log` and `exercise_set -> session_exercise` in `V1__schema.sql`.
+
+### ~~Missing: delete story for accounts~~ (done 24.09.2026, #92)
+
+Deleting an account is a hard delete. The user and everything they own disappear, nothing is anonymized or kept.
+
+Cascade alone is not enough. Owned rows also reference each other: a plan or a session points at the user's own exercise, a session at the user's own plan. Postgres works through the cascades one after the other, meaning a delete fails because of row referencing each other. These three references (`fk_workout_exercise_exercise`, `fk_session_exercise_exercise`, `fk_session_log_plan`) are therefore `DEFERRABLE`. [`UserService.deleteUser`](../../backend/src/main/java/de/phil/fitness/backend/user/service/UserService.java) runs `SET CONSTRAINTS ALL DEFERRED`.
+
+Note for potential future tables: A new table holding user data needs `ON DELETE CASCADE` on its path to `userdata`, and `DEFERRABLE` on any reference to another owned row.
 
 ### ~~Constraint: `exercise` name uniqueness~~ (done 23.09.2026, PR#77)
 
