@@ -6,6 +6,7 @@ import de.phil.fitness.backend.user.model.User;
 import de.phil.fitness.backend.user.repository.RoleRepository;
 import de.phil.fitness.backend.user.repository.UserRepository;
 
+import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -24,11 +25,14 @@ public class UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EntityManager entityManager;
 
-    public UserService(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder,
+                       EntityManager entityManager) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
+        this.entityManager = entityManager;
     }
 
     /**
@@ -53,6 +57,36 @@ public class UserService {
      */
     public Optional<User> findByUsername(String username) {
         return userRepository.findByUsername(username);
+    }
+
+    /**
+     * @param id user id to look up, must not be {@code null}
+     * @return the matching user, or an empty {@link Optional} if none exists
+     */
+    public Optional<User> findById(Long id) {
+        return userRepository.findById(id);
+    }
+
+    /**
+     * @param user the user whose password is checked, must not be {@code null}
+     * @param rawPassword the plain text password to compare
+     * @return {@code true} if it matches the stored hash
+     */
+    public boolean passwordMatches(User user, String rawPassword) {
+        return passwordEncoder.matches(rawPassword, user.getPasswordHashed());
+    }
+
+    /**
+     * Deletes the user and, through {@code ON DELETE CASCADE}, everything the user owns.
+     *
+     * <p>The references between owned rows are {@code DEFERRABLE}; checked immediately they fire
+     * while the cascade has only removed part of the rows. Deferring them to commit lets the
+     * cascade finish first, and a reference from a row that survives still fails at commit.
+     * @param user the user to delete, must not be {@code null}
+     */
+    public void deleteUser(User user) {
+        entityManager.createNativeQuery("SET CONSTRAINTS ALL DEFERRED").executeUpdate();
+        userRepository.delete(user);
     }
 
     /**

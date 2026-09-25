@@ -15,11 +15,13 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
+import de.phil.fitness.backend.account.exception.InvalidPasswordException;
 import de.phil.fitness.backend.auth.exception.AccessDeniedException;
 import de.phil.fitness.backend.exercise.exception.ExerciseNotFoundException;
 import de.phil.fitness.backend.signup.exception.EmailAlreadyExistsException;
 import de.phil.fitness.backend.signup.exception.UsernameAlreadyTaken;
 import de.phil.fitness.backend.user.exception.DefaultRoleNotFoundException;
+import de.phil.fitness.backend.user.exception.UserNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import tools.jackson.databind.exc.InvalidFormatException;
@@ -88,6 +90,46 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(
                         "INVALID_CREDENTIALS",
                         "Username or password is incorrect",
+                        req.getRequestURI()
+                ));
+    }
+
+    /**
+     * Handles the password confirming an account deletion not matching the stored one.
+     *
+     * Deliberately not 401: the caller is authenticated, only the confirmation failed, so the
+     * client must not treat the session as expired.
+     * @param ex The exception object thrown
+     * @return Returns a {@link ResponseEntity} containing key information regarding the exception
+     */
+    @ExceptionHandler(InvalidPasswordException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidPassword(InvalidPasswordException ex, HttpServletRequest req) {
+        log.warn("Account deletion rejected: wrong password. path={}", req.getRequestURI());
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(new ErrorResponse(
+                        "INVALID_PASSWORD",
+                        "The password is incorrect",
+                        req.getRequestURI()
+                ));
+    }
+
+    /**
+     * Handles a valid access token whose user no longer exists, e.g. after the account was deleted
+     * while the token had not expired yet.
+     *
+     * Answers like a missing token, because the session is no longer usable.
+     * @param ex The exception object thrown
+     * @return Returns a {@link ResponseEntity} containing key information regarding the exception
+     */
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleUserNotFound(UserNotFoundException ex, HttpServletRequest req) {
+        log.warn("Token subject has no user. path={} {}", req.getRequestURI(), ex.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(new ErrorResponse(
+                        "UNAUTHENTICATED",
+                        "Authentication is required to access this resource",
                         req.getRequestURI()
                 ));
     }
