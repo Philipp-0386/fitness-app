@@ -33,7 +33,7 @@ CREATE TABLE exercise (
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
     deleted_at TIMESTAMPTZ,
-    CONSTRAINT fk_exercise_owner FOREIGN KEY (owner_user_id) REFERENCES userdata(id)
+    CONSTRAINT fk_exercise_owner FOREIGN KEY (owner_user_id) REFERENCES userdata(id) ON DELETE CASCADE
 );
 
 CREATE TABLE exercise_musclegroup (
@@ -41,7 +41,7 @@ CREATE TABLE exercise_musclegroup (
     muscle_group_id BIGINT NOT NULL,
     role VARCHAR(16) NOT NULL CHECK (role IN ('PRIMARY', 'SECONDARY')),
     CONSTRAINT pk_exercise_musclegroup PRIMARY KEY (exercise_id, muscle_group_id),
-    CONSTRAINT fk_exercise_musclegroup_exercise FOREIGN KEY (exercise_id) REFERENCES exercise(id),
+    CONSTRAINT fk_exercise_musclegroup_exercise FOREIGN KEY (exercise_id) REFERENCES exercise(id) ON DELETE CASCADE,
     CONSTRAINT fk_exercise_musclegroup_musclegroup FOREIGN KEY (muscle_group_id) REFERENCES muscle_group(id)
 );
 
@@ -54,7 +54,7 @@ CREATE TABLE workout_plan (
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
     deleted_at TIMESTAMPTZ,
-    CONSTRAINT fk_workout_plan_user FOREIGN KEY (user_id) REFERENCES userdata(id)
+    CONSTRAINT fk_workout_plan_user FOREIGN KEY (user_id) REFERENCES userdata(id) ON DELETE CASCADE
 );
 
 CREATE TABLE workout_exercise (
@@ -70,8 +70,8 @@ CREATE TABLE workout_exercise (
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
     CONSTRAINT uq_workout_exercise_order UNIQUE (plan_id, order_index),
-    CONSTRAINT fk_workout_exercise_plan FOREIGN KEY (plan_id) REFERENCES workout_plan(id),
-    CONSTRAINT fk_workout_exercise_exercise FOREIGN KEY (exercise_id) REFERENCES exercise(id)
+    CONSTRAINT fk_workout_exercise_plan FOREIGN KEY (plan_id) REFERENCES workout_plan(id) ON DELETE CASCADE,
+    CONSTRAINT fk_workout_exercise_exercise FOREIGN KEY (exercise_id) REFERENCES exercise(id) DEFERRABLE
 );
 
 CREATE TABLE session_log (
@@ -85,8 +85,8 @@ CREATE TABLE session_log (
     session_type VARCHAR(16) CHECK (session_type IN ('FULL', 'QUICK')),
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    CONSTRAINT fk_session_log_user FOREIGN KEY (user_id) REFERENCES userdata(id),
-    CONSTRAINT fk_session_log_plan FOREIGN KEY (plan_id) REFERENCES workout_plan(id)
+    CONSTRAINT fk_session_log_user FOREIGN KEY (user_id) REFERENCES userdata(id) ON DELETE CASCADE,
+    CONSTRAINT fk_session_log_plan FOREIGN KEY (plan_id) REFERENCES workout_plan(id) DEFERRABLE
 );
 
 CREATE TABLE session_exercise (
@@ -104,7 +104,7 @@ CREATE TABLE session_exercise (
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
     CONSTRAINT uq_session_exercise_order UNIQUE (session_log_id, order_index),
     CONSTRAINT fk_session_exercise_session FOREIGN KEY (session_log_id) REFERENCES session_log(id) ON DELETE CASCADE,
-    CONSTRAINT fk_session_exercise_exercise FOREIGN KEY (exercise_id) REFERENCES exercise(id)
+    CONSTRAINT fk_session_exercise_exercise FOREIGN KEY (exercise_id) REFERENCES exercise(id) DEFERRABLE
 );
 
 CREATE TABLE exercise_set (
@@ -134,3 +134,6 @@ CREATE UNIQUE INDEX uq_exercise_name ON exercise (owner_user_id, name) NULLS NOT
 
 -- At most one running session per user
 CREATE UNIQUE INDEX uq_session_log_active ON session_log (user_id) WHERE status = 'IN_PROGRESS';
+
+-- Deleting a user cascades to everything they own. The DEFERRABLE references between owned rows
+-- (plan and session to own exercise, session to own plan) are checked too early otherwise.
