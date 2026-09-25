@@ -1,15 +1,15 @@
-package de.phil.fitness.backend.account.dto;
+package de.phil.fitness.backend.user.dto;
 
 import java.time.Instant;
 
 /**
- * Account of the authenticated user as returned to the client.
+ * The authenticated user as returned to the client.
  *
  * @param username Login name
  * @param email Email address
  * @param createdAt Time of sign-up
  */
-public record AccountResponse(
+public record UserResponse(
         String username,
         String email,
         Instant createdAt

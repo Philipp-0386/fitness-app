@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
-import de.phil.fitness.backend.account.exception.InvalidPasswordException;
+import de.phil.fitness.backend.user.exception.InvalidPasswordException;
 import de.phil.fitness.backend.auth.exception.AccessDeniedException;
 import de.phil.fitness.backend.exercise.exception.ExerciseNotFoundException;
 import de.phil.fitness.backend.signup.exception.EmailAlreadyExistsException;
