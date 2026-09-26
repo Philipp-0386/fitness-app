@@ -2,7 +2,7 @@ import { ApiError } from '@/shared/api/errors/api-error';
 
 export function evaluateApiError(error: ApiError) {
   switch (error.code) {
-    case 'USERNAME_ALREADY_EXISTS':
+    case 'USERNAME_ALREADY_TAKEN':
       return {
         generalError: 'This username is already taken. Please choose another one.',
         fieldErrors: error.fieldErrors ?? {},
@@ -22,7 +22,7 @@ export function evaluateApiError(error: ApiError) {
     case 'BACKEND_UNREACHABLE':
       return {
         generalError:
-          'The server is currently seems to be unreachable. Please try again later.',
+          'The server currently seems to be unreachable. Please try again later.',
         fieldErrors: {},
       };
     default:
