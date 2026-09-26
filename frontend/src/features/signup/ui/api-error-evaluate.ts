@@ -2,6 +2,11 @@ import { ApiError } from '@/shared/api/errors/api-error';
 
 export function evaluateApiError(error: ApiError) {
   switch (error.code) {
+    case 'SIGNUP_DISABLED':
+      return {
+        generalError: 'Sign-ups are currently closed. No account was created.',
+        fieldErrors: {},
+      };
     case 'USERNAME_ALREADY_TAKEN':
       return {
         generalError: 'This username is already taken. Please choose another one.',

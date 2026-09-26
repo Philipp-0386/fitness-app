@@ -1,0 +1,40 @@
+.banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 520px;
+  margin: 40px auto 0;
+  padding: 14px 18px;
+  box-sizing: border-box;
+  background: color-mix(in srgb, var(--color-primary) 18%, var(--color-surface));
+  border: 1px solid color-mix(in srgb, var(--color-primary) 40%, transparent);
+  border-radius: 16px;
+  color: var(--color-text-primary);
+  font-family: var(--font-geist-sans);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.icon {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  color: var(--color-primary);
+}
+
+.text {
+  flex: 1;
+  margin: 0;
+}
+
+@media (max-width: 600px) {
+  .banner {
+    align-items: flex-start;
+    margin: 20px 16px 0;
+    font-size: 0.85rem;
+  }
+
+  .icon {
+    margin-top: 2px;
+  }
+}

@@ -1,8 +1,10 @@
 package de.phil.fitness.backend.signup.service;
 
+import de.phil.fitness.backend.signup.SignUpProperties;
 import de.phil.fitness.backend.signup.dto.SignUpRequest;
 import de.phil.fitness.backend.signup.dto.SignUpResponse;
 import de.phil.fitness.backend.signup.exception.EmailAlreadyExistsException;
+import de.phil.fitness.backend.signup.exception.SignUpDisabledException;
 import de.phil.fitness.backend.signup.exception.UsernameAlreadyTaken;
 import de.phil.fitness.backend.signup.mapper.SignUpMapper;
 import de.phil.fitness.backend.user.model.User;
@@ -21,10 +23,12 @@ import org.springframework.stereotype.Service;
 public class SignUpService {
     private final UserService userService;
     private final SignUpMapper signUpMapper;
+    private final SignUpProperties signUpProperties;
 
-    public SignUpService(UserService userService, SignUpMapper mapper) {
+    public SignUpService(UserService userService, SignUpMapper mapper, SignUpProperties signUpProperties) {
         this.userService = userService;
         this.signUpMapper = mapper;
+        this.signUpProperties = signUpProperties;
     }
 
     /**
@@ -33,6 +37,9 @@ public class SignUpService {
      * @return returns a {@link SignUpResponse} object after successful creation
      */
     public SignUpResponse createUser(SignUpRequest dto) {
+        if(!signUpProperties.enabled()) {
+            throw new SignUpDisabledException("Currently not allowed");
+        }
         log.debug("User creation initiated");
         if(userService.existsByEmail(dto.email())) {
             throw new EmailAlreadyExistsException(

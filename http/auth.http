@@ -135,3 +135,18 @@ Content-Type: application/json
 ### Log out server-side -> 404, no handler mapped
 POST {{host}}/backend/auth/logout
 Authorization: Bearer {{login.response.body.$.accessToken}}
+
+###############################################################################
+# 7 Disabled Sign Up
+###############################################################################
+
+### Signup while disabled (!prod profile!) -> 403 SIGNUP_DISABLED
+POST {{host}}/backend/auth/signup
+Content-Type: application/json
+
+{
+  "username": "blocked-user",
+  "email": "blocked@fitness.local",
+  "password": "password"
+}
+

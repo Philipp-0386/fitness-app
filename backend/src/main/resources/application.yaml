@@ -20,6 +20,8 @@ app:
     secret: ${JWT_SECRET}
     access-token-expiration-minutes: 120
     refresh-token-expiration-days: 7
+  signup:
+    enabled: false
 
 springdoc:
   api-docs:

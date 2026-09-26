@@ -20,6 +20,7 @@ import de.phil.fitness.backend.auth.exception.AccessDeniedException;
 import de.phil.fitness.backend.exercise.exception.ExerciseNotFoundException;
 import de.phil.fitness.backend.signup.exception.EmailAlreadyExistsException;
 import de.phil.fitness.backend.signup.exception.UsernameAlreadyTaken;
+import de.phil.fitness.backend.signup.exception.SignUpDisabledException;
 import de.phil.fitness.backend.user.exception.DefaultRoleNotFoundException;
 import de.phil.fitness.backend.user.exception.UserNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -254,6 +255,18 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(
                         "EXERCISE_NOT_FOUND",
                         "No exercise with this id is available",
+                        req.getRequestURI()
+                ));
+    }
+
+    @ExceptionHandler(SignUpDisabledException.class)
+    public ResponseEntity<ErrorResponse> handleSignUpDisabled(SignUpDisabledException ex, HttpServletRequest req) {
+        log.warn("Someone tried to sign up, while signups are disabled. path={}", req.getRequestURI());
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(new ErrorResponse(
+                        "SIGNUP_DISABLED",
+                        "SignUps are currently disabled",
                         req.getRequestURI()
                 ));
     }
