@@ -41,6 +41,8 @@ public class SignUpController {
     @ApiResponse(responseCode = "200", description = "Account created")
     @ApiResponse(responseCode = "400", description = "INVALID_JSON or VALIDATION_FAILED",
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    @ApiResponse(responseCode = "403", description = "SIGNUP_DISABLED (app.signup.enabled is false)",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     @ApiResponse(responseCode = "409", description = "EMAIL_ALREADY_EXISTS or USERNAME_ALREADY_TAKEN",
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     @ApiResponse(responseCode = "500", description = "DEFAULT_ROLE_NOT_FOUND (missing seed data)",

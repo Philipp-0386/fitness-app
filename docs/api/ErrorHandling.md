@@ -34,6 +34,7 @@ The frontend mirrors this shape in
 | `EMAIL_ALREADY_EXISTS`   | 409    | sign-up                                                                                                                              |
 | `USERNAME_ALREADY_TAKEN` | 409    | sign-up                                                                                                                              |
 | `DEFAULT_ROLE_NOT_FOUND` | 500    | sign-up, missing seed data                                                                                                           |
+| `SIGNUP_DISABLED`        | 403    | `SignUpDisabledException` from `SignUpService` when `app.signup.enabled` is false; checked before the duplicate checks               |
 | `UNAUTHENTICATED`        | 401    | security filter chain, no valid access token; `UserNotFoundException` on `/backend/me` when the token's user was deleted             |
 | `ACCESS_DENIED`          | 403    | ownership checks, and the filter chain                                                                                               |
 | `INVALID_PASSWORD`       | 403    | `InvalidPasswordException` on `DELETE /backend/me`, wrong password; not 401, the session is still valid                              |
