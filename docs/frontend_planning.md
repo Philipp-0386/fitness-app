@@ -1,6 +1,6 @@
 # Frontend Planning 
 
-Disclaimer: This whole document in it current state is AI generated. I still have **not** thought about the frontend design, or made any final desicisions regarding it, as the focus is currently elsewhere.
+Disclaimer: This whole document in its current state is AI generated. I still have **not** thought about the frontend design, or made any final desicisions regarding it, as the focus is currently elsewhere.
 
 This document is for exploring the visual design of the app. Nothing in it is decided. It collects what the app has to handle, where a distinct look could come from, and a few directions to try out before picking one.
 
