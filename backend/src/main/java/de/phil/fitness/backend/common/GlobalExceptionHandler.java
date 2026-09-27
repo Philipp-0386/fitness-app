@@ -15,14 +15,14 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
-import de.phil.fitness.backend.user.exception.InvalidPasswordException;
 import de.phil.fitness.backend.auth.exception.AccessDeniedException;
 import de.phil.fitness.backend.exercise.exception.ExerciseNotFoundException;
-import de.phil.fitness.backend.signup.exception.EmailAlreadyExistsException;
-import de.phil.fitness.backend.signup.exception.UsernameAlreadyTaken;
 import de.phil.fitness.backend.signup.exception.SignUpDisabledException;
 import de.phil.fitness.backend.user.exception.DefaultRoleNotFoundException;
+import de.phil.fitness.backend.user.exception.EmailAlreadyExistsException;
+import de.phil.fitness.backend.user.exception.InvalidPasswordException;
 import de.phil.fitness.backend.user.exception.UserNotFoundException;
+import de.phil.fitness.backend.user.exception.UsernameAlreadyTakenException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import tools.jackson.databind.exc.InvalidFormatException;
@@ -71,8 +71,8 @@ public class GlobalExceptionHandler {
      * @param ex The exception object thrown
      * @return Returns a {@link ResponseEntity} containing key information regarding the exception
      */
-    @ExceptionHandler(UsernameAlreadyTaken.class)
-    public ResponseEntity<ErrorResponse> handleUsernameTaken(UsernameAlreadyTaken ex, HttpServletRequest req) {
+    @ExceptionHandler(UsernameAlreadyTakenException.class)
+    public ResponseEntity<ErrorResponse> handleUsernameTaken(UsernameAlreadyTakenException ex, HttpServletRequest req) {
         log.warn("Username already taken. {}", ex.getMessage());
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)

@@ -5,15 +5,15 @@ import java.util.Optional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import de.phil.fitness.backend.signup.exception.EmailAlreadyExistsException;
-import de.phil.fitness.backend.signup.exception.UsernameAlreadyTaken;
 import de.phil.fitness.backend.user.dto.PasswordUpdateRequest;
 import de.phil.fitness.backend.user.dto.UserDeleteRequest;
 import de.phil.fitness.backend.user.dto.UserResponse;
 import de.phil.fitness.backend.user.dto.UserUpdateRequest;
 import de.phil.fitness.backend.user.exception.DefaultRoleNotFoundException;
+import de.phil.fitness.backend.user.exception.EmailAlreadyExistsException;
 import de.phil.fitness.backend.user.exception.InvalidPasswordException;
 import de.phil.fitness.backend.user.exception.UserNotFoundException;
+import de.phil.fitness.backend.user.exception.UsernameAlreadyTakenException;
 import de.phil.fitness.backend.user.mapper.UserMapper;
 import de.phil.fitness.backend.user.model.Role;
 import de.phil.fitness.backend.user.model.User;
@@ -131,7 +131,7 @@ public class UserService {
         User user = loadUser(userId);
         verifyPassword(user, req.currentPassword());
         if(!req.username().equals(user.getUsername()) && userRepository.existsByUsername(req.username())) {
-            throw new UsernameAlreadyTaken("Username already taken!");
+            throw new UsernameAlreadyTakenException("Username already taken!");
         }
         if(!req.email().equals(user.getEmail()) && userRepository.existsByEmail(req.email())) {
             throw new EmailAlreadyExistsException("User with this email already registered!");
