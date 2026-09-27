@@ -33,13 +33,13 @@ import tools.jackson.databind.exc.InvalidFormatException;
 @Slf4j
 public class GlobalExceptionHandler {
     /**
-     * Handles case of already existing emails during the sign-up process and creation of a new user.
+     * Handles an email that is already registered to another user, on sign-up or on an account update.
      * @param ex Accepts the exception object
      * @return  Returns a {@link ResponseEntity} containing key information regarding the exception
      */
     @ExceptionHandler(EmailAlreadyExistsException.class)
     public ResponseEntity<ErrorResponse> handleEmailAlreadyExists(EmailAlreadyExistsException ex, HttpServletRequest req) {
-        log.warn("User creation rejected. Email already registered. {}", ex.getMessage());
+        log.warn("Email already registered. {}", ex.getMessage());
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
                 .body(new ErrorResponse(
@@ -73,7 +73,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(UsernameAlreadyTaken.class)
     public ResponseEntity<ErrorResponse> handleUsernameTaken(UsernameAlreadyTaken ex, HttpServletRequest req) {
-        log.warn("User creation rejected. Username already taken. {}", ex.getMessage());
+        log.warn("Username already taken. {}", ex.getMessage());
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
                 .body(new ErrorResponse(
@@ -96,7 +96,7 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Handles the password confirming an account deletion not matching the stored one.
+     * Handles the password confirming an account change or deletion not matching the stored one.
      *
      * Deliberately not 401: the caller is authenticated, only the confirmation failed, so the
      * client must not treat the session as expired.
@@ -105,7 +105,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(InvalidPasswordException.class)
     public ResponseEntity<ErrorResponse> handleInvalidPassword(InvalidPasswordException ex, HttpServletRequest req) {
-        log.warn("Account deletion rejected: wrong password. path={}", req.getRequestURI());
+        log.warn("Password confirmation failed. path={}", req.getRequestURI());
         return ResponseEntity
                 .status(HttpStatus.FORBIDDEN)
                 .body(new ErrorResponse(

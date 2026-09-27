@@ -1,11 +1,9 @@
 package de.phil.fitness.backend.user.api;
 
+import de.phil.fitness.backend.user.dto.PasswordUpdateRequest;
+import de.phil.fitness.backend.user.dto.UserUpdateRequest;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import de.phil.fitness.backend.auth.CurrentUser;
 import de.phil.fitness.backend.user.dto.UserDeleteRequest;
@@ -38,6 +36,17 @@ public class UserController {
     @DeleteMapping
     public ResponseEntity<Void> deleteUser(@Valid @RequestBody UserDeleteRequest req) {
         userService.deleteUser(currentUser.currentUserId(), req);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping
+    public ResponseEntity<UserResponse> updateUser(@Valid @RequestBody UserUpdateRequest req) {
+        return ResponseEntity.ok(userService.updateUser(currentUser.currentUserId(), req));
+    }
+
+    @PutMapping("/password")
+    public ResponseEntity<Void> updatePassword(@Valid @RequestBody PasswordUpdateRequest req) {
+        userService.updatePassword(currentUser.currentUserId(), req);
         return ResponseEntity.noContent().build();
     }
 }
