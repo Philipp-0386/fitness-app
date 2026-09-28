@@ -8,3 +8,14 @@ export type User = {
 export type DeleteUserPayload = {
   password: string;
 };
+
+export type UpdateUserPayload = {
+  username: string;
+  email: string;
+  currentPassword: string;
+};
+
+export type UpdatePasswordPayload = {
+  currentPassword: string;
+  newPassword: string;
+};
