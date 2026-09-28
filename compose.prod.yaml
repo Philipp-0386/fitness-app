@@ -1,13 +1,27 @@
 # Production overlay: no published app ports, Caddy terminates TLS.
 # Used on the server via COMPOSE_FILE=compose.yaml:compose.prod.yaml
+
+# All container logs go to journald; retention is configured on the host.
+x-logging: &journald
+  logging:
+    driver: journald
+
 services:
+  db:
+    <<: *journald
+
   backend:
+    <<: *journald
     environment:
       SPRING_PROFILES_ACTIVE: prod
       SEED_ADMIN_PASSWORD_HASH: ${SEED_ADMIN_PASSWORD_HASH:?bcrypt hash for the seeded admin account}
       SEED_USER_PASSWORD_HASH: ${SEED_USER_PASSWORD_HASH:?bcrypt hash for the seeded user account}
 
+  frontend:
+    <<: *journald
+
   caddy:
+    <<: *journald
     profiles: ["full"]
     image: caddy:2
     ports:

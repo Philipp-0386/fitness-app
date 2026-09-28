@@ -29,7 +29,3 @@ springdoc:
   swagger-ui:
     enabled: ${API_DOCS_ENABLED:false}
   paths-to-match: /backend/**
-
-logging:
-  file:
-    name: logs/fitness-app.log

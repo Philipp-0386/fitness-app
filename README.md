@@ -116,8 +116,11 @@ Inside the compose network, services address each other by service name, not loc
 
 ## Logs
 
-Backend logs go to stdout (`docker compose logs -f backend`) and additionally to the
-`backend-logs` volume, because `application.yaml` configures a file appender.
+All services log to stdout only (`docker compose logs -f backend`); Spring writes no log file.
+Locally Docker keeps them with its default driver. In production, `compose.prod.yaml` sets the
+`journald` logging driver for every service, and journald deletes entries after 14 days
+(see [deployment](/docs/deployment.md#server)). Older entries are available via
+`journalctl CONTAINER_NAME=fitness-app-backend-1`.
 
 --
 
