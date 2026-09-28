@@ -1,23 +1,27 @@
 package de.phil.fitness.backend.user.service;
 
+import java.util.Optional;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import de.phil.fitness.backend.user.dto.PasswordUpdateRequest;
 import de.phil.fitness.backend.user.dto.UserDeleteRequest;
 import de.phil.fitness.backend.user.dto.UserResponse;
+import de.phil.fitness.backend.user.dto.UserUpdateRequest;
 import de.phil.fitness.backend.user.exception.DefaultRoleNotFoundException;
+import de.phil.fitness.backend.user.exception.EmailAlreadyExistsException;
 import de.phil.fitness.backend.user.exception.InvalidPasswordException;
 import de.phil.fitness.backend.user.exception.UserNotFoundException;
+import de.phil.fitness.backend.user.exception.UsernameAlreadyTakenException;
 import de.phil.fitness.backend.user.mapper.UserMapper;
 import de.phil.fitness.backend.user.model.Role;
 import de.phil.fitness.backend.user.model.User;
 import de.phil.fitness.backend.user.repository.RoleRepository;
 import de.phil.fitness.backend.user.repository.UserRepository;
-
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 /**
  * Encapsulates the logic of the user domain, including the account endpoints of the authenticated user.
@@ -98,6 +102,12 @@ public class UserService {
         return userMapper.toResponse(user);
     }
 
+    private void verifyPassword(User user, String rawPassword) {
+        if(!passwordEncoder.matches(rawPassword, user.getPasswordHashed())) {
+            throw new InvalidPasswordException("Password confirmation failed for userId=" + user.getId());
+        }
+    }
+
     /**
      * Deletes the user and, through {@code ON DELETE CASCADE}, everything the user owns.
      *
@@ -111,11 +121,31 @@ public class UserService {
      */
     public void deleteUser(Long userId, UserDeleteRequest req) {
         User user = loadUser(userId);
-        if (!passwordEncoder.matches(req.password(), user.getPasswordHashed())) {
-            throw new InvalidPasswordException("Password confirmation failed for userId=" + userId);
-        }
+        verifyPassword(user, req.password());
         entityManager.createNativeQuery("SET CONSTRAINTS ALL DEFERRED").executeUpdate();
         userRepository.delete(user);
         log.info("User deleted. userId={}", userId);
+    }
+
+    public UserResponse updateUser(Long userId, UserUpdateRequest req) {
+        User user = loadUser(userId);
+        verifyPassword(user, req.currentPassword());
+        if(!req.username().equals(user.getUsername()) && userRepository.existsByUsername(req.username())) {
+            throw new UsernameAlreadyTakenException("Username already taken!");
+        }
+        if(!req.email().equals(user.getEmail()) && userRepository.existsByEmail(req.email())) {
+            throw new EmailAlreadyExistsException("User with this email already registered!");
+        }
+        user.setUsername(req.username());
+        user.setEmail(req.email());
+        log.info("User updated. userId={}", userId);
+        return userMapper.toResponse(user);
+    }
+
+    public void updatePassword(Long userId, PasswordUpdateRequest req) {
+        User user = loadUser(userId);
+        verifyPassword(user, req.currentPassword());
+        user.setPasswordHashed(passwordEncoder.encode(req.newPassword()));
+        log.info("Password updated. userId={}", userId);
     }
 }

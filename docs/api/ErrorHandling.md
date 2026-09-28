@@ -28,19 +28,20 @@ The frontend mirrors this shape in
 
 ### Codes in use
 
-| Code                     | Status | Raised by                                                                                                                            |
-| ------------------------ | ------ | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `INVALID_CREDENTIALS`    | 401    | `BadCredentialsException` from `LoginService`                                                                                        |
-| `EMAIL_ALREADY_EXISTS`   | 409    | sign-up                                                                                                                              |
-| `USERNAME_ALREADY_TAKEN` | 409    | sign-up                                                                                                                              |
-| `DEFAULT_ROLE_NOT_FOUND` | 500    | sign-up, missing seed data                                                                                                           |
-| `SIGNUP_DISABLED`        | 403    | `SignUpDisabledException` from `SignUpService` when `app.signup.enabled` is false; checked before the duplicate checks               |
-| `UNAUTHENTICATED`        | 401    | security filter chain, no valid access token; `UserNotFoundException` on `/backend/me` when the token's user was deleted             |
-| `ACCESS_DENIED`          | 403    | ownership checks, and the filter chain                                                                                               |
-| `INVALID_PASSWORD`       | 403    | `InvalidPasswordException` on `DELETE /backend/me`, wrong password; not 401, the session is still valid                              |
-| `INVALID_JSON`           | 400    | unparseable request body                                                                                                             |
-| `VALIDATION_FAILED`      | 400    | bean validation on a `@Valid` request body, and a value outside an enum; `fieldErrors` maps each rejected field to its first message |
-| `RESOURCE_NOT_FOUND`     | 404    | no handler mapped to the path                                                                                                        |
+| Code                     | Status | Raised by                                                                                                                                                   |
+| ------------------------ | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `INVALID_CREDENTIALS`    | 401    | `BadCredentialsException` from `LoginService`                                                                                                               |
+| `EMAIL_ALREADY_EXISTS`   | 409    | sign-up; `PUT /backend/me` when another user has the email                                                                                                  |
+| `USERNAME_ALREADY_TAKEN` | 409    | sign-up; `PUT /backend/me` when another user has the username                                                                                               |
+| `DEFAULT_ROLE_NOT_FOUND` | 500    | sign-up, missing seed data                                                                                                                                  |
+| `SIGNUP_DISABLED`        | 403    | `SignUpDisabledException` from `SignUpService` when `app.signup.enabled` is false; checked before the duplicate checks                                      |
+| `UNAUTHENTICATED`        | 401    | security filter chain, no valid access token; `UserNotFoundException` on `/backend/me` when the token's user was deleted                                    |
+| `ACCESS_DENIED`          | 403    | ownership checks, and the filter chain                                                                                                                      |
+| `EXERCISE_NOT_FOUND`     | 404    | `ExerciseNotFoundException` from `ExerciseService`: missing, soft deleted or owned by someone else; deliberately not 403, which would confirm the id exists |
+| `INVALID_PASSWORD`       | 403    | `InvalidPasswordException` on `DELETE /backend/me`, `PUT /backend/me` and `PUT /backend/me/password`, wrong password; not 401, the session is still valid   |
+| `INVALID_JSON`           | 400    | unparseable request body                                                                                                                                    |
+| `VALIDATION_FAILED`      | 400    | bean validation on a `@Valid` request body, and a value outside an enum; `fieldErrors` maps each rejected field to its first message                        |
+| `RESOURCE_NOT_FOUND`     | 404    | no handler mapped to the path                                                                                                                               |
 
 ---
 
@@ -111,4 +112,5 @@ The `CHECK` constraint on `exercise.exercise_type` in [V1\_\_schema.sql](../../b
   accepts it until it expires (up to 2h): `GET /backend/exercises` answers 200, a write that
   references the user fails on the foreign key with a 500. Closes with the token lifecycle
   (revocation), or with a user lookup in `CurrentUser`.
+- After a password change, tokens issued before it stay valid until they expire -> adress with the token lifecycle improvement
 - Frontend handling overhaul (maybe)

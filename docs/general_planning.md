@@ -11,7 +11,7 @@ The current goal is to finish these tasks:
 - Add refresh endpoint
 - Implement `exercise` slice completely (backend)
 - Start on frontend implementation for `exercise` slice (frontend)
-- Incooperate userful tests for already existing code (auth, bean val, etc.)
+- Deployment-relevant changes (Issue #96)
 
 ## Relevant Points
 
@@ -80,6 +80,16 @@ runtime, so the dependency graph was never the problem. The build now keeps the 
 ### Exercise empty list return case
 
 The global catalog should never be empty, meaning, if a user calls for all available exercises to have selection from, the returned list can never be empty. I should handle this case within the backend.
+
+### Make deyloyment relevant implementations (Issue #96)
+
+Before i can comfortably deploy the application permanently publically available, there are changes to be made. These include implementations such as
+
+- allow users to update their information
+- disclaimer banner/note, and about page
+- privacy policy
+- disabling signups (for now)
+- triming information needed of users
 
 ## Key Decisions
 

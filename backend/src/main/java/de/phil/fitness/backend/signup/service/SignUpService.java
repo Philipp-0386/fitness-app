@@ -1,18 +1,18 @@
 package de.phil.fitness.backend.signup.service;
 
+import org.springframework.stereotype.Service;
+
 import de.phil.fitness.backend.signup.SignUpProperties;
 import de.phil.fitness.backend.signup.dto.SignUpRequest;
 import de.phil.fitness.backend.signup.dto.SignUpResponse;
-import de.phil.fitness.backend.signup.exception.EmailAlreadyExistsException;
 import de.phil.fitness.backend.signup.exception.SignUpDisabledException;
-import de.phil.fitness.backend.signup.exception.UsernameAlreadyTaken;
 import de.phil.fitness.backend.signup.mapper.SignUpMapper;
+import de.phil.fitness.backend.user.exception.EmailAlreadyExistsException;
+import de.phil.fitness.backend.user.exception.UsernameAlreadyTakenException;
 import de.phil.fitness.backend.user.model.User;
 import de.phil.fitness.backend.user.service.UserService;
-
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
 
 /**
  * Handles user creation process.
@@ -46,7 +46,7 @@ public class SignUpService {
                     "User with this email already registered!");
         }
         if(userService.existsByUsername(dto.username())) {
-            throw new UsernameAlreadyTaken(
+            throw new UsernameAlreadyTakenException(
                     "Username already taken!");
         }
         User userEntity = signUpMapper.mapRequestToUserEntity(dto);
