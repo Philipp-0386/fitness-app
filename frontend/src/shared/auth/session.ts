@@ -4,7 +4,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
 export type Session = {
-  username: string | null;
+  userId: string | null;
 };
 
 /**
@@ -20,7 +20,7 @@ export async function getSession(): Promise<Session | null> {
 
   if (!accessToken) return null;
 
-  return { username: readSubjectClaim(accessToken) };
+  return { userId: readSubjectClaim(accessToken) };
 }
 
 export async function isAuthenticated(): Promise<boolean> {
