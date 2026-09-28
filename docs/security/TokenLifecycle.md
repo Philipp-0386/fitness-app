@@ -15,7 +15,7 @@ Related docs:
 
 ## Current State
 
-`login` issues an **access token** (JWT, HS512, 2h) and a **refresh token**
+`login` issues an **access token** (JWT, HS512, 15 min) and a **refresh token**
 (JWT, 7 days) and returns both in the response body
 ([LoginService.java](../../backend/src/main/java/de/phil/fitness/backend/login/service/LoginService.java)).
 Validation is stateless via `oauth2ResourceServer.jwt(...)`
@@ -31,7 +31,7 @@ no persistence, and therefore no way to renew or revoke tokens.
 
 | #   | Gap                                    | Impact                                                                   | Status                   |
 | --- | -------------------------------------- | ------------------------------------------------------------------------ | ------------------------ |
-| 1   | No `/backend/auth/refresh` endpoint    | Refresh token is useless; re-login required after 2h                     | open                     |
+| 1   | No `/backend/auth/refresh` endpoint    | Refresh token is useless; re-login required after 15 min                 | open                     |
 | 2   | Token type (`type` claim) not enforced | Refresh token is accepted as a valid access token on protected endpoints | **closed**               |
 | 3   | No persistence of refresh tokens       | No revocation possible; JWTs are valid until expiry                      | open                     |
 | 4   | No token rotation                      | No theft/reuse detection                                                 | open                     |

@@ -109,7 +109,7 @@ The `CHECK` constraint on `exercise.exercise_type` in [V1\_\_schema.sql](../../b
 
 - `405 Method Not Allowed` still answers in Spring's default shape.
 - After an account deletion, only `/backend/me` rejects the old access token. Every other endpoint
-  accepts it until it expires (up to 2h): `GET /backend/exercises` answers 200, a write that
+  accepts it until it expires (up to 15 min): `GET /backend/exercises` answers 200, a write that
   references the user fails on the foreign key with a 500. Closes with the token lifecycle
   (revocation), or with a user lookup in `CurrentUser`.
 - After a password change, tokens issued before it stay valid until they expire -> adress with the token lifecycle improvement

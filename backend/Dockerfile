@@ -22,9 +22,6 @@ WORKDIR /app
 
 COPY --from=build /build/target/*.jar app.jar
 
-# application.yaml writes to logs/fitness-app.log, relative to the working dir
-RUN mkdir -p /app/logs && chown -R spring:spring /app
-
 USER spring
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]

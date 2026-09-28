@@ -72,6 +72,15 @@ The cloud firewall sits in front of the VM. This matters because Docker writes i
 - **Unattended security upgrades** enabled (`apt-daily*.timer`). Reboots are not automatic; check `/var/run/reboot-required`.
 - **2 GB swap file** (`/swapfile`, registered in `/etc/fstab`) as a buffer for Maven and Next.js builds on 4 GB RAM.
 - The Hetzner web console is the fallback if SSH ever locks out.
+- **journald retention**: all container logs end up in the host journal (see [Logging](#logging)). `/etc/systemd/journald.conf.d/retention.conf`:
+
+  ```ini
+  [Journal]
+  MaxRetentionSec=13day
+  MaxFileSec=1day
+  ```
+
+  journald deletes whole journal files only. Rotating daily and dropping files older than 13 days keeps every entry for at most 14 days, as promised in the privacy policy. Apply with `sudo systemctl restart systemd-journald`.
 
 ---
 
@@ -83,7 +92,7 @@ Three files, layered:
 | ----------------------- | --------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
 | `compose.yaml`          | always                                                          | Base definition of `db`, `backend`, `frontend`. **No published ports.**                |
 | `compose.override.yaml` | automatically, when no `-f` / `COMPOSE_FILE` is set (local dev) | Publishes 5432 / 8080 / 3000 for IntelliJ and `npm run dev`                            |
-| `compose.prod.yaml`     | explicitly, on the server                                       | Sets `SPRING_PROFILES_ACTIVE=prod`, requires the seed hashes, adds the `caddy` service |
+| `compose.prod.yaml`     | explicitly, on the server                                       | Sets `SPRING_PROFILES_ACTIVE=prod`, requires the seed hashes, adds the `caddy` service, sets the `journald` logging driver for all services |
 
 Ports are intentionally absent from the base file: Compose **appends** list fields like `ports` when merging, so an overlay could never remove them.
 
@@ -110,7 +119,21 @@ docker compose config --services             # db, backend, frontend, caddy
 | `pgdata`       | PostgreSQL data                 | **All user data gone**                                          |
 | `caddy_data`   | TLS certificates + ACME account | New certificate on next start (Let's Encrypt rate limits apply) |
 | `caddy_config` | Caddy autosaved config          | Nothing critical                                                |
-| `backend-logs` | Spring log file                 | Log history only                                                |
+
+### Logging
+
+There is exactly one log sink, so the 14-day deletion promised in the privacy policy is enforced by a single time-based mechanism:
+
+- Spring logs to stdout only (no `logging.file.*`, no log volume).
+- `compose.prod.yaml` sets `logging.driver: journald` for `db`, `backend`, `frontend` and `caddy` via the `x-logging` extension field. Without the overlay the default driver stays. To run the overlay locally, `LOG_DRIVER=json-file` in `.env` replaces journald, which Docker Desktop does not have; the server never sets it.
+- journald on the host deletes entries after 14 days (see [Server](#server)).
+
+Reading logs:
+
+```bash
+docker compose logs -f backend                                  # works with the journald driver too
+journalctl CONTAINER_NAME=fitness-app-backend-1 --since "3 days ago"
+```
 
 ---
 
@@ -225,7 +248,6 @@ Changes are always made locally, committed and pushed. The server only pulls; no
 | Item                                                                            | Why it matters                                                                                                                                      |
 | ------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Backups** (Hetzner backups + `pg_dump` cron, copy off-server)                 | `pgdata` is the only copy of user data                                                                                                              |
-| **Docker log rotation** (`/etc/docker/daemon.json`: `local` driver, `max-size`) | json-file logs grow without limit by default                                                                                                        |
 | **Privacy policy** (+ decision on Impressum)                                    | Required before sign-up is reopened and other people's data is stored                                                                               |
 | **Token refresh endpoint**                                                      | Access token expires after 15 min, users are logged out mid-session                                                                                 |
 | **Rate limiting on login**                                                      | Unlimited password guessing is currently possible                                                                                                   |
