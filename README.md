@@ -99,7 +99,8 @@ Flyway location. Their bcrypt hashes come from `SEED_ADMIN_PASSWORD_HASH` and
 `SEED_USER_PASSWORD_HASH` in `.env`; compose refuses to start without them. Details in
 the README under `backend/src/main/resources/db/`.
 
-To run the prod configuration locally (fresh volume required, Caddy left out):
+To run the prod configuration locally (fresh volume required, Caddy left out), set
+`LOG_DRIVER=json-file` in `.env` first, because Docker Desktop has no journald:
 
 ```
 docker compose --profile full down -v

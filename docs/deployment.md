@@ -125,7 +125,7 @@ docker compose config --services             # db, backend, frontend, caddy
 There is exactly one log sink, so the 14-day deletion promised in the privacy policy is enforced by a single time-based mechanism:
 
 - Spring logs to stdout only (no `logging.file.*`, no log volume).
-- `compose.prod.yaml` sets `logging.driver: journald` for `db`, `backend`, `frontend` and `caddy` via the `x-logging` extension field. Locally the default driver stays.
+- `compose.prod.yaml` sets `logging.driver: journald` for `db`, `backend`, `frontend` and `caddy` via the `x-logging` extension field. Without the overlay the default driver stays. To run the overlay locally, `LOG_DRIVER=json-file` in `.env` replaces journald, which Docker Desktop does not have; the server never sets it.
 - journald on the host deletes entries after 14 days (see [Server](#server)).
 
 Reading logs:

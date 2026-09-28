@@ -2,9 +2,10 @@
 # Used on the server via COMPOSE_FILE=compose.yaml:compose.prod.yaml
 
 # All container logs go to journald; retention is configured on the host.
+# LOG_DRIVER=json-file only for running this overlay locally, where journald is missing.
 x-logging: &journald
   logging:
-    driver: journald
+    driver: ${LOG_DRIVER:-journald}
 
 services:
   db:
