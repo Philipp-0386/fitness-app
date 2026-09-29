@@ -679,7 +679,7 @@ export default function PrivacyPolicy() {
           <br />
           Landesbeauftragte für Datenschutz und Informationsfreiheit Nordrhein-Westfalen
           <br />
-          Kavalleriestraße 2-4
+          Kavalleriestraße 2–4
           <br />
           40213 Düsseldorf
           <br />

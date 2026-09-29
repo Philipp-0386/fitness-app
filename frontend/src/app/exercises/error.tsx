@@ -9,7 +9,7 @@ type Props = {
  * Catches anything the server component of this route throws, such as an ApiError from
  * fetchExercises that nothing else handled.
  *
- * Client component by convention - an error boundary needs to run in the browser.
+ * An error boundary has to run in the browser, so this is a client component.
  *
  * The error arrives here as a plain Error: in a production build Next replaces the message
  * with a generic one and only keeps `digest` to match it against the server log, so this

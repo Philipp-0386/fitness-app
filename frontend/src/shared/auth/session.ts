@@ -10,8 +10,7 @@ export type Session = {
 /**
  * Reads the session from the httpOnly access token cookie.
  *
- * The token is NOT verified here - that happens in the Spring backend on every
- * protected request. The decoded claims are used for display purposes only.
+ * The token is NOT verified here. The decoded claims are used for display purposes only.
  * See docs/security/TokenLifecycle.md for the planned lifecycle (refresh, logout).
  */
 export async function getSession(): Promise<Session | null> {
@@ -30,7 +29,7 @@ export async function isAuthenticated(): Promise<boolean> {
 /**
  * The gate for a protected page: returns the session, or redirects to the login page.
  *
- * Server side only, and it never returns null - so a page can use the session right away
+ * Server side only. It never returns null, so a page can use the session right away
  * instead of narrowing it first.
  */
 export async function requireSession(): Promise<Session> {
