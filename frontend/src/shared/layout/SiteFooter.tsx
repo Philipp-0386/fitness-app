@@ -11,6 +11,9 @@ export default function SiteFooter() {
         <Link href="/about" className={styles.link}>
           About
         </Link>
+        <Link href="/datenschutz" className={styles.link}>
+          Datenschutz/Privacy Policy
+        </Link>
         <a
           href={GITHUB_URL}
           className={styles.link}

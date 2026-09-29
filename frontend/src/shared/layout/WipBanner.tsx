@@ -9,7 +9,8 @@ export default function WipBanner() {
     <aside className={styles.banner} aria-label="Project status">
       <Construction className={styles.icon} aria-hidden="true" />
       <p className={styles.text}>
-        <strong>Work in progress</strong> - solo side project, data may reset.{' '}
+        <strong>Work in progress.</strong> This is a solo side project and data may reset
+        any day.{' '}
         <Link href="/about" className={styles.link}>
           About
         </Link>

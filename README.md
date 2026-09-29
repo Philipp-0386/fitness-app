@@ -3,17 +3,11 @@
 A backend-focused fitness tracking application, with the idea to go beyond a simple CRUD app by adding domain logic such as one-rep-max prediction. This is a personal side project i maintain besides uni.
 
 Status:
-A lot of ground work has been done, to begin with domain driven implementations. Token based authentication is implemented, but still WIP. Core domain model exists within the database, but most of it is not accessible through the backend yet. I am currently working on implementing the exercise slice.
+A lot of ground work has been done to begin with domain driven implementations. Token based authentication is implemented, but still WIP. Core domain model exists within the database, but most of it is not accessible through the backend yet. I am currently working on implementing the exercise slice, and the function for users to track a session.
 
 Current focus:
 
-- Token refresh endpoint
-- Implementing `exercise` endpoints
-- Laying out core frontend look (design planning)
-
-A basic deployment at https://fit.ringelkamp.dev, but currently not online. #96
-
-For more [insights](././docs/general_planning.md)
+[For more insights](././docs/general_planning.md#what-now)
 
 ---
 
@@ -75,7 +69,7 @@ layout and the rules.
 
 - The database container starts empty. Nothing is mounted into
   `/docker-entrypoint-initdb.d` anymore.
-- Test users (`max`, `lena_lifts`,  etc., all with the password `password`) come from
+- Test users (`max`, `lena_lifts`, etc., all with the password `password`) come from
   the `dev` Flyway location and require `SPRING_PROFILES_ACTIVE=dev`.
   `compose.yaml` sets that by default; a deployed environment must not.
 - Reset: `docker compose down -v` followed by `up`. Dropping the `pgdata` volume is

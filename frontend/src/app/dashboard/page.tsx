@@ -1,8 +1,13 @@
 import { UserHome } from '@/features/home';
+import { fetchMe } from '@/features/user';
 import { requireSession } from '@/shared/auth/session';
 
 export default async function DashboardPage() {
-  const session = await requireSession();
+  await requireSession();
 
-  return <UserHome username={session.username} />;
+  const username = await fetchMe()
+    .then((user) => user.username)
+    .catch(() => null);
+
+  return <UserHome username={username} />;
 }

@@ -12,7 +12,7 @@ const features = [
   {
     icon: CalendarCheck,
     title: 'Log every session',
-    text: 'Track sets, reps and weights while you train - no spreadsheet needed.',
+    text: 'Track sets, reps and weights while you train.',
   },
   {
     icon: LineChart,
@@ -30,8 +30,8 @@ export default function GuestHome() {
           Train with a plan, <span className={styles.highlight}>not with a guess</span>
         </h1>
         <p className={styles.subtitle}>
-          Create your training plans, log your sessions and keep track of your progress -
-          all in one place.
+          Create your training plans, log your sessions and keep track of your progress in
+          one place.
         </p>
         <div className={styles.actions}>
           <Link href="/signup" className={styles.primaryAction}>
