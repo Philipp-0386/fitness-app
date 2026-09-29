@@ -6,12 +6,18 @@ This documentation will be dynamically adjusted. The only purpose it serves is b
 
 ## What now?
 
+For the last week, i have focussed heavily on making changes to allow the application to be live permanently. While this has mostly been achieved, i can now put more focus on making actual domain-driven implementations.
+
 The current goal is to finish these tasks:
 
-- Add refresh endpoint
-- Implement `exercise` slice completely (backend)
-- Start on frontend implementation for `exercise` slice (frontend)
-- Deployment-relevant changes (Issue #96)
+- Add refresh endpoint (auth)
+  - fix frontend "hanging token bug"
+- Add `session` tracking feature
+  - requires `exercise` changes and implementations
+  - accidently browser close -> session gone?
+- Actually develop have a frontend-concept
+- Research open-source visual sources (pictures, gifs) for `exercise` catalog
+  - S3 storing? -> Research
 
 ## Relevant Points
 
@@ -58,14 +64,10 @@ I have already started implementing the exercise slice. The idea is, to have _th
 - implementing tests
 - start on frontend relevant tasks
 
-### Git Workflow (WIP)
+### Git Workflow and CI/CD (WIP)
 
 Currenlty base CI exists running backend and frontend test builds.
 Drift between mapped (backend) entites and database entities prohibited. Since the Flyway switch (23.09.2026) CI no longer applies a schema script: the test context boots, Flyway migrates the empty database, and `validate` then checks the mapped entities against the migrated schema.
-
-### Tests (not started)
-
-Implement tests verfiying request checks and authorization behaviour. Ideally i had already done this for auth and some bean validations.
 
 ### Api error handling (idea)
 
@@ -81,15 +83,22 @@ runtime, so the dependency graph was never the problem. The build now keeps the 
 
 The global catalog should never be empty, meaning, if a user calls for all available exercises to have selection from, the returned list can never be empty. I should handle this case within the backend.
 
-### Make deyloyment relevant implementations (Issue #96)
+### Make deyloyment relevant implementations
 
 Before i can comfortably deploy the application permanently publically available, there are changes to be made. These include implementations such as
 
-- allow users to update their information
-- disclaimer banner/note, and about page
-- privacy policy
-- disabling signups (for now)
-- triming information needed of users
+- allow users to update their information (done)
+- disclaimer banner/note, and about page (done)
+- privacy policy (done, german only)
+- disabling signups in backend (for now) (done)
+- triming information needed of users (done)
+- create single source of logs that gets cleared every 14 days (done)
+
+(29.09.2026 Issue #96 done)
+These changes above are done. They were part of a bulk of changes i wanted to implement before confidently leaving the application live. Furthermore there are changes needed relevant specifically for the deployment part of this project, such as:
+
+- rate limiting
+- backups
 
 ## Key Decisions
 
@@ -146,5 +155,10 @@ Open points:
 - Automated deployment (build and roll out from CI)
 - Database backups for the `pgdata` volume
 - Log retention and monitoring beyond `docker compose logs`
+  - partially solved with journald
 
 For a detailed look at the deployment status and [everything surrounding deployment](/docs/deployment.md)
+
+### Privacy policy
+
+The privacy policy is 99% generated with https://datenschutz-generator.de. Currently i only implemented a german version. While an english version makes sense considering the entire application is designed in english, i have decided against making an english version as of now. In its current state, the application is not usable for the public, only people i specifically allow access.
