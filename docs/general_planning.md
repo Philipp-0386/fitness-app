@@ -13,11 +13,14 @@ The current goal is to finish these tasks:
 - Add refresh endpoint (auth)
   - fix frontend "hanging token bug"
 - Add `session` tracking feature
-  - requires `exercise` changes and implementations
-  - accidently browser close -> session gone?
-- Actually develop have a frontend-concept
+  - requires completion of `exercise` slice to higher degree
+  - accidental browser close -> session gone?
+- Actually develop a frontend-concept
+  - most pages are currently basic/generic or even simply json-looking
 - Research open-source visual sources (pictures, gifs) for `exercise` catalog
   - S3 storing? -> Research
+- [Demo account](./general_planning.md#demo-account-idea)
+  - add temporary accounts allowing outsiders to test for limited time
 
 ## Relevant Points
 
@@ -69,21 +72,24 @@ I have already started implementing the exercise slice. The idea is, to have _th
 Currenlty base CI exists running backend and frontend test builds.
 Drift between mapped (backend) entites and database entities prohibited. Since the Flyway switch (23.09.2026) CI no longer applies a schema script: the test context boots, Flyway migrates the empty database, and `validate` then checks the mapped entities against the migrated schema.
 
+(29.09.2026)
+Deployment is done, meaning continues deployment is something to consider implementing.
+
 ### Api error handling (idea)
 
 As of now, i use custom codes within the response body of error handling. The frontend reacts to the codes rather than the pure http-code. I may change the way the frontend reacts to error responses. Currently not sure what goal structure i have in mind.
 
-### Jackson 2 and 3 on the same classpath (addressed 22.09.2026)
+### Jackson 2 and 3 on the same classpath (addressed 22.09.2026) (noteworthy)
 
 Both Jackson lines sit on the classpath permanently: Spring Boot 4 binds bodies with Jackson 3,
 while jjwt and springdoc pull in Jackson 2. Boot plans for this, and the two never interact at
 runtime, so the dependency graph was never the problem. The build now keeps the 2.x packages off the compile classpath so the wrong import fails instead of silently doing nothing.
 
-### Exercise empty list return case
+### Exercise empty list return case (bug)
 
 The global catalog should never be empty, meaning, if a user calls for all available exercises to have selection from, the returned list can never be empty. I should handle this case within the backend.
 
-### Make deyloyment relevant implementations
+### Make deployment relevant implementations
 
 Before i can comfortably deploy the application permanently publically available, there are changes to be made. These include implementations such as
 
@@ -99,6 +105,14 @@ These changes above are done. They were part of a bulk of changes i wanted to im
 
 - rate limiting
 - backups
+
+### Demo Account (idea)
+
+One idea to allow outsiders access without requiring them to sign up, is to provide temporary accounts. These accounts bring most of the functionality a "real" account would, but do not persist any data, and get automatically deleted after x amount of time.
+
+Realistically this would probably require rate-limiting to be effective and limit accounts created per IP or something similiar (=> ip-logging issue?)
+
+I like this idea, but it may be a project in itself, and I might just focus on domain-driven implemenations.
 
 ## Key Decisions
 
@@ -143,6 +157,11 @@ The columns were removed from `V1__schema.sql` directly instead of a drop migrat
 The date of birth comes back with the energy requirement calculator (kcal calc), once there is a feature that reads it.
 
 The `USERNAME_ALREADY_TAKEN` message is generic now ("Username already taken!"), like `EMAIL_ALREADY_EXISTS`, so the requested username no longer ends up in the log or the error body.
+
+### Sign-ups disabled
+
+I have currently disabled sign-ups for two reasons: The first being, that the application in its current state provides no real use. This would result in new users just gifting me their data without return. The second reason is that i am not fully sure yet, whether i have covered all basis regarding privacy protection and handling data.
+While attack surface may near zero, i do not want to take an unnecessary risk.
 
 ### Basic deployment (24.09.2026)
 

@@ -3,7 +3,9 @@
 A backend-focused fitness tracking application, with the idea to go beyond a simple CRUD app by adding domain logic such as one-rep-max prediction. This is a personal side project i maintain besides uni.
 
 Status:
-A lot of ground work has been done to begin with domain driven implementations. Token based authentication is implemented, but still WIP. Core domain model exists within the database, but most of it is not accessible through the backend yet. I am currently working on implementing the exercise slice, and the function for users to track a session.
+A lot of ground work has been done to begin with domain driven implementations. Token based authentication is implemented, but still WIP. Core domain model exists within the database, but most of it is not accessible through the backend yet. I am currently working on implementing the exercise slice, and the function for users to track sessions.
+
+The application is deployed under [fit.ringelkamp.dev](fit.ringelkamp.dev), but signups are currently fully closed. 
 
 Current focus:
 
@@ -117,6 +119,3 @@ Locally Docker keeps them with its default driver. In production, `compose.prod.
 (see [deployment](/docs/deployment.md#server)). Older entries are available via
 `journalctl CONTAINER_NAME=fitness-app-backend-1`.
 
---
-
-Note: Dependency changes might require **manual Maven reload** in IntelliJ.
