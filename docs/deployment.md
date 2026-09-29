@@ -128,6 +128,14 @@ There is exactly one log sink, so the 14-day deletion promised in the privacy po
 - `compose.prod.yaml` sets `logging.driver: journald` for `db`, `backend`, `frontend` and `caddy` via the `x-logging` extension field. Without the overlay the default driver stays. To run the overlay locally, `LOG_DRIVER=json-file` in `.env` replaces journald, which Docker Desktop does not have; the server never sets it.
 - journald on the host deletes entries after 14 days (see [Server](#server)).
 
+What ends up in the logs, and what the privacy policy therefore states:
+
+- Caddy writes no access logs, because the Caddyfile has no `log` directive. Regular requests leave no trace.
+- When Caddy fails to serve a request (e.g. `reverse_proxy` cannot reach the frontend during a rebuild), it logs an `http.log.error` entry that contains `remote_ip`, `client_ip`, the URI and the request headers including `User-Agent`. Verified on 2026-09-29 by stopping the frontend and sending a request.
+- Spring, Next.js and Postgres log no client IPs. Application logs carry at most the pseudonymous user id.
+
+Adding a `log` directive, request logging in Spring or anything else that stores IPs requires updating the privacy policy (`frontend/src/features/legal/ui/PrivacyPolicy.tsx` and `other/datenschutzerklaerung.html`).
+
 Reading logs:
 
 ```bash
@@ -156,14 +164,7 @@ fit.ringelkamp.dev {
 
 After editing the Caddyfile, use `docker compose restart caddy` instead of `caddy reload`: the file is a single-file bind mount, and editors that replace the inode on save would leave the container reading the old version.
 
-**Sign-up is currently blocked at the proxy** until a privacy policy is online (see [Known gaps](#known-gaps--todo)):
-
-```
-@signup path /signup /signup/* /api/signup
-respond @signup "Registrierung ist aktuell geschlossen." 403
-```
-
-Because the backend is only reachable through the Next.js BFF, blocking these two frontend paths closes registration completely.
+Sign-up is not handled by Caddy (see [Sign-up](#sign-up)).
 
 ---
 
@@ -181,6 +182,19 @@ Because the backend is only reachable through the Next.js BFF, blocking these tw
 - Password hashes for the seeded accounts are **not in the repo**. They come from `SEED_ADMIN_PASSWORD_HASH` and `SEED_USER_PASSWORD_HASH` as Flyway placeholders. `compose.prod.yaml` uses `${VAR:?}` so the stack refuses to start without them.
 - Changing a hash later does not change an existing account (insert skipped on conflict).
 - **A database created with the `dev` profile cannot be switched to `prod`**: `V9001` is recorded in `flyway_schema_history` but missing from the prod locations, so Flyway validation fails.
+
+### Sign-up
+
+Registration is closed in production. Accounts are created by the admin only, and the privacy policy states that there is no public registration, so this is currently the intended state and not a temporary one.
+
+| Where                  | `app.signup.enabled` |
+| ---------------------- | -------------------- |
+| `application.yaml`     | `false`              |
+| `application-dev.yaml` | `true`               |
+
+`prod` inherits the base value. `SignUpService.createUser` checks the flag before anything else, so a request neither creates an account nor reveals whether a username or email is taken. The backend answers `403` with code `SIGNUP_DISABLED` and logs a warning with the request path only (no IP).
+
+The `/signup` page itself stays reachable and shows the "sign-ups are closed" banner. Reopening registration means setting the flag to `true` for prod and first changing the privacy policy, which currently rules out public registration.
 
 ### Auth cookies
 
@@ -225,7 +239,6 @@ docker image prune -f
 ```
 
 Changes are always made locally, committed and pushed. The server only pulls; nothing is edited there permanently.
-
 ### Fresh setup on a new server
 
 1. Create the VM with SSH key, attach the firewall above.
@@ -241,18 +254,24 @@ Changes are always made locally, committed and pushed. The server only pulls; no
 - Flyway migrations are forward-only: rolling back the code does not roll back the schema. Migrations should stay backward compatible
 - Whole server: snapshot.
 
+### Resetting the production database
+
+Dropping `pgdata` restarts the identity sequence of `userdata`, so new accounts get ids that earlier accounts had. Access tokens only carry the user id in `sub`, so a token issued before the reset would authenticate as the new account with the same id until it expires.
+
+Therefore, on every reset of the production database, also replace `JWT_SECRET` in `.env` (`openssl rand -hex 64`). This invalidates all existing tokens; everyone has to log in again.
+
 ---
 
 ## Known gaps / TODO
 
 | Item                                                                            | Why it matters                                                                                                                                      |
 | ------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Backups** (Hetzner backups + `pg_dump` cron, copy off-server)                 | `pgdata` is the only copy of user data                                                                                                              |
-| **Privacy policy** (+ decision on Impressum)                                    | Required before sign-up is reopened and other people's data is stored                                                                               |
+| **Backups** (Hetzner backups + `pg_dump` cron, copy off-server)                 | `pgdata` is the only copy of user data. Once in place, the privacy policy has to state how long deleted data stays in backups                       |
+| **Decision on Impressum**                                                       | Privacy policy is online (German only); whether an Impressum is needed is still undecided                                                           |
 | **Token refresh endpoint**                                                      | Access token expires after 15 min, users are logged out mid-session                                                                                 |
+| **Handle rejected tokens in the frontend**                                      | A cookie whose token the backend rejects (401) leaves the user stuck between `/login` and `/dashboard`; solve together with token refresh           |
 | **Rate limiting on login**                                                      | Unlimited password guessing is currently possible                                                                                                   |
 | **Real client IPs**                                                             | Connections forwarded by `docker-proxy` (e.g. IPv6) arrive at Caddy with the Docker gateway IP (`172.18.0.1`); needed before IP-based rate limiting |
 | **Uptime monitoring**                                                           | Outages are currently noticed only by using the app                                                                                                 |
 | **Regular image updates** (`docker compose pull` + `build --pull`)              | `unattended-upgrades` covers the OS, not container images                                                                                           |
 | **CD via GitHub Actions**                                                       | Build images in CI, push to GHCR tagged with the commit SHA, deploy via SSH with a forced-command deploy key                                        |
-| **Feature flag for sign-up**                                                    | Replace the Caddy block with a backend setting                                                                                                      |
