@@ -65,6 +65,14 @@ public class UserService {
     }
 
     /**
+     * @param userId id to check, must not be {@code null}
+     * @return {@code true} if a user with this id exists
+     */
+    public boolean existsById(Long userId) {
+        return userRepository.existsById(userId);
+    }
+
+    /**
      * @param username username to look up, must not be {@code null}
      * @return the matching user, or an empty {@link Optional} if none exists
      */

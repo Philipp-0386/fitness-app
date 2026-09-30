@@ -5,6 +5,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import de.phil.fitness.backend.auth.exception.InvalidRefreshTokenException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -267,6 +268,18 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(
                         "SIGNUP_DISABLED",
                         "SignUps are currently disabled",
+                        req.getRequestURI()
+                ));
+    }
+
+    @ExceptionHandler(InvalidRefreshTokenException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidRefreshToken(InvalidRefreshTokenException ex, HttpServletRequest req) {
+        log.warn("Token is not valid refresh token. path={} {}", req.getRequestURI(), ex.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(new ErrorResponse(
+                        "UNAUTHENTICATED",
+                        "Authentication is required to access this resource",
                         req.getRequestURI()
                 ));
     }

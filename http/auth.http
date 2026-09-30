@@ -121,16 +121,47 @@ GET {{host}}/backend/nonexistent
 Authorization: Bearer {{login.response.body.$.accessToken}}
 
 ###############################################################################
-# 6  Not implemented (gaps 1 and 6)
+# 6  Refresh
 ###############################################################################
 
-### Refresh the access token -> 404, no handler mapped
+### Refresh the access token -> 200, new accessToken
+# @name refresh
 POST {{host}}/backend/auth/refresh
 Content-Type: application/json
 
 {
   "refreshToken": "{{login.response.body.$.refreshToken}}"
 }
+
+### Protected endpoint, refreshed access token -> 200
+GET {{host}}/backend/exercises
+Authorization: Bearer {{refresh.response.body.$.accessToken}}
+
+### Access token as refresh token -> 401 UNAUTHENTICATED
+POST {{host}}/backend/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "{{login.response.body.$.accessToken}}"
+}
+
+### Malformed refresh token -> 401 UNAUTHENTICATED
+POST {{host}}/backend/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "not-a-jwt"
+}
+
+### Missing refresh token -> 400 VALIDATION_FAILED
+POST {{host}}/backend/auth/refresh
+Content-Type: application/json
+
+{}
+
+###############################################################################
+# 6b  Logout (currently not implemented)
+###############################################################################
 
 ### Log out server-side -> 404, no handler mapped
 POST {{host}}/backend/auth/logout
