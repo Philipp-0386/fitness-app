@@ -3,6 +3,7 @@ import 'server-only';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { ACCESS_TOKEN_COOKIE } from './cookies';
+import { readSubjectClaim } from './token';
 
 export type Session = {
   userId: string | null;
@@ -51,44 +52,5 @@ export async function requireSession(): Promise<Session> {
 export async function redirectIfAuthenticated(): Promise<void> {
   if (await isAuthenticated()) {
     redirect('/dashboard');
-  }
-}
-
-function readSubjectClaim(token: string): string | null {
-  const payload = token.split('.')[1];
-  if (!payload) return null;
-
-  try {
-    const json = Buffer.from(payload, 'base64url').toString('utf8');
-    const claims: unknown = JSON.parse(json);
-    if (typeof claims === 'object' && claims !== null && 'sub' in claims) {
-      const sub = (claims as { sub: unknown }).sub;
-      return typeof sub === 'string' ? sub : null;
-    }
-    return null;
-  } catch {
-    return null;
-  }
-}
-
-/*
- * Checks if token expires within the next 30sec to prevent it from becoming invalid between calls between frontend and backend
- */
-export function isExpiringSoon(token: string): boolean {
-  const payload = token.split('.')[1];
-  if (!payload) return true;
-
-  try {
-    const json = Buffer.from(payload, 'base64url').toString('utf8');
-    const claims: unknown = JSON.parse(json);
-    if (typeof claims === 'object' && claims !== null && 'exp' in claims) {
-      const exp = (claims as { exp: unknown }).exp;
-      if (typeof exp === 'number') {
-        return exp * 1000 - Date.now() < 30000;
-      }
-    }
-    return true;
-  } catch {
-    return true;
   }
 }
