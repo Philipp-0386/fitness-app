@@ -2,6 +2,12 @@ import backendFetch from '@/shared/api/backend';
 import { NetworkError } from '@/shared/api/errors/network-error';
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
+import {
+  ACCESS_TOKEN_COOKIE,
+  REFRESH_TOKEN_COOKIE,
+  accessTokenCookieOptions,
+  refreshTokenCookieOptions,
+} from '@/shared/auth/cookies';
 
 export async function POST(request: NextRequest) {
   let requestBody: unknown;
@@ -96,21 +102,9 @@ export async function POST(request: NextRequest) {
 
   const cookieStore = await cookies();
 
-  cookieStore.set('access_token', tokens.accessToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge: 60 * 15,
-    path: '/',
-  });
+  cookieStore.set(ACCESS_TOKEN_COOKIE, tokens.accessToken, accessTokenCookieOptions);
 
-  cookieStore.set('refresh_token', tokens.refreshToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge: 60 * 60 * 24 * 7,
-    path: '/',
-  });
+  cookieStore.set(REFRESH_TOKEN_COOKIE, tokens.refreshToken, refreshTokenCookieOptions);
 
   return NextResponse.json({ success: true }, { status: 200 });
 }
