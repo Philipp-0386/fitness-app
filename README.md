@@ -5,7 +5,7 @@ A backend-focused fitness tracking application, with the idea to go beyond a sim
 Status:
 A lot of ground work has been done to begin with domain driven implementations. Token based authentication is implemented, but still WIP. Core domain model exists within the database, but most of it is not accessible through the backend yet. I am currently working on implementing the exercise slice, and the function for users to track sessions.
 
-The application is deployed under [fit.ringelkamp.dev](fit.ringelkamp.dev), but signups are currently fully closed. 
+The application is deployed under [fit.ringelkamp.dev](https://fit.ringelkamp.dev/), but signups are currently fully closed.
 
 Current focus:
 
@@ -118,4 +118,3 @@ Locally Docker keeps them with its default driver. In production, `compose.prod.
 `journald` logging driver for every service, and journald deletes entries after 14 days
 (see [deployment](/docs/deployment.md#server)). Older entries are available via
 `journalctl CONTAINER_NAME=fitness-app-backend-1`.
-
