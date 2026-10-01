@@ -12,7 +12,7 @@ The current goal is to finish these tasks:
 
 - Add refresh endpoint (auth)
   - fix frontend "hanging token bug"
-- Add `session` tracking feature
+- Add `workout` tracking feature
   - requires completion of `exercise` slice to higher degree
   - accidental browser close -> session gone?
 - Actually develop a frontend-concept
@@ -133,7 +133,15 @@ Furthermore, this was partially done out of pure convenience after i have worked
 
 ### Database table structure
 
-See [DB Schema](./database/DatabaseModelling.md##session_log-session_exercise-and-exercise_set).
+See [DB Schema](./database/DatabaseModelling.md#model).
+
+### Data model rework (01.10.2026, Issue #122)
+
+Before the routine and workout slices are built, V1 was reworked once more, while there is still no data to keep. The tables are now named `routine` / `routine_exercise` (the plan) and `workout` / `workout_exercise` / `workout_set` (what was done). Exercises got a `tracking_type` that decides which values a set holds, global exercises a stable `slug`, and sets a `set_type` for warm-ups. Fields without behavior (`day_type`, `session_type`, `avg_heart_rate`) are gone.
+
+The app tracks training, it does not coach it live. Rest times are therefore not tracked at all, and the workout keeps only the states that matter: a workout is running or finished, an exercise counts as done once it has sets.
+
+Details and the logging conventions are in [DatabaseModelling.md](./database/DatabaseModelling.md).
 
 ### Schema freeze and Flyway (23.09.2026)
 
