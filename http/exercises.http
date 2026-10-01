@@ -181,6 +181,7 @@ Content-Type: application/json
 {
   "name": "My Own Movement",
   "exerciseType": "STRENGTH",
+  "trackingType": "WEIGHT_REPS",
   "description": "Added from the REST client.",
   "instructions": "Perform slowly, three sets of eight."
 }
@@ -254,7 +255,8 @@ Content-Type: application/json
 
 {
   "name": "   ",
-  "exerciseType": "CARDIO"
+  "exerciseType": "CARDIO",
+  "trackingType": "DURATION"
 }
 
 ### 8.6  name beyond 128 characters -> 400, caught before the column would reject it

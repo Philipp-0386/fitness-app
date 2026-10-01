@@ -21,6 +21,7 @@ public class ExerciseMapper {
                 exercise.getId(),
                 exercise.getName(),
                 exercise.getExerciseType(),
+                exercise.getTrackingType(),
                 exercise.getDescription(),
                 exercise.getOwnerUserId() != null
         );
@@ -36,6 +37,7 @@ public class ExerciseMapper {
         exercise.setOwnerUserId(userId);
         exercise.setName(req.name());
         exercise.setExerciseType(req.exerciseType());
+        exercise.setTrackingType(req.trackingType());
         exercise.setDescription(req.description());
         exercise.setInstructions(req.instructions());
         return exercise;

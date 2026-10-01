@@ -26,13 +26,16 @@ CREATE TABLE muscle_group (
 CREATE TABLE exercise (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     owner_user_id BIGINT,
+    slug VARCHAR(128) UNIQUE,
     name VARCHAR(128) NOT NULL,
     exercise_type VARCHAR(16) NOT NULL CHECK (exercise_type IN ('STRENGTH', 'CARDIO', 'MOBILITY')),
+    tracking_type VARCHAR(24) NOT NULL CHECK (tracking_type IN ('WEIGHT_REPS', 'BODYWEIGHT_REPS', 'ASSISTED_REPS', 'DURATION', 'WEIGHT_DISTANCE', 'DISTANCE_DURATION')),
     description VARCHAR(1000),
     instructions TEXT,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
     deleted_at TIMESTAMPTZ,
+    CONSTRAINT ck_exercise_slug_only_global CHECK ((owner_user_id IS NULL) = (slug IS NOT NULL)),
     CONSTRAINT fk_exercise_owner FOREIGN KEY (owner_user_id) REFERENCES userdata(id) ON DELETE CASCADE
 );
 
@@ -45,84 +48,86 @@ CREATE TABLE exercise_musclegroup (
     CONSTRAINT fk_exercise_musclegroup_musclegroup FOREIGN KEY (muscle_group_id) REFERENCES muscle_group(id)
 );
 
-CREATE TABLE workout_plan (
+CREATE TABLE routine (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     user_id BIGINT NOT NULL,
     name VARCHAR(128) NOT NULL,
-    day_type VARCHAR(16) NOT NULL CHECK (day_type IN ('PUSH', 'PULL', 'LEGS', 'CUSTOM')),
     description VARCHAR(1000),
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    deleted_at TIMESTAMPTZ,
-    CONSTRAINT fk_workout_plan_user FOREIGN KEY (user_id) REFERENCES userdata(id) ON DELETE CASCADE
+    CONSTRAINT uq_routine_user_id UNIQUE (user_id, id),
+    CONSTRAINT fk_routine_user FOREIGN KEY (user_id) REFERENCES userdata(id) ON DELETE CASCADE
+);
+
+CREATE TABLE routine_exercise (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    routine_id BIGINT NOT NULL,
+    exercise_id BIGINT NOT NULL,
+    order_index INTEGER NOT NULL CHECK (order_index >= 0),
+    target_sets INTEGER CHECK (target_sets > 0),
+    target_reps_min INTEGER CHECK (target_reps_min > 0),
+    target_reps_max INTEGER CHECK (target_reps_max > 0),
+    target_rpe NUMERIC(3,1) CHECK (target_rpe BETWEEN 1 AND 10),
+    target_duration_seconds INTEGER CHECK (target_duration_seconds > 0),
+    target_distance_meters NUMERIC(8,2) CHECK (target_distance_meters > 0),
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    CONSTRAINT ck_routine_exercise_reps_range CHECK (target_reps_min <= target_reps_max),
+    CONSTRAINT uq_routine_exercise_order UNIQUE (routine_id, order_index) DEFERRABLE INITIALLY DEFERRED,
+    CONSTRAINT fk_routine_exercise_routine FOREIGN KEY (routine_id) REFERENCES routine(id) ON DELETE CASCADE,
+    CONSTRAINT fk_routine_exercise_exercise FOREIGN KEY (exercise_id) REFERENCES exercise(id) DEFERRABLE
+);
+
+CREATE TABLE workout (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    routine_id BIGINT,
+    name VARCHAR(128) NOT NULL,
+    started_at TIMESTAMPTZ NOT NULL,
+    status VARCHAR(16) NOT NULL CHECK (status IN ('IN_PROGRESS', 'COMPLETED')),
+    ended_at TIMESTAMPTZ,
+    notes VARCHAR(1000),
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    CONSTRAINT ck_workout_ended_after_start CHECK (ended_at IS NULL OR ended_at >= started_at),
+    CONSTRAINT fk_workout_user FOREIGN KEY (user_id) REFERENCES userdata(id) ON DELETE CASCADE,
+    CONSTRAINT fk_workout_routine FOREIGN KEY (user_id, routine_id) REFERENCES routine(user_id, id) ON DELETE SET NULL (routine_id)
 );
 
 CREATE TABLE workout_exercise (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    plan_id BIGINT NOT NULL,
+    workout_id BIGINT NOT NULL,
     exercise_id BIGINT NOT NULL,
-    order_index INTEGER NOT NULL,
-    target_sets INTEGER,
-    target_reps_min INTEGER,
-    target_reps_max INTEGER,
-    target_rpe NUMERIC(3,1),
-    target_rest_seconds INTEGER,
-    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    CONSTRAINT uq_workout_exercise_order UNIQUE (plan_id, order_index),
-    CONSTRAINT fk_workout_exercise_plan FOREIGN KEY (plan_id) REFERENCES workout_plan(id) ON DELETE CASCADE,
-    CONSTRAINT fk_workout_exercise_exercise FOREIGN KEY (exercise_id) REFERENCES exercise(id) DEFERRABLE
-);
-
-CREATE TABLE session_log (
-    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    user_id BIGINT NOT NULL,
-    plan_id BIGINT,
-    started_at TIMESTAMPTZ NOT NULL,
-    status VARCHAR(16) NOT NULL CHECK (status IN ('IN_PROGRESS', 'COMPLETED', 'ABANDONED')),
-    ended_at TIMESTAMPTZ,
-    notes VARCHAR(1000),
-    session_type VARCHAR(16) CHECK (session_type IN ('FULL', 'QUICK')),
-    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    CONSTRAINT fk_session_log_user FOREIGN KEY (user_id) REFERENCES userdata(id) ON DELETE CASCADE,
-    CONSTRAINT fk_session_log_plan FOREIGN KEY (plan_id) REFERENCES workout_plan(id) DEFERRABLE
-);
-
-CREATE TABLE session_exercise (
-    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    session_log_id BIGINT NOT NULL,
-    exercise_id BIGINT NOT NULL,
-    order_index INTEGER NOT NULL,
-    status VARCHAR(16) NOT NULL CHECK (status IN ('PLANNED', 'COMPLETED', 'SKIPPED')),
+    order_index INTEGER NOT NULL CHECK (order_index >= 0),
     notes VARCHAR(1000),
     target_sets_snapshot INTEGER,
     target_reps_min_snapshot INTEGER,
     target_reps_max_snapshot INTEGER,
     target_rpe_snapshot NUMERIC(3,1),
+    target_duration_seconds_snapshot INTEGER,
+    target_distance_meters_snapshot NUMERIC(8,2),
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    CONSTRAINT uq_session_exercise_order UNIQUE (session_log_id, order_index),
-    CONSTRAINT fk_session_exercise_session FOREIGN KEY (session_log_id) REFERENCES session_log(id) ON DELETE CASCADE,
-    CONSTRAINT fk_session_exercise_exercise FOREIGN KEY (exercise_id) REFERENCES exercise(id) DEFERRABLE
+    CONSTRAINT uq_workout_exercise_order UNIQUE (workout_id, order_index) DEFERRABLE INITIALLY DEFERRED,
+    CONSTRAINT fk_workout_exercise_workout FOREIGN KEY (workout_id) REFERENCES workout(id) ON DELETE CASCADE,
+    CONSTRAINT fk_workout_exercise_exercise FOREIGN KEY (exercise_id) REFERENCES exercise(id) DEFERRABLE
 );
 
-CREATE TABLE exercise_set (
+CREATE TABLE workout_set (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    session_exercise_id BIGINT NOT NULL,
+    workout_exercise_id BIGINT NOT NULL,
     set_number INTEGER NOT NULL,
-    reps INTEGER,
-    weight_kg NUMERIC(6,2),
-    rpe NUMERIC(3,1),
-    duration_seconds INTEGER,
-    distance_meters NUMERIC(8,2),
-    avg_heart_rate INTEGER,
-    rest_seconds_after INTEGER,
+    set_type VARCHAR(16) DEFAULT 'WORKING' NOT NULL CHECK (set_type IN ('WARMUP', 'WORKING', 'DROP')),
+    reps INTEGER CHECK (reps >= 0),
+    weight_kg NUMERIC(6,2) CHECK (weight_kg >= 0),
+    rpe NUMERIC(3,1) CHECK (rpe BETWEEN 1 AND 10),
+    duration_seconds INTEGER CHECK (duration_seconds > 0),
+    distance_meters NUMERIC(8,2) CHECK (distance_meters >= 0),
     notes VARCHAR(1000),
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    CONSTRAINT uq_exercise_set_number UNIQUE (session_exercise_id, set_number),
-    CONSTRAINT fk_exercise_set_session_exercise FOREIGN KEY (session_exercise_id) REFERENCES session_exercise(id) ON DELETE CASCADE
+    CONSTRAINT uq_workout_set_number UNIQUE (workout_exercise_id, set_number) DEFERRABLE INITIALLY DEFERRED,
+    CONSTRAINT fk_workout_set_workout_exercise FOREIGN KEY (workout_exercise_id) REFERENCES workout_exercise(id) ON DELETE CASCADE
 );
 
 -- ---------------------------------------------------------------------------
@@ -132,8 +137,10 @@ CREATE TABLE exercise_set (
 -- Exercise name uniqueness is per owner, not global, allowing every user to define their own variant of an existing name.
 CREATE UNIQUE INDEX uq_exercise_name ON exercise (owner_user_id, name) NULLS NOT DISTINCT WHERE deleted_at IS NULL;
 
--- At most one running session per user
-CREATE UNIQUE INDEX uq_session_log_active ON session_log (user_id) WHERE status = 'IN_PROGRESS';
+-- At most one running workout per user
+CREATE UNIQUE INDEX uq_workout_active ON workout (user_id) WHERE status = 'IN_PROGRESS';
 
 -- Deleting a user cascades to everything they own. The DEFERRABLE references between owned rows
--- (plan and session to own exercise, session to own plan) are checked too early otherwise.
+-- (routine and workout to own exercise) are checked too early otherwise. A deleted routine only
+-- clears the reference of its workouts, they copied everything they need at their start.
+-- The order constraints are deferred to commit, because reordering updates one row at a time.

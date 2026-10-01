@@ -10,8 +10,8 @@ VALUES ('luca', 'luca@fitness.local', '${seed_user_password_hash}', 1)
 ON CONFLICT (username) DO NOTHING;
 
 -- custom exercises
-INSERT INTO exercise (owner_user_id, name, exercise_type, description, instructions)
-VALUES ((SELECT id FROM userdata WHERE username = 'luca'), 'Slow Tempo Push-Up', 'STRENGTH', 'Custom push-up variation with a 4 second eccentric.', 'Lower for four seconds, pause briefly at the bottom, press up explosively.')
+INSERT INTO exercise (owner_user_id, name, exercise_type, tracking_type, description, instructions)
+VALUES ((SELECT id FROM userdata WHERE username = 'luca'), 'Slow Tempo Push-Up', 'STRENGTH', 'BODYWEIGHT_REPS', 'Custom push-up variation with a 4 second eccentric.', 'Lower for four seconds, pause briefly at the bottom, press up explosively.')
 ON CONFLICT (owner_user_id, name) WHERE deleted_at IS NULL DO NOTHING;
 
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role)
