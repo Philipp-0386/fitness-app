@@ -89,7 +89,7 @@ runtime, so the dependency graph was never the problem. The build now keeps the 
 
 The global catalog should never be empty, meaning, if a user calls for all available exercises to have selection from, the returned list can never be empty. I should handle this case within the backend.
 
-### Make deployment relevant implementations
+### Make deployment relevant implementations (done)
 
 Before i can comfortably deploy the application permanently publically available, there are changes to be made. These include implementations such as
 
@@ -113,6 +113,14 @@ One idea to allow outsiders access without requiring them to sign up, is to prov
 Realistically this would probably require rate-limiting to be effective and limit accounts created per IP or something similiar (=> ip-logging issue?)
 
 I like this idea, but it may be a project in itself, and I might just focus on domain-driven implemenations.
+
+### Rework datamodel (adressed 01/02.10.26 mostly)
+
+Ultimately issue #122 mentions everything relevant, but the idea is, to rework the database model before using the current state as a foundation, and then having to make costly changes in the future.
+
+### UUID for `workout_set`s (idea)
+
+The idea is, that due to bad network logging sets might come in multiple times. Generating a UUID in the frontend that i send and save with every request could be a way to negate duplicate tracking of the same instance of done set.
 
 ## Key Decisions
 
