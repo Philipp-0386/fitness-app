@@ -193,3 +193,96 @@ BEGIN
         (v_entry, 1, 'WORKING', 10, 40, 8.0),
         (v_entry, 2, 'WORKING', 9, 40, 8.5);
 END $$;
+
+-- programs
+
+-- max: an active program with a copied preset and a rest day, plus an inactive one for planning
+DO $$
+DECLARE
+    v_user BIGINT := (SELECT id FROM userdata WHERE username = 'max');
+    v_push BIGINT := (SELECT id FROM routine WHERE user_id = (SELECT id FROM userdata WHERE username = 'max') AND name = 'Push A');
+    v_pull BIGINT;
+    v_program BIGINT;
+    v_first_day BIGINT;
+BEGIN
+    -- taking a preset always creates an own copy
+    INSERT INTO routine (user_id, name, description)
+    SELECT v_user, name, description FROM routine WHERE slug = 'pull'
+    RETURNING id INTO v_pull;
+    INSERT INTO routine_exercise (routine_id, exercise_id, order_index, target_sets, target_reps_min, target_reps_max, target_rpe, target_duration_seconds, target_distance_meters)
+    SELECT v_pull, exercise_id, order_index, target_sets, target_reps_min, target_reps_max, target_rpe, target_duration_seconds, target_distance_meters
+    FROM routine_exercise WHERE routine_id = (SELECT id FROM routine WHERE slug = 'pull');
+
+    INSERT INTO program (user_id, name, is_active)
+    VALUES (v_user, 'Push Pull', TRUE)
+    RETURNING id INTO v_program;
+
+    -- routine_id NULL is a rest day
+    INSERT INTO program_day (user_id, program_id, routine_id, order_index)
+    VALUES (v_user, v_program, v_push, 0)
+    RETURNING id INTO v_first_day;
+    INSERT INTO program_day (user_id, program_id, routine_id, order_index) VALUES
+        (v_user, v_program, v_pull, 1),
+        (v_user, v_program, NULL, 2);
+
+    UPDATE workout SET program_day_id = v_first_day
+    WHERE user_id = v_user AND started_at = TIMESTAMPTZ '2026-09-28 18:00:00+02';
+
+    INSERT INTO program (user_id, name, description)
+    VALUES (v_user, 'Push only', 'Trying out a lower frequency.')
+    RETURNING id INTO v_program;
+    INSERT INTO program_day (user_id, program_id, routine_id, order_index) VALUES
+        (v_user, v_program, v_push, 0),
+        (v_user, v_program, NULL, 1),
+        (v_user, v_program, NULL, 2);
+END $$;
+
+-- lena_lifts: her running workout belongs to the first slot of her active program
+DO $$
+DECLARE
+    v_user BIGINT := (SELECT id FROM userdata WHERE username = 'lena_lifts');
+    v_program BIGINT;
+    v_first_day BIGINT;
+BEGIN
+    INSERT INTO program (user_id, name, is_active)
+    VALUES (v_user, 'Legs and rest', TRUE)
+    RETURNING id INTO v_program;
+
+    INSERT INTO program_day (user_id, program_id, routine_id, order_index)
+    VALUES (v_user, v_program, (SELECT id FROM routine WHERE user_id = v_user AND name = 'Legs'), 0)
+    RETURNING id INTO v_first_day;
+    INSERT INTO program_day (user_id, program_id, routine_id, order_index)
+    VALUES (v_user, v_program, NULL, 1);
+
+    UPDATE workout SET program_day_id = v_first_day
+    WHERE user_id = v_user AND status = 'IN_PROGRESS';
+END $$;
+
+-- max: the preset program taken over, as the copy endpoint will do it (program, slots and an own copy of every routine)
+DO $$
+DECLARE
+    v_user BIGINT := (SELECT id FROM userdata WHERE username = 'max');
+    v_preset BIGINT := (SELECT id FROM program WHERE slug = 'push-pull-legs');
+    v_program BIGINT;
+    v_slot RECORD;
+    v_copy BIGINT;
+BEGIN
+    INSERT INTO program (user_id, name, description)
+    SELECT v_user, name, description FROM program WHERE id = v_preset
+    RETURNING id INTO v_program;
+
+    -- the preset uses every routine once, so one copy per slot is one copy per routine
+    FOR v_slot IN SELECT routine_id, order_index FROM program_day WHERE program_id = v_preset ORDER BY order_index LOOP
+        v_copy := NULL;
+        IF v_slot.routine_id IS NOT NULL THEN
+            INSERT INTO routine (user_id, name, description)
+            SELECT v_user, name, description FROM routine WHERE id = v_slot.routine_id
+            RETURNING id INTO v_copy;
+            INSERT INTO routine_exercise (routine_id, exercise_id, order_index, target_sets, target_reps_min, target_reps_max, target_rpe, target_duration_seconds, target_distance_meters)
+            SELECT v_copy, exercise_id, order_index, target_sets, target_reps_min, target_reps_max, target_rpe, target_duration_seconds, target_distance_meters
+            FROM routine_exercise WHERE routine_id = v_slot.routine_id;
+        END IF;
+        INSERT INTO program_day (user_id, program_id, routine_id, order_index)
+        VALUES (v_user, v_program, v_copy, v_slot.order_index);
+    END LOOP;
+END $$;
