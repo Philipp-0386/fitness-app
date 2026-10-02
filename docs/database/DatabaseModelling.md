@@ -19,7 +19,10 @@ Three aggregates. Each is written through its root, they reference each other by
 
 ### Exercise
 
-`exercise` holds the global catalog (`owner_user_id IS NULL`) and every user's custom exercises. Muscle groups are linked through `exercise_musclegroup` (`PRIMARY` / `SECONDARY`).
+`exercise` holds the global catalog (`owner_user_id IS NULL`) and every user's custom exercises. Muscle groups are linked through `exercise_musclegroup`.
+
+- **Two levels:** groups (Chest, Back, Shoulders, Arms, Neck, Core, Legs) carry the `body_region`, their areas (Upper Chest, Lats, Side Delts, ...) reference them via `parent_id`. Exercises link the most precise level, custom exercises may also link a group. A search or volume count for a group includes its areas.
+- **Role:** `PRIMARY` is the target muscle, `SECONDARY` a muscle that clearly assists (bench press: chest primary, triceps and front delts secondary). Search by muscle shows primary links by default. Volume counts primary sets fully and secondary sets half.
 
 `tracking_type` decides which values a set holds. It drives the logging UI, the validation in the service and the analytics. `exercise_type` is only a catalog filter, no logic may depend on it.
 

@@ -18,11 +18,14 @@ CREATE TABLE userdata (
     CONSTRAINT fk_userdata_role FOREIGN KEY (role_id) REFERENCES roles(id)
 );
 
--- Lookup of muscle groups, grouped by body region.
+-- Lookup of muscle groups in two levels: groups (Chest, Back, ..., with body_region) and their areas (Upper Chest, Lats, ...).
 CREATE TABLE muscle_group (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    parent_id BIGINT,
     name VARCHAR(64) NOT NULL UNIQUE,
-    body_region VARCHAR(16) CHECK (body_region IN ('UPPER', 'LOWER', 'CORE'))
+    body_region VARCHAR(16) CHECK (body_region IN ('UPPER', 'LOWER', 'CORE')),
+    CONSTRAINT ck_muscle_group_region_on_top_level CHECK ((parent_id IS NULL) = (body_region IS NOT NULL)),
+    CONSTRAINT fk_muscle_group_parent FOREIGN KEY (parent_id) REFERENCES muscle_group(id)
 );
 
 -- Global catalog (owner_user_id NULL, has a slug) and custom exercises of users (soft deleted)

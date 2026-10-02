@@ -6,27 +6,34 @@ INSERT INTO roles (name) VALUES ('USER');
 INSERT INTO roles (id, name) VALUES (0, 'ADMIN');
 
 -- muscle_group
+-- groups carry the body region, their areas reference them as parent
 INSERT INTO muscle_group (name, body_region) VALUES ('Chest', 'UPPER');
-INSERT INTO muscle_group (name, body_region) VALUES ('Upper Back', 'UPPER');
-INSERT INTO muscle_group (name, body_region) VALUES ('Lats', 'UPPER');
-INSERT INTO muscle_group (name, body_region) VALUES ('Trapezius', 'UPPER');
-INSERT INTO muscle_group (name, body_region) VALUES ('Front Delts', 'UPPER');
-INSERT INTO muscle_group (name, body_region) VALUES ('Side Delts', 'UPPER');
-INSERT INTO muscle_group (name, body_region) VALUES ('Rear Delts', 'UPPER');
-INSERT INTO muscle_group (name, body_region) VALUES ('Biceps', 'UPPER');
-INSERT INTO muscle_group (name, body_region) VALUES ('Triceps', 'UPPER');
-INSERT INTO muscle_group (name, body_region) VALUES ('Forearms', 'UPPER');
+INSERT INTO muscle_group (name, body_region) VALUES ('Back', 'UPPER');
+INSERT INTO muscle_group (name, body_region) VALUES ('Shoulders', 'UPPER');
+INSERT INTO muscle_group (name, body_region) VALUES ('Arms', 'UPPER');
 INSERT INTO muscle_group (name, body_region) VALUES ('Neck', 'UPPER');
-INSERT INTO muscle_group (name, body_region) VALUES ('Abs', 'CORE');
-INSERT INTO muscle_group (name, body_region) VALUES ('Obliques', 'CORE');
-INSERT INTO muscle_group (name, body_region) VALUES ('Lower Back', 'CORE');
-INSERT INTO muscle_group (name, body_region) VALUES ('Quadriceps', 'LOWER');
-INSERT INTO muscle_group (name, body_region) VALUES ('Hamstrings', 'LOWER');
-INSERT INTO muscle_group (name, body_region) VALUES ('Glutes', 'LOWER');
-INSERT INTO muscle_group (name, body_region) VALUES ('Calves', 'LOWER');
-INSERT INTO muscle_group (name, body_region) VALUES ('Hip Adductors', 'LOWER');
-INSERT INTO muscle_group (name, body_region) VALUES ('Hip Abductors', 'LOWER');
-INSERT INTO muscle_group (name, body_region) VALUES ('Tibialis Anterior', 'LOWER');
+INSERT INTO muscle_group (name, body_region) VALUES ('Core', 'CORE');
+INSERT INTO muscle_group (name, body_region) VALUES ('Legs', 'LOWER');
+INSERT INTO muscle_group (parent_id, name) VALUES ((SELECT id FROM muscle_group WHERE name = 'Chest'), 'Upper Chest');
+INSERT INTO muscle_group (parent_id, name) VALUES ((SELECT id FROM muscle_group WHERE name = 'Back'), 'Lats');
+INSERT INTO muscle_group (parent_id, name) VALUES ((SELECT id FROM muscle_group WHERE name = 'Back'), 'Upper Back');
+INSERT INTO muscle_group (parent_id, name) VALUES ((SELECT id FROM muscle_group WHERE name = 'Back'), 'Trapezius');
+INSERT INTO muscle_group (parent_id, name) VALUES ((SELECT id FROM muscle_group WHERE name = 'Back'), 'Lower Back');
+INSERT INTO muscle_group (parent_id, name) VALUES ((SELECT id FROM muscle_group WHERE name = 'Shoulders'), 'Front Delts');
+INSERT INTO muscle_group (parent_id, name) VALUES ((SELECT id FROM muscle_group WHERE name = 'Shoulders'), 'Side Delts');
+INSERT INTO muscle_group (parent_id, name) VALUES ((SELECT id FROM muscle_group WHERE name = 'Shoulders'), 'Rear Delts');
+INSERT INTO muscle_group (parent_id, name) VALUES ((SELECT id FROM muscle_group WHERE name = 'Arms'), 'Biceps');
+INSERT INTO muscle_group (parent_id, name) VALUES ((SELECT id FROM muscle_group WHERE name = 'Arms'), 'Triceps');
+INSERT INTO muscle_group (parent_id, name) VALUES ((SELECT id FROM muscle_group WHERE name = 'Arms'), 'Forearms');
+INSERT INTO muscle_group (parent_id, name) VALUES ((SELECT id FROM muscle_group WHERE name = 'Core'), 'Abs');
+INSERT INTO muscle_group (parent_id, name) VALUES ((SELECT id FROM muscle_group WHERE name = 'Core'), 'Obliques');
+INSERT INTO muscle_group (parent_id, name) VALUES ((SELECT id FROM muscle_group WHERE name = 'Legs'), 'Quadriceps');
+INSERT INTO muscle_group (parent_id, name) VALUES ((SELECT id FROM muscle_group WHERE name = 'Legs'), 'Hamstrings');
+INSERT INTO muscle_group (parent_id, name) VALUES ((SELECT id FROM muscle_group WHERE name = 'Legs'), 'Glutes');
+INSERT INTO muscle_group (parent_id, name) VALUES ((SELECT id FROM muscle_group WHERE name = 'Legs'), 'Calves');
+INSERT INTO muscle_group (parent_id, name) VALUES ((SELECT id FROM muscle_group WHERE name = 'Legs'), 'Hip Adductors');
+INSERT INTO muscle_group (parent_id, name) VALUES ((SELECT id FROM muscle_group WHERE name = 'Legs'), 'Hip Abductors');
+INSERT INTO muscle_group (parent_id, name) VALUES ((SELECT id FROM muscle_group WHERE name = 'Legs'), 'Tibialis Anterior');
 
 -- exercise (owner_user_id NULL = standard exercise, set = custom exercise of that user)
 -- Global exercises are referenced by slug. A name can repeat across owners, so a lookup by name breaks once users exist.
@@ -122,7 +129,7 @@ INSERT INTO exercise (owner_user_id, slug, name, exercise_type, tracking_type, d
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'barbell-bench-press'), (SELECT id FROM muscle_group WHERE name = 'Chest'), 'PRIMARY');
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'barbell-bench-press'), (SELECT id FROM muscle_group WHERE name = 'Triceps'), 'SECONDARY');
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'barbell-bench-press'), (SELECT id FROM muscle_group WHERE name = 'Front Delts'), 'SECONDARY');
-INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'incline-dumbbell-press'), (SELECT id FROM muscle_group WHERE name = 'Chest'), 'PRIMARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'incline-dumbbell-press'), (SELECT id FROM muscle_group WHERE name = 'Upper Chest'), 'PRIMARY');
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'incline-dumbbell-press'), (SELECT id FROM muscle_group WHERE name = 'Front Delts'), 'SECONDARY');
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'incline-dumbbell-press'), (SELECT id FROM muscle_group WHERE name = 'Triceps'), 'SECONDARY');
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'cable-chest-fly'), (SELECT id FROM muscle_group WHERE name = 'Chest'), 'PRIMARY');
