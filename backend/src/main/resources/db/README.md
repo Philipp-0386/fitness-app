@@ -21,6 +21,10 @@ alone. Forgetting -> ideally prod safe.
 - **Never edit a migration that has run somewhere.** Flyway stores a checksum per
   file and refuses to start when one changes. Correct a mistake with a new
   migration.
+
+  Exception until the public launch: there is no user data worth keeping yet,
+  so schema changes still go into `V1` directly.
+
 - **Keep migrations additive** where possible - adding a nullable column or a new
   table lets an older image keep running. A dropped or renamed column makes a
   rollback to the previous image impossible.

@@ -93,7 +93,7 @@ offering three options in a dropdown is convenience while the backend still enfo
 The first row of failures arrives as an `InvalidFormatException` wrapped in
 `HttpMessageNotReadableException`. `handleUnreadableBody` picks those out and reports them as a field error rather than `INVALID_JSON`, so the client sees one shape no matter which layer rejected the field. A body that is not parseable JSON at all still yields `INVALID_JSON`, because there are no fields.
 
-The `CHECK` constraint on `exercise.exercise_type` in [V1\_\_schema.sql](../../backend/src/main/resources/db/migration/V1__schema.sql) is ideally never reached.
+`trackingType` is bound the same way and fails the same way. The `CHECK` constraints on `exercise.exercise_type` and `exercise.tracking_type` in [V1\_\_schema.sql](../../backend/src/main/resources/db/migration/V1__schema.sql) are ideally never reached.
 
 ---
 

@@ -41,6 +41,10 @@ public class Exercise {
     @Column(name = "EXERCISE_TYPE", nullable = false, length = 16)
     private ExerciseType exerciseType;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "TRACKING_TYPE", nullable = false, length = 24)
+    private TrackingType trackingType;
+
     @Column(name = "DESCRIPTION", length = 1000)
     private String description;
 

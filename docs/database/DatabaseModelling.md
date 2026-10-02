@@ -1,205 +1,133 @@
 # Database Modelling
 
-This file documents the database modelling.
+The migrations are the source of truth, mainly [V1\_\_schema.sql](../../backend/src/main/resources/db/migration/V1__schema.sql). This file explains the intent behind them. Until the public launch `V1` is still edited directly, because there is no user data worth keeping yet. Only `exercise` is mapped as a JPA entity so far.
 
-## Current State
+The [relational model diagram](./database_relational_model.png) is outdated (Oracle types, removed fields, table names from before 01.10.2026).
 
-Auth tables (`roles`, `userdata`) plus the core domain tables below (`exercise`, `muscle_group`, `exercise_musclegroup`, `workout_plan`, `workout_exercise`, `session_log`, `session_exercise`, `exercise_set`) are created by Flyway from [V1\_\_schema.sql](../../backend/src/main/resources/db/migration/V1__schema.sql). No JPA entities/repositories exist for the domain tables yet.
+## Model
 
-Since the schema freeze on 23.09.2026 the migrations are the source of truth and this file describes the intent. `V1` is frozen, every change from here on is a new migration. All timestamp columns are `TIMESTAMPTZ`, the mapped entities use `Instant`.
+Three aggregates. Each is written through its root, they reference each other by id only.
 
-## Planning
+| Aggregate | Tables                                       | Written                                       |
+| --------- | -------------------------------------------- | --------------------------------------------- |
+| Exercise  | `exercise`, `exercise_musclegroup`           | when the catalog or a custom exercise changes |
+| Routine   | `routine`, `routine_exercise`                | when the user edits a training day, rarely    |
+| Workout   | `workout`, `workout_exercise`, `workout_set` | during training, after every set              |
+| Program   | `program`, `program_day`                     | when the user plans, rarely                   |
 
-### exercise and muscle_group
+`routine_` is the plan for one day, `workout_` is what was done, a program orders routines into a sequence.
 
-`exercise` table contains predefined and custom exercises. `muscle_group` is just a lookup-table containing muscle groups, and being referenced by `exercise` entries through a join-table.
+### Exercise
 
-### workout_plan and workout_exercise
+`exercise` holds the global catalog (`owner_user_id IS NULL`) and every user's custom exercises. Muscle groups are linked through `exercise_musclegroup`.
 
-`workout_plan` and `workout_exercise` are templates defined by the user. `workout_exercise` contains target values (sets, rep ranges, RPE) per exercise. These entries will initially be only manual, but are planned to be automatically generated.
+- **Two levels:** groups (Chest, Back, Shoulders, Arms, Neck, Core, Legs) carry the `body_region`, their areas (Upper Chest, Lats, Side Delts, ...) reference them via `parent_id`. Exercises link the most precise level, custom exercises may also link a group. A search or volume count for a group includes its areas.
+- **Role:** `PRIMARY` is the target muscle, `SECONDARY` a muscle that clearly assists (bench press: chest primary, triceps and front delts secondary). Search by muscle shows primary links by default. Volume counts primary sets fully and secondary sets half.
 
-TODO: auto-generate targets from user's own training history (rep range preferences, last weights at target RPE).
+`tracking_type` decides which values a set holds. It drives the logging UI, the validation in the service and the analytics. `exercise_type` is only a catalog filter, no logic may depend on it.
 
-### session_log, session_exercise and exercise_set
+| `tracking_type`     | Values of a set                              | Examples                   |
+| ------------------- | -------------------------------------------- | -------------------------- |
+| `WEIGHT_REPS`       | `weight_kg`, `reps`                          | Bench Press, curls         |
+| `BODYWEIGHT_REPS`   | `reps`, optional `weight_kg` as added weight | Pull-Up, Hanging Leg Raise |
+| `ASSISTED_REPS`     | `reps`, `weight_kg` as assistance            | Assisted Pull-Up           |
+| `DURATION`          | `duration_seconds`, optional `weight_kg`     | Plank, Dead Hang           |
+| `WEIGHT_DISTANCE`   | `weight_kg`, `distance_meters`               | Farmers Walk               |
+| `DISTANCE_DURATION` | `distance_meters`, `duration_seconds`        | Treadmill run              |
 
-Once a user starts to track their workout, a `session_log` entry is created. Once a set is completed, this user's data will be stored in `exercise_set` entries. These entries reference `session_exercise` entries, and therefore grouping individual sets.
+Global exercises carry a unique `slug`. Their ids differ between environments once later migrations add catalog entries, so images, translations and migrations reference them by slug, never by id or name.
 
-Important: `session` and `workout` tables decoupled, and only related to each other through a referenced exercise. This allows sessions to be created without an existing `workout_plan`. This has a couple advantages:
+### Routine
 
-- Freestyle sessions without an existing `workout_plan`
-- Spontaneously adding exercises during a session without modifying the plan
-- Plan edits (renaming, reordering, replacing exercises) without corrupting historical sessions
+A `routine` is one training day. `routine_exercise` holds its exercises with aggregate targets per exercise ("3 x 8-12 @ RPE 8"), only the targets matching the `tracking_type` are filled.
 
-Note: Session creation lazy vs eager?
+Preset routines (Push, Pull, Legs... more in the future) have `user_id IS NULL` and a unique `slug`, seeded in `V2`. Taking a preset always creates an own copy, programs and workouts never reference a preset. The composite keys enforce this, they require the same user on both sides.
 
-### Tables (work in progress)
+TODO: auto-generate targets from the user's own history (rep range preferences, last weights at target RPE).
 
-#### `exercise`
+### Program
 
-- **PK**: `id`
-- **FK**: `owner_user_id` → `users.id` (nullable: NULL = standard, set = custom)
-- **Required**: `name`, `exercise_type` (`STRENGTH` / `CARDIO` / `MOBILITY`)
-- **Optional**: `description`, `instructions`
-- **Audit**: `created_at`, `updated_at`, `deleted_at` (soft delete)
+A `program` is an ordered sequence of `program_day` slots, each holding a routine or a rest day (`routine_id IS NULL`). `workout.program_day_id` records which slot a workout came from.
 
----
+- **Sequence, not calendar.** The next training is the slot after the one of the user's latest workout in this program, wrapping at the end. No workout in it yet, or just switched to it: the first slot. Missed days never break the plan.
+- **Rest days are shown, not enforced.** Training anyway starts the next training slot. How strict the UI is stays open.
+- **Three programs per user, one active.** Activating one deactivates the previous one in the same transaction.
+- **Deleting a routine turns its slots into rest days,** so a PPLUL program losing Upper never schedules two leg days in a row. The UI warns which programs are affected and that logged workouts stay complete.
+- **Editor:** "make rest day" keeps the slot, "remove slot" deletes it and renumbers the rest (only on explicit request).
+- **Presets are copied,** never referenced. Besides the preset routines there is a preset program (Push Pull Legs plus a rest day, `user_id IS NULL`, `slug`). Taking it copies the program, its slots and each routine it uses. Preset programs are never active.
 
-#### `muscle_group`
+### Workout
 
-- **PK**: `id`
-- **Required**: `name` (unique)
-- **Optional**: `body_region` (e.g. `UPPER` / `LOWER` / `CORE`)
+- **Eager start:** the `workout` row is created at the start, all exercises of the routine are copied into `workout_exercise` right then, every set is stored immediately. After the start a workout never reads its routine again.
+- **Snapshots:** targets become `*_snapshot` columns, the routine's name becomes `workout.name`. Routine edits never change history, freestyle workouts need no routine.
+- **States:** a workout is `IN_PROGRESS` or `COMPLETED`, discarding deletes it. An exercise in a workout has no status, it counts as done once it has sets. No rest tracking: the app tracks training, it does not coach it live.
+- **Open in the slice:** handling a workout left `IN_PROGRESS` (resume, finish, discard), and a client generated id per set against duplicates from retries (deferred).
 
----
+### Deleting
 
-#### `exercise_musclegroup` (join table)
+Rule: **what a workout copies is hard deleted, what it references is soft deleted.**
 
-- **PK**: composite `(exercise_id, muscle_group_id)`
-- **FK**: `exercise_id` → `exercise.id`, `muscle_group_id` → `muscle_group.id`
-- **Required**: `role` (`PRIMARY` / `SECONDARY`)
+- **Routines: hard delete.** Their `routine_exercise` rows go with them, workouts only lose `routine_id` (`ON DELETE SET NULL (routine_id)`; the column list is required, a plain `SET NULL` would also null `user_id`).
+- **Routines in programs:** a deleted routine turns its program slots into rest days (`ON DELETE SET NULL (routine_id)` on `program_day`). Slots never shift on their own.
+- **Programs: hard delete,** their slots cascade, workouts only lose `program_day_id` (`ON DELETE SET NULL (program_day_id)`).
+- **Exercises: soft delete.** `workout_exercise.exercise_id` is their identity for progression, PRs and 1RM.
+- **Workouts: hard delete,** sets and exercises cascade.
+- **Accounts: hard delete,** everything owned cascades. References between owned rows that point at an own exercise are `DEFERRABLE`, and `UserService.deleteUser` defers them, because Postgres works through the cascades one after the other. A new table holding user data needs `ON DELETE CASCADE` on its path to `userdata` and `DEFERRABLE` on references to other owned rows.
 
----
+### Logging conventions
 
-#### `workout_plan`
+These live in no column, but fix what every logged set means. A later migration cannot reconstruct a meaning that was never fixed.
 
-- **PK**: `id`
-- **FK**: `user_id` → `user.id`
-- **Required**: `name`, `day_type` (`PUSH` / `PULL` / `LEGS` / `CUSTOM`)
-- **Optional**: `description`
-- **Audit**: `created_at`, `updated_at`, `deleted_at`
+- **Bodyweight exercises:** `weight_kg` is the added weight. For `ASSISTED_REPS` it is the assistance, as a positive value.
+- **Dumbbells:** weight of one dumbbell.
+- **Unilateral exercises:** repetitions of one side.
+- **Set types:** warm-ups are `WARMUP`. Volume, set counts, PRs and 1RM only count `WORKING` sets.
+- **`tracking_type` is immutable** once sets exist for the exercise.
+- **Units:** kg. Other units are a display conversion.
+- **Derived values** (PRs, volume, 1RM) are calculated, never stored.
 
----
+### Constraints worth knowing
 
-#### `workout_exercise`
+- `uq_exercise_name`: unique per owner, `NULLS NOT DISTINCT` so global names are unique too, `WHERE deleted_at IS NULL` frees a name after a soft delete.
+- `uq_workout_active`: at most one `IN_PROGRESS` workout per user. The service checks first for a usable error, the index closes the race.
+- `uq_program_active`: at most one active program per user.
+- Composite ownership keys over `user_id`: `fk_workout_routine`, `fk_workout_program_day`, `fk_program_day_program`, `fk_program_day_routine`. A workout or a program slot can only reference rows of the same user. `program_day` carries its own `user_id` for that reason. Preset slots have `user_id IS NULL`, so the composite keys skip them; plain foreign keys on `program_id` and `routine_id` keep their integrity.
+- The four order constraints are `DEFERRABLE INITIALLY DEFERRED`. Postgres checks non-deferrable unique constraints row by row and Hibernate runs deletes last, so reordering would fail otherwise.
+- Plausibility checks on all value and target columns.
 
-- **PK**: `id`
-- **FK**: `plan_id` → `workout_plan.id`, `exercise_id` → `exercise.id`
-- **Required**: `order_index`
-- **Optional (targets)**: `target_sets`, `target_reps_min`, `target_reps_max`, `target_rpe`, `target_rest_seconds`
-- **Audit**: `created_at`, `updated_at`
-- **Unique**: `(plan_id, order_index)`
+## Rules for the routine and workout slices
 
----
+The schema cannot express these, so the code has to.
 
-#### `session_log`
-
-- **PK**: `id`
-- **FK**: `user_id` → `user.id`, `plan_id` → `workout_plan.id` (nullable: NULL = freestyle)
-- **Required**: `started_at`, `status` (`IN_PROGRESS` / `COMPLETED` / `ABANDONED`)
-- **Optional**: `ended_at`, `notes`, `session_type` (`FULL` / `QUICK`)
-- **Audit**: `created_at`, `updated_at`
-
----
-
-#### `session_exercise`
-
-- **PK**: `id`
-- **FK**: `session_log_id` → `session_log.id` (`ON DELETE CASCADE`), `exercise_id` → `exercise.id`
-- **Required**: `order_index`, `status` (`PLANNED` / `COMPLETED` / `SKIPPED`)
-- **Optional**: `notes`
-- **Optional (target snapshots)**: `target_sets_snapshot`, `target_reps_min_snapshot`, `target_reps_max_snapshot`, `target_rpe_snapshot`
-- **Audit**: `created_at`, `updated_at`
-- **Unique**: `(session_log_id, order_index)`
-
----
-
-#### `exercise_set`
-
-- **PK**: `id`
-- **FK**: `session_exercise_id` → `session_exercise.id` (`ON DELETE CASCADE`)
-- **Required**: `set_number`
-- **Optional (strength)**: `reps`, `weight_kg`, `rpe`
-- **Optional (cardio)**: `duration_seconds`, `distance_meters`, `avg_heart_rate`
-- **Optional**: `rest_seconds_after`, `notes`
-- **Audit**: `created_at`, `updated_at`
-- **Unique**: `(session_exercise_id, set_number)`
+- **Referenced exercises must be global or own and not deleted.** One guard in `ExerciseService` for every write path that sets an `exercise_id`, covered by access tests. A missed check leaks the foreign exercise and blocks the other user's account deletion.
+- **Children are loaded through the root,** always filtered by the root's `user_id`, like `ExerciseRepository.findAvailableById`.
+- **History reads include soft deleted exercises.** No global soft delete filter (`@SQLRestriction`) on `Exercise`.
+- **Sets are validated against `tracking_type`** in the service. The wide `workout_set` table (all values nullable) cannot check that itself.
+- **Presets are listed separately** (`user_id IS NULL`). A user's own routines are queried with `user_id = :userId`, copying a preset copies its `routine_exercise` rows too.
+- **At most three programs per user,** checked in the service before creating one.
+- **Sharing a routine** would be a copy, never a reference.
 
 ## Open Points
 
-Reviewed on 03.08.2026 against the feature goals in [domain_notes.md](../domain_notes.md). None of the following is implemented yet; this section exists so the gaps are recorded rather than rediscovered later.
+- **Bodyweight tracking:** needs a `bodyweight_log` (user, value, measured_at). It also turns `BODYWEIGHT_REPS` sets into real loads, so it must answer "bodyweight on the date of this workout". Possibly health data under Art. 9 GDPR, check consent and the privacy policy before it arrives.
+- **Programs:** schema and presets done, backend and frontend follow. Still open: how strict rest days are in the UI, presets beyond Push, Pull and Legs.
+- **Time zone:** weekly analytics must not group in implicit UTC (Monday 00:30 Berlin time lands in the previous week). Queries take the zone as a parameter from the start, a column can follow.
+- **Additive when needed:** `equipment` on `exercise` (plate diagram), supersets (group column), per set targets, merging exercises, case insensitive names (`lower(name)`; [R\_\_prod_seed_users.sql](../../backend/src/main/resources/db/prod/R__prod_seed_users.sql) uses `uq_exercise_name` as its `ON CONFLICT` target).
 
-The core tracking flow itself holds up: `session_log` → `session_exercise` → `exercise_set` covers logging, and the deliberate decoupling from `workout_plan` (see above) delivers what it promises — freestyle sessions, spontaneous exercises, and plan edits that do not corrupt history.
+History of the changes: the data model rework on 01.10.2026 (Issue #122) is summarized in [general_planning.md](../general_planning.md).
 
-### Missing: bodyweight tracking
+## Index candidates
 
-`domain_notes.md` lists a bodyweight tracker under Core and historical bodyweight progression under Analytics, but there is no table for it. Needs a `bodyweight_log` (user, value, measured_at) before either feature is possible.
+Deliberately not created yet. An index picked before its query is a guess, each belongs in the migration of the slice that queries it (`CREATE INDEX CONCURRENTLY`, migration marked `-- executeInTransaction=false`). PKs and unique constraints already cover the parent to child paths.
 
-### Missing: load type on `exercise`
+| Index                                                                                               | Reason                                                                                 |
+| --------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `exercise_musclegroup(muscle_group_id)`                                                             | "which exercises train this muscle group", the PK only serves the other direction      |
+| `workout(user_id, started_at DESC)`                                                                 | "my recent workouts"                                                                   |
+| `workout_exercise(exercise_id)`                                                                     | analytics: progression, 1RM, volume per muscle group                                   |
+| `program_day(routine_id)`                                                                           | "which programs use this routine" for the delete warning, and the `SET NULL` on delete |
+| `workout(user_id, routine_id)`, `workout(user_id, program_day_id)`, `routine_exercise(exercise_id)` | foreign key lookups on delete                                                          |
 
-For pull-ups or dips it is currently undecidable whether `exercise_set.weight_kg` means added weight or total weight. This blocks the 1RM and volume-per-muscle-group analytics: a bodyweight set stored with `weight_kg = NULL` counts as zero volume.
+`exercise(owner_user_id)` is served by `uq_exercise_name` for "my custom exercises", not for the foreign key lookup on account deletion (partial index). Irrelevant at the current size.
 
-Suggested: a `load_type` column on `exercise` (`EXTERNAL` / `BODYWEIGHT` / `BODYWEIGHT_PLUS` / `ASSISTED`). Turning that into real numbers additionally requires the bodyweight at the time of the session, so this point and the one above should be implemented together.
-
-### Missing: routine layer above `workout_plan`
-
-`workout_plan` models a single training day (`day_type`). The weekly programme / multi-week plans from `domain_notes.md` have no representation: a PPL split is currently just a loose set of unrelated plans, without ordering, weekday assignment or week cycle. This requires a new table (e.g. `routine` plus an assignment table), not an extra column.
-
-Deliberately deferred for now.
-
-### ~~Missing: delete story for sessions~~ (done 23.09.2026, PR#77)
-
-`exercise` and `workout_plan` use soft deletes (`deleted_at`); the three session tables do not, and no foreign key declared `ON DELETE CASCADE`. Deleting a mislogged session therefore failed unless `exercise_set` and `session_exercise` rows were removed manually first.
-
-Cascade is semantically correct here, a set has no meaning without its session. It is now declared on `session_exercise -> session_log` and `exercise_set -> session_exercise` in `V1__schema.sql`.
-
-### ~~Missing: delete story for accounts~~ (done 24.09.2026, #92)
-
-Deleting an account is a hard delete. The user and everything they own disappear, nothing is anonymized or kept.
-
-Cascade alone is not enough. Owned rows also reference each other: a plan or a session points at the user's own exercise, a session at the user's own plan. Postgres works through the cascades one after the other, meaning a delete fails because of row referencing each other. These three references (`fk_workout_exercise_exercise`, `fk_session_exercise_exercise`, `fk_session_log_plan`) are therefore `DEFERRABLE`. [`UserService.deleteUser`](../../backend/src/main/java/de/phil/fitness/backend/user/service/UserService.java) runs `SET CONSTRAINTS ALL DEFERRED`.
-
-Note for potential future tables: A new table holding user data needs `ON DELETE CASCADE` on its path to `userdata`, and `DEFERRABLE` on any reference to another owned row.
-
-### ~~Constraint: `exercise` name uniqueness~~ (done 23.09.2026, PR#77)
-
-`exercise.name` has no uniqueness constraint, so duplicate standard exercises can be created. The intent is not a global constraint but a per-owner one, so that each user can define their own variant of an existing name. A plain `UNIQUE (owner_user_id, name)` does not fully express that in Postgres: NULLs are treated as distinct there, so it would still allow duplicate standard exercises (`owner_user_id IS NULL`). Two constraints are needed instead — `UNIQUE (owner_user_id, name)` for custom exercises, plus a partial index `CREATE UNIQUE INDEX ... ON exercise (name) WHERE owner_user_id IS NULL` for the standard ones. More explicit than the Oracle equivalent, and the partial index states the rule directly instead of relying on NULL semantics.
-
-Implemented as:
-
-```sql
-CREATE UNIQUE INDEX uq_exercise_name ON exercise (owner_user_id, name)
-    NULLS NOT DISTINCT WHERE deleted_at IS NULL;
-```
-
-`WHERE deleted_at IS NULL` frees a name again after a soft delete. An index rather than a constraint, because Postgres has no partial `UNIQUE` constraint.
-
-### ~~Constraint: one active session per user~~ (done 23.09.2026, PR#77)
-
-`CREATE UNIQUE INDEX uq_session_log_active ON session_log (user_id) WHERE status = 'IN_PROGRESS';`
-
-A domain rule rather than an access path. The service checks it first to produce a usable error message, but the index is what closes the race between check and insert, for example on a double tap. _Currently_ nothing makes use of this.
-
-### Tradeoff: wide `exercise_set` table
-
-Strength columns (`reps`, `weight_kg`, `rpe`) and cardio columns (`duration_seconds`, `distance_meters`, `avg_heart_rate`) live in one table, all nullable, with no check enforcing a coherent combination. This is the pragmatic choice — table-per-type and EAV are both worse here — but nothing currently prevents a set with both `reps` and `distance_meters`. A guard would have to consider `exercise.exercise_type`, which is not reachable from a row-level check on `exercise_set`.
-
-### Tradeoff: `day_type` as a CHECK constraint
-
-`PUSH` / `PULL` / `LEGS` / `CUSTOM` is committed to one style of split; Upper/Lower, Full Body or Arms days all collapse into `CUSTOM`. Since every extension means a schema change, a free-text label or a lookup table (like `muscle_group`) would be more flexible.
-
-### Index candidates
-
-Primary keys and unique constraints already cover the hottest parent-to-child paths: `(plan_id, order_index)`, `(session_log_id, order_index)` and `(session_exercise_id, set_number)` each serve lookups by their leading column, and `muscle_group` is fully covered by its PK and unique name (21 rows — an index scan would not beat a full scan anyway).
-
-Remaining gaps:
-
-| Index                                                   | Reason                                                                                                                         |
-| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| `exercise_musclegroup(muscle_group_id)`                 | The composite PK only serves the `exercise_id` direction; "which exercises train this muscle group" scans the whole join table |
-| `session_log(user_id, started_at DESC)`                 | "my recent sessions" — filter and sort in one index                                                                            |
-| `session_exercise(exercise_id)`                         | The analytics path: per-exercise progression, 1RM, volume per muscle group                                                     |
-| `exercise(owner_user_id)`                               | "my custom exercises", plus the foreign key reason below                                                                       |
-| `workout_plan(user_id)`                                 | "my plans"                                                                                                                     |
-| `session_log(plan_id)`, `workout_exercise(exercise_id)` | Foreign key reason only                                                                                                        |
-
-The Oracle-specific reason for indexing every foreign key column no longer applies: Oracle takes a lock on the _entire_ child table when a parent row is deleted and the foreign key column is unindexed, Postgres only takes row-level locks. What remains is the ordinary performance reason — Postgres still has to scan the whole child table to verify that no referencing rows exist on a parent delete or PK update, and the query paths in the table above are the actual justification.
-
-Note that with the current mock data volume none of these will produce a measurable difference; the value right now is documenting the intended access paths.
-
-**Still candidates after the schema freeze on 23.09.2026, deliberately not created.** They serve queries that do not exist yet, and an index picked before its query is a guess. Each belongs in the migration that ships the slice querying it. Adding one later is cheap: `CREATE INDEX CONCURRENTLY`, in a migration marked `-- executeInTransaction=false`.
-
-`exercise(owner_user_id)` drops off the list entirely. `uq_exercise_name` leads with that column and already serves both access paths.
-
-### Not planned
-
-Indexes on `deleted_at` or on low-cardinality status columns (`status`, `session_type`, `body_region`) — write cost without meaningful benefit.
+Not planned: indexes on `deleted_at` or low cardinality columns (`status`, `set_type`, `body_region`).
