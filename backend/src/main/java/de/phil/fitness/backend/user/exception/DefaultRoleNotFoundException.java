@@ -13,6 +13,6 @@ public class DefaultRoleNotFoundException extends ApiException {
      * @param msg Message containing contextual information
      */
     public DefaultRoleNotFoundException(String msg) {
-        super(HttpStatus.INTERNAL_SERVER_ERROR, "DEFAULT_ROLE_NOT_FOUND", "Default role not found during user creation!", msg);
+        super(HttpStatus.INTERNAL_SERVER_ERROR, "DEFAULT_ROLE_NOT_FOUND", "An unexpected error occurred", msg);
     }
 }
