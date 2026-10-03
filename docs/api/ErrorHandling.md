@@ -134,5 +134,3 @@ The first row of failures arrives as an `InvalidFormatException` wrapped in
   references the user fails on the foreign key with a 409 `DATA_CONFLICT`. Closes with the token lifecycle
   (revocation), or with a user lookup in `CurrentUser`.
 - After a password change, tokens issued before it stay valid until they expire -> adress with the token lifecycle improvement
-- BFF route handlers under `frontend/src/app/api/` still repeat the same forwarding block (body parsing,
-  `BACKEND_UNREACHABLE`, passing the error on); a shared helper would remove that.

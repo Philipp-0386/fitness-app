@@ -1,5 +1,6 @@
-import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
+
+import { clearAuthCookies } from '@/shared/auth/session';
 
 /**
  * Clears the auth cookies of the current browser session.
@@ -9,10 +10,7 @@ import { NextResponse } from 'next/server';
  * Once the endpoint exists, it has to be called from here as well.
  */
 export async function POST() {
-  const cookieStore = await cookies();
-
-  cookieStore.delete('access_token');
-  cookieStore.delete('refresh_token');
+  await clearAuthCookies();
 
   return NextResponse.json({ success: true }, { status: 200 });
 }

@@ -1,7 +1,7 @@
 /**
- * Every code an ApiError can carry.
- * Nothing compares against those, the status handles them. This is just for typesafety
- * non-string.
+ * Every code an ApiError can carry, so a comparison against a misspelled code fails to compile.
+ * Codes missing here (e.g. METHOD_NOT_ALLOWED from Spring's own exceptions) can still arrive at
+ * runtime. Nothing compares against those, the status handles them.
  */
 export type ErrorCode =
   // Spring backend
@@ -22,10 +22,9 @@ export type ErrorCode =
   | 'INTERNAL_ERROR'
   // Next route handlers and proxy
   | 'BACKEND_UNREACHABLE'
-  | 'INTERNAL_SERVER_ERROR'
   | 'INVALID_BACKEND_RESPONSE'
   | 'INVALID_ORIGIN'
-  // Fallbacks of toApiError when the body carries no code
+  // Fallbacks when a body carries no code
   | 'UNKNOWN_ERROR'
   | 'USER_FETCH_FAILED'
   | 'EXERCISES_FETCH_FAILED'
