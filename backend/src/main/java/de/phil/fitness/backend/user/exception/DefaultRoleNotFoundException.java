@@ -1,14 +1,18 @@
 package de.phil.fitness.backend.user.exception;
 
+import org.springframework.http.HttpStatus;
+
+import de.phil.fitness.backend.common.ApiException;
+
 /**
  * Thrown when user creation process fails due to the default role not being accessible.
  */
-public class DefaultRoleNotFoundException extends RuntimeException {
+public class DefaultRoleNotFoundException extends ApiException {
     /**
      *
      * @param msg Message containing contextual information
      */
     public DefaultRoleNotFoundException(String msg) {
-        super(msg);
+        super(HttpStatus.INTERNAL_SERVER_ERROR, "DEFAULT_ROLE_NOT_FOUND", "An unexpected error occurred", msg);
     }
 }

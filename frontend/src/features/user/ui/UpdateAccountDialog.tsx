@@ -5,6 +5,7 @@ import { updateMe } from '../client/update-user.client';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { ApiError } from '@/shared/api/errors/api-error';
+import { fallbackErrorMessage } from '@/shared/api/errors/fallback-error-message';
 
 type Props = {
   username: string;
@@ -62,11 +63,7 @@ export default function UpdateAccountDialog({ username, email }: Props) {
       toast.success(`Account updated: ${user.username}`);
       router.refresh();
     } catch (err) {
-      if (err instanceof ApiError) {
-        setError(err.message);
-        return;
-      }
-      setError('An unexpected error occurred. Please try again later.');
+      setError(evaluateError(err));
     } finally {
       setIsSaving(false);
     }
@@ -125,4 +122,18 @@ export default function UpdateAccountDialog({ username, email }: Props) {
       </dialog>
     </>
   );
+}
+
+function evaluateError(error: unknown): string {
+  if (error instanceof ApiError) {
+    switch (error.code) {
+      case 'INVALID_PASSWORD':
+        return 'The password is incorrect.';
+      case 'USERNAME_ALREADY_TAKEN':
+        return 'This username is already taken. Please choose another one.';
+      case 'EMAIL_ALREADY_EXISTS':
+        return 'An account with this email already exists. Please use another one.';
+    }
+  }
+  return fallbackErrorMessage(error);
 }

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { login } from '../client/login.client';
 import { ApiError } from '@/shared/api/errors/api-error';
+import { fallbackErrorMessage } from '@/shared/api/errors/fallback-error-message';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff } from 'lucide-react';
 
@@ -46,21 +47,16 @@ export default function LoginForm() {
     setIsSubmitting(true);
     try {
       await login({ username: form.username, password: form.password });
-      // Replace instead of push: the login form must not stay in the history stack.
+      //Replace instead of push: the login form must not stay in the history stack.
       router.replace('/dashboard');
       router.refresh();
     } catch (error) {
-      if (error instanceof ApiError) {
-        if (error.code === 'INVALID_CREDENTIALS') {
-          setGeneralError('Username or password is incorrect.');
-        } else if (error.code === 'BACKEND_UNREACHABLE') {
-          setGeneralError('The server is currently unreachable. Please try again later.');
-        } else {
-          setGeneralError(error.message || 'An unknown error occurred.');
-        }
+      //401 means wrong credentials, not an expired session
+      if (error instanceof ApiError && error.code === 'INVALID_CREDENTIALS') {
+        setGeneralError('Username or password is incorrect.');
         return;
       }
-      setGeneralError('An unexpected error occurred. Please try again later.');
+      setGeneralError(fallbackErrorMessage(error));
     } finally {
       setIsSubmitting(false);
     }
@@ -104,9 +100,7 @@ export default function LoginForm() {
             <p className={styles.fieldError}>{fieldErrors.password}</p>
           )}
         </div>
-        <div className={styles.errorBox}>
-          {generalError && <div>{generalError}</div>}
-        </div>
+        <div className={styles.errorBox}>{generalError && <div>{generalError}</div>}</div>
         <div>
           <button type="submit" disabled={isSubmitting}>
             {isSubmitting ? 'Logging in...' : 'Log In'}

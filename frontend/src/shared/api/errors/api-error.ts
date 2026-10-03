@@ -1,13 +1,15 @@
+import { ErrorCode } from './error-code';
+
 export class ApiError extends Error {
   status: number;
-  code: string;
+  code: ErrorCode;
   path: string | null;
   fieldErrors: Record<string, string> | null;
   timestamp: string | null;
 
   constructor(params: {
     status: number;
-    code: string;
+    code: ErrorCode;
     message: string;
     path?: string | null;
     fieldErrors?: Record<string, string> | null;

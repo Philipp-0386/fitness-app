@@ -1,7 +1,7 @@
 import 'server-only';
 
 import backendFetch from '@/shared/api/backend';
-import { ApiError } from '@/shared/api/errors/api-error';
+import { toApiError } from '@/shared/api/errors/to-api-error';
 import { User } from '../types/api.types';
 
 /**
@@ -11,17 +11,10 @@ import { User } from '../types/api.types';
  */
 export async function fetchMe(): Promise<User> {
   const response = await backendFetch('/backend/me');
-  const body = await response.json().catch(() => null);
 
   if (!response.ok) {
-    throw new ApiError({
-      status: response.status,
-      code: body?.code || 'USER_FETCH_FAILED',
-      message: body?.message || 'An unknown error occurred',
-      path: body?.path || null,
-      timestamp: body?.timestamp || null,
-    });
+    throw await toApiError(response, 'USER_FETCH_FAILED');
   }
 
-  return body;
+  return response.json();
 }
