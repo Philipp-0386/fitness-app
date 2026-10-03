@@ -46,7 +46,7 @@ comparison against a misspelled code fails to compile. A new code in the backend
 | `USERNAME_ALREADY_TAKEN` | 409    | sign-up; `PUT /backend/me` when another user has the username                                                                                               |
 | `DEFAULT_ROLE_NOT_FOUND` | 500    | sign-up, missing seed data; the client only gets a generic message                                                                                          |
 | `SIGNUP_DISABLED`        | 403    | `SignUpDisabledException` from `SignUpService` when `app.signup.enabled` is false; checked before the duplicate checks                                      |
-| `UNAUTHENTICATED`        | 401    | security filter chain, no valid access token; `UserNotFoundException` on `/backend/me` when the token's user was deleted                                    |
+| `UNAUTHENTICATED`        | 401    | security filter chain, no valid access token; `UserNotFoundException` on `/backend/me` when the token's user was deleted; `InvalidRefreshTokenException` on `/backend/auth/refresh` |
 | `ACCESS_DENIED`          | 403    | ownership checks, and the filter chain                                                                                                                      |
 | `EXERCISE_NOT_FOUND`     | 404    | `ExerciseNotFoundException` from `ExerciseService`: missing, soft deleted or owned by someone else; deliberately not 403, which would confirm the id exists |
 | `INVALID_PASSWORD`       | 403    | `InvalidPasswordException` on `DELETE /backend/me`, `PUT /backend/me` and `PUT /backend/me/password`, wrong password; not 401, the session is still valid   |

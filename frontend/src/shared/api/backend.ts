@@ -2,6 +2,7 @@ import 'server-only';
 
 import { NetworkError } from '@/shared/api/errors/network-error';
 import { cookies } from 'next/headers';
+import { ACCESS_TOKEN_COOKIE } from '../auth/cookies';
 
 const BASE_URL = process.env.SPRING_API_BASE_URL;
 
@@ -15,7 +16,7 @@ export default async function backendFetch(
   init: RequestInit = {},
 ): Promise<Response> {
   const cookieStore = await cookies();
-  const accessToken = cookieStore.get('access_token')?.value;
+  const accessToken = cookieStore.get(ACCESS_TOKEN_COOKIE)?.value;
 
   try {
     return await fetch(`${BASE_URL}${path}`, {

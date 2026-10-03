@@ -1,39 +1,15 @@
 import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
 
-const SAFE = ['GET', 'HEAD', 'OPTIONS'];
+import { refreshSession } from '@/shared/auth/refresh-session';
+import { checkOrigin } from '@/shared/security/origin-check';
 
-export function proxy(request: NextRequest) {
-  if (SAFE.includes(request.method)) {
-    return;
-  }
+export async function proxy(request: NextRequest) {
+  const rejection = checkOrigin(request);
+  if (rejection) return rejection;
 
-  if (!isSameOrigin(request)) {
-    return NextResponse.json(
-      {
-        code: 'INVALID_ORIGIN',
-        message: 'Request origin does not match the host',
-        path: request.nextUrl.pathname,
-      },
-      { status: 403 },
-    );
-  }
-}
-
-function isSameOrigin(request: NextRequest): boolean {
-  const origin = request.headers.get('origin');
-  const host = request.headers.get('host');
-  if (!origin || !host) {
-    return false;
-  }
-
-  try {
-    return new URL(origin).host === host;
-  } catch {
-    return false;
-  }
+  return refreshSession(request);
 }
 
 export const config = {
-  matcher: '/api/:path*',
+  matcher: '/((?!_next/static|_next/image|favicon.ico).*)',
 };

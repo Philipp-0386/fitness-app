@@ -5,7 +5,7 @@ starting point in another application**. It is deliberately small: issues token 
 verify the access token on protected endpoints, answer failures with a consistent error body.
 That is enough to make the basic structure usable, without the full lifecycle.
 
-For everything this baseline does *not* do (refresh, rotation, revocation, logout),
+For everything this baseline does *not* do (rotation, revocation, logout),
 see [TokenLifecycle.md](./TokenLifecycle.md). For the error response format, see
 [ErrorHandling.md](../api/ErrorHandling.md).
 
@@ -37,6 +37,7 @@ The security of this rests entirely on the signing secret.
 | `CurrentUser` | Reads the user id (`sub`) of the authenticated request from the security context |
 | `LoginService` | Verifies credentials against the DB, triggers token issuance |
 | `LoginController` | `POST /backend/auth/login` |
+| `TokenRefreshService` / `TokenRefreshController` | `POST /backend/auth/refresh`: verifies the refresh token (`JwtService.verifyRefreshToken`) and issues a new access token |
 
 In this repo: [JwtProperties.java](../../backend/src/main/java/de/phil/fitness/backend/auth/JwtProperties.java),
 [JwtService.java](../../backend/src/main/java/de/phil/fitness/backend/auth/JwtService.java),
@@ -178,7 +179,8 @@ the security context.
 
 **Client side (this repo):** the browser never calls Spring directly. The Next.js BFF route
 `/api/login` stores both tokens as HttpOnly cookies and forwards the access token as a
-bearer header on server-side backend calls.
+bearer header on server-side backend calls. The Next.js proxy renews the access token through
+`/backend/auth/refresh` before it expires (see [TokenLifecycle.md](./TokenLifecycle.md)).
 
 ---
 
@@ -226,7 +228,6 @@ for 401/403 from the filter chain.
 
 | Missing | Consequence to be aware of |
 |---------|---------------------------|
-| No refresh endpoint | The refresh token is issued but unusable — after 15 min the user must log in again |
 | No persistence | No revocation possible; a token is valid until it expires |
 | No logout | Sessions cannot be terminated server-side; the frontend only deletes its cookies |
 | No roles in the token | Only `sub` and `type` are carried — `hasRole(...)` style authorization is not possible; `role_id` never reaches the token |

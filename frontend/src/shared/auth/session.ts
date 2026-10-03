@@ -2,6 +2,8 @@ import 'server-only';
 
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { ACCESS_TOKEN_COOKIE, REFRESH_TOKEN_COOKIE } from './cookies';
+import { readSubjectClaim } from './token';
 
 export type Session = {
   userId: string | null;
@@ -15,7 +17,7 @@ export type Session = {
  */
 export async function getSession(): Promise<Session | null> {
   const cookieStore = await cookies();
-  const accessToken = cookieStore.get('access_token')?.value;
+  const accessToken = cookieStore.get(ACCESS_TOKEN_COOKIE)?.value;
 
   if (!accessToken) return null;
 
@@ -31,8 +33,8 @@ export async function isAuthenticated(): Promise<boolean> {
  */
 export async function clearAuthCookies(): Promise<void> {
   const cookieStore = await cookies();
-  cookieStore.delete('access_token');
-  cookieStore.delete('refresh_token');
+  cookieStore.delete(ACCESS_TOKEN_COOKIE);
+  cookieStore.delete(REFRESH_TOKEN_COOKIE);
 }
 
 /**
@@ -59,22 +61,5 @@ export async function requireSession(): Promise<Session> {
 export async function redirectIfAuthenticated(): Promise<void> {
   if (await isAuthenticated()) {
     redirect('/dashboard');
-  }
-}
-
-function readSubjectClaim(token: string): string | null {
-  const payload = token.split('.')[1];
-  if (!payload) return null;
-
-  try {
-    const json = Buffer.from(payload, 'base64url').toString('utf8');
-    const claims: unknown = JSON.parse(json);
-    if (typeof claims === 'object' && claims !== null && 'sub' in claims) {
-      const sub = (claims as { sub: unknown }).sub;
-      return typeof sub === 'string' ? sub : null;
-    }
-    return null;
-  } catch {
-    return null;
   }
 }

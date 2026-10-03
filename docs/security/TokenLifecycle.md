@@ -24,14 +24,14 @@ Validation is stateless via `oauth2ResourceServer.jwt(...)`
 Config: `app.jwt` in [application.yaml](../../backend/src/main/resources/application.yaml)
 (`access-token-expiration-minutes: 15`, `refresh-token-expiration-days: 7`).
 
-**Core problem:** tokens can only be issued _once, at login_. There is no refresh endpoint,
-no persistence, and therefore no way to renew or revoke tokens.
+**Core problem:** the refresh token can be redeemed for a new access token, but nothing is
+persisted, so tokens cannot be revoked and are valid until they expire.
 
 ### Known gaps
 
 | #   | Gap                                    | Impact                                                                   | Status                   |
 | --- | -------------------------------------- | ------------------------------------------------------------------------ | ------------------------ |
-| 1   | No `/backend/auth/refresh` endpoint    | Refresh token is useless; re-login required after 15 min                 | open                     |
+| 1   | No `/backend/auth/refresh` endpoint    | Refresh token is useless; re-login required after 15 min                 | **closed**               |
 | 2   | Token type (`type` claim) not enforced | Refresh token is accepted as a valid access token on protected endpoints | **closed**               |
 | 3   | No persistence of refresh tokens       | No revocation possible; JWTs are valid until expiry                      | open                     |
 | 4   | No token rotation                      | No theft/reuse detection                                                 | open                     |
@@ -49,6 +49,39 @@ cannot drift apart.
 Before the validator existed, the 7-day refresh token returned `200` on any protected endpoint.
 The probe used to run against `/backend/smoketest/users`, which no longer exists. It now runs against `/backend/exercises`. Both cases are kept as probes in
 [http/auth.http](../../http/auth.http) and [http/exercises.http](../../http/exercises.http).
+
+### Gap 1: how it was closed (stateless)
+
+`POST /backend/auth/refresh` takes `{ refreshToken }` and returns `{ accessToken }`
+([TokenRefreshService](../../backend/src/main/java/de/phil/fitness/backend/tokenRefresh/service/TokenRefreshService.java)).
+`JwtService.verifyRefreshToken` verifies signature, expiry and `type=refresh` with jjwt. The service
+then checks that the user still exists. Every failure answers 401 `UNAUTHENTICATED`.
+
+The refresh token is deliberately **not** renewed. Without persistence, a new refresh token on
+every call would make a stolen token usable forever. The session therefore ends 7 days after login.
+Renewing it (rotation) waits for step 3 and 4.
+
+#### Frontend: refresh in the proxy
+
+The Next.js [proxy](../../frontend/src/proxy.ts) (formerly middleware) runs before every page and
+`/api` route. When a refresh token cookie is present and the access token cookie is missing or
+expires within 30 seconds, it calls the endpoint through
+[refresh.ts](../../frontend/src/shared/auth/refresh.ts). The result has three outcomes:
+
+| Outcome       | Cause                                | Proxy action                                      |
+| ------------- | ------------------------------------ | ------------------------------------------------- |
+| `ok`          | 200 with an access token             | set the new access token cookie, continue         |
+| `invalid`     | 4xx from the backend                 | delete both cookies, `requireSession()` redirects |
+| `unavailable` | network error, 5xx or malformed body | leave the cookies untouched, continue             |
+
+`unavailable` is kept apart from `invalid` so that a backend restart does not log anyone out.
+
+The refresh happens in the proxy because Server Components cannot set cookies. The new token is
+written twice: on the response (`Set-Cookie`, for later requests) and on the forwarded request, so
+the page rendering this very request already reads the new token.
+
+Cookie names and options live in [cookies.ts](../../frontend/src/shared/auth/cookies.ts), shared by
+the login route and the proxy.
 
 **Consequence for step 4:** the refresh endpoint cannot validate its token through the resource
 server, because that path now rejects `type=refresh` by design. It has to verify the token itself
@@ -133,9 +166,9 @@ New JPA entity `RefreshToken` + `RefreshTokenRepository`.
 
 `POST /backend/auth/logout`: marks the provided refresh token (or all of the user's tokens) as revoked.
 
-Because the refresh token now travels as an ambient cookie (see decisions below), these cookie-authenticated
-`POST` endpoints (refresh/logout) need **CSRF protection** — `csrf.disable()` is no longer sufficient here.
-Options: enable CSRF selectively for these endpoints only, or `SameSite=Strict` + double-submit token.
+CSRF does not concern Spring here since the browser never reaches Spring (Caddy only proxies the
+frontend), and the Next.js server sends the refresh token in the request body. The cookie-carrying endpoints are the Next.js `/api` routes, which the proxy
+protects with a same-origin check on every non-safe method.
 
 Logout offers two variants: revoke only the current refresh token (this device) or all of the user's tokens (all devices).
 
@@ -153,9 +186,9 @@ usually unnecessary. If required: add a `jti` claim in `JwtService` + a denylist
 
 ## Decisions Made
 
-| Topic                | Decision                                                                                        | Consequence for the implementation                                                                                                                                                               |
-| -------------------- | ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Token transport**  | Refresh token as **HttpOnly+Secure cookie** (access token in client memory)                     | Set the cookie via the Next.js BFF route; **CSRF must be handled**, since `csrf.disable()` is currently set (see Step 5). Use `SameSite=Strict`, restrict `Path` to the refresh/logout endpoint. |
-| **Cleanup**          | **Scheduled job**: delete expired rows, keep revoked ones for a retention window (e.g. 30 days) | Own Step 7 (`@Scheduled` cleanup). Reuse detection stays possible within the audit window.                                                                                                       |
-| **Multi-device**     | **Multiple active refresh tokens per user** (per device/session)                                | `refresh_token` stays 1:n to `userdata` (table already supports this). Logout distinguishes "this device" vs. "all devices".                                                                     |
-| **Signature scheme** | **Keep HMAC (HS512)**                                                                           | No change. Switch to RSA/EC only once the auth and resource servers are separated.                                                                                                               |
+| Topic                | Decision                                                                                        | Consequence for the implementation                                                                                                                                                                                              |
+| -------------------- | ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Token transport**  | **Both tokens as HttpOnly cookies**, set by the Next.js BFF                                     | Browser JavaScript never sees a token. `SameSite=Lax` and `Path=/` on both, because the proxy needs the refresh token on every request. CSRF is handled by the proxy's same-origin check on `/api`, not by Spring (see Step 5). |
+| **Cleanup**          | **Scheduled job**: delete expired rows, keep revoked ones for a retention window (e.g. 30 days) | Own Step 7 (`@Scheduled` cleanup). Reuse detection stays possible within the audit window.                                                                                                                                      |
+| **Multi-device**     | **Multiple active refresh tokens per user** (per device/session)                                | `refresh_token` stays 1:n to `userdata` (table already supports this). Logout distinguishes "this device" vs. "all devices".                                                                                                    |
+| **Signature scheme** | **Keep HMAC (HS512)**                                                                           | No change. Switch to RSA/EC only once the auth and resource servers are separated.                                                                                                                                              |
