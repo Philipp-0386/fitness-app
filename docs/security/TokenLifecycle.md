@@ -113,7 +113,7 @@ Only **refresh tokens** are persisted and therefore revocable.
 
 ### Step 1 — DB: `refresh_token` table
 
-_Extends [DatabaseModelling.md](../database/DatabaseModelling.md). Since 23.09.2026 the schema belongs to Flyway, so this table arrives as a **new** migration (`V3__refresh_token.sql`) — [V1\_\_schema.sql](../../backend/src/main/resources/db/migration/V1__schema.sql) is frozen and must not be edited._
+_Extends [DatabaseModelling.md](../database/DatabaseModelling.md). The schema belongs to Flyway. Until the public launch the table goes directly into [V1\_\_schema.sql](../../backend/src/main/resources/db/migration/V1__schema.sql) (with a database reset), afterwards it would be a new migration._
 
 The refresh token is stored **hashed** (never in plaintext) — on a DB leak the token is worthless.
 

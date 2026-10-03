@@ -29,6 +29,15 @@ export async function isAuthenticated(): Promise<boolean> {
 }
 
 /**
+ * Deletes both auth cookies. Only works in route handlers and server actions.
+ */
+export async function clearAuthCookies(): Promise<void> {
+  const cookieStore = await cookies();
+  cookieStore.delete('access_token');
+  cookieStore.delete('refresh_token');
+}
+
+/**
  * The gate for a protected page: returns the session, or redirects to the login page.
  *
  * Server side only. It never returns null, so a page can use the session right away

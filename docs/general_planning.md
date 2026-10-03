@@ -12,7 +12,7 @@ The current goal is to finish these tasks:
 
 - Add refresh endpoint (auth)
   - fix frontend "hanging token bug"
-- Add `session` tracking feature
+- Add `workout` tracking feature
   - requires completion of `exercise` slice to higher degree
   - accidental browser close -> session gone?
 - Actually develop a frontend-concept
@@ -89,7 +89,7 @@ runtime, so the dependency graph was never the problem. The build now keeps the 
 
 The global catalog should never be empty, meaning, if a user calls for all available exercises to have selection from, the returned list can never be empty. I should handle this case within the backend.
 
-### Make deployment relevant implementations
+### Make deployment relevant implementations (done)
 
 Before i can comfortably deploy the application permanently publically available, there are changes to be made. These include implementations such as
 
@@ -114,6 +114,14 @@ Realistically this would probably require rate-limiting to be effective and limi
 
 I like this idea, but it may be a project in itself, and I might just focus on domain-driven implemenations.
 
+### Rework datamodel (adressed 01/02.10.26 mostly)
+
+Ultimately issue #122 mentions everything relevant, but the idea is, to rework the database model before using the current state as a foundation, and then having to make costly changes in the future.
+
+### UUID for `workout_set`s (idea)
+
+The idea is, that due to bad network logging sets might come in multiple times. Generating a UUID in the frontend that i send and save with every request could be a way to negate duplicate tracking of the same instance of done set.
+
 ## Key Decisions
 
 ### JWT > Sessions
@@ -133,7 +141,15 @@ Furthermore, this was partially done out of pure convenience after i have worked
 
 ### Database table structure
 
-See [DB Schema](./database/DatabaseModelling.md##session_log-session_exercise-and-exercise_set).
+See [DB Schema](./database/DatabaseModelling.md#model).
+
+### Data model rework (01.10.2026, Issue #122)
+
+Before the routine and workout slices are built, V1 was reworked once more, while there is still no data to keep. The tables are now named `routine` / `routine_exercise` (the plan) and `workout` / `workout_exercise` / `workout_set` (what was done). Exercises got a `tracking_type` that decides which values a set holds, global exercises a stable `slug`, and sets a `set_type` for warm-ups. Fields without behavior (`day_type`, `session_type`, `avg_heart_rate`) are gone.
+
+The app tracks training, it does not coach it live. Rest times are therefore not tracked at all, and the workout keeps only the states that matter: a workout is running or finished, an exercise counts as done once it has sets.
+
+Details and the logging conventions are in [DatabaseModelling.md](./database/DatabaseModelling.md).
 
 ### Schema freeze and Flyway (23.09.2026)
 

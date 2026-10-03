@@ -1,5 +1,3 @@
-import backendFetch from '@/shared/api/backend';
-import { NetworkError } from '@/shared/api/errors/network-error';
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 import {
@@ -9,94 +7,22 @@ import {
   refreshTokenCookieOptions,
 } from '@/shared/auth/cookies';
 
+import { errorResponse, forwardToBackend } from '@/shared/api/forward-to-backend';
+
 export async function POST(request: NextRequest) {
-  let requestBody: unknown;
-  try {
-    requestBody = await request.json();
-  } catch {
-    return NextResponse.json(
-      {
-        code: 'INVALID_JSON',
-        message: 'Request body contains invalid JSON',
-      },
-      { status: 400 },
-    );
-  }
+  const result = await forwardToBackend(request, '/backend/auth/login', 'POST');
+  if ('error' in result) return result.error;
 
-  let response: Response;
-  try {
-    response = await backendFetch('/backend/auth/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(requestBody),
-    });
-  } catch (error) {
-    if (error instanceof NetworkError) {
-      return NextResponse.json(
-        {
-          code: 'BACKEND_UNREACHABLE',
-          message: 'Spring Boot backend unreachable',
-        },
-        { status: 503 },
-      );
-    }
-    return NextResponse.json(
-      {
-        code: 'INTERNAL_SERVER_ERROR',
-        message: 'An internal server error occurred',
-      },
-      { status: 500 },
-    );
-  }
-
-  // Mirrors the backend ErrorResponse record.
-  type BackendErrorResponse = {
-    code: string;
-    message: string;
-    path: string | null;
-    fieldErrors: Record<string, string> | null;
-    timestamp: string | null;
-  };
-
-  if (!response.ok) {
-    let error: BackendErrorResponse | null = null;
-    try {
-      error = await response.json();
-    } catch {}
-
-    return NextResponse.json(
-      {
-        code: error?.code || 'UNKNOWN_BACKEND_ERROR',
-        message: error?.message || 'An unknown error occurred in the backend',
-        path: error?.path || null,
-        fieldErrors: error?.fieldErrors || null,
-      },
-      { status: response.status },
-    );
-  }
-
-  let tokens: { accessToken?: string; refreshToken?: string } | null = null;
-  try {
-    tokens = await response.json();
-  } catch {
-    return NextResponse.json(
-      {
-        code: 'INVALID_BACKEND_RESPONSE',
-        message: 'Backend returned malformed login response',
-      },
-      { status: 502 },
-    );
-  }
+  const path = request.nextUrl.pathname;
+  const tokens: { accessToken?: string; refreshToken?: string } | null =
+    await result.response.json().catch(() => null);
 
   if (!tokens?.accessToken || !tokens?.refreshToken) {
-    return NextResponse.json(
-      {
-        code: 'INVALID_BACKEND_RESPONSE',
-        message: 'Backend response missing tokens',
-      },
-      { status: 502 },
+    return errorResponse(
+      502,
+      'INVALID_BACKEND_RESPONSE',
+      'Backend response missing tokens',
+      path,
     );
   }
 

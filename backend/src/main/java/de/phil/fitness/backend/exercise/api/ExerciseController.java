@@ -77,7 +77,7 @@ public class ExerciseController {
             + "requesting user. The global catalog cannot be extended through this endpoint.")
     @ApiResponse(responseCode = "201", description = "The created exercise")
     @ApiResponse(responseCode = "400", description = "VALIDATION_FAILED: a field is missing, too long or, for "
-            + "exerciseType, not one of STRENGTH, CARDIO, MOBILITY",
+            + "exerciseType or trackingType, not one of their enum values",
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     @ApiResponse(responseCode = "401", description = "UNAUTHENTICATED: missing, invalid or expired access token, or a refresh token",
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))

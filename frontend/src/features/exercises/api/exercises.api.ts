@@ -1,7 +1,8 @@
 import 'server-only';
 
 import backendFetch from '@/shared/api/backend';
-import { ApiError } from '@/shared/api/errors/api-error';
+import { ErrorCode } from '@/shared/api/errors/error-code';
+import { toApiError } from '@/shared/api/errors/to-api-error';
 import { Exercise } from '../types/api.types';
 
 /**
@@ -26,19 +27,12 @@ export async function fetchExerciseById(id: string): Promise<Exercise> {
   return request(`/backend/exercises/${encodeURIComponent(id)}`, 'EXERCISE_FETCH_FAILED');
 }
 
-async function request<T>(path: string, fallbackCode: string): Promise<T> {
+async function request<T>(path: string, fallbackCode: ErrorCode): Promise<T> {
   const response = await backendFetch(path);
-  const body = await response.json().catch(() => null);
 
   if (!response.ok) {
-    throw new ApiError({
-      status: response.status,
-      code: body?.code || fallbackCode,
-      message: body?.message || 'An unknown error occurred',
-      path: body?.path || null,
-      timestamp: body?.timestamp || null,
-    });
+    throw await toApiError(response, fallbackCode);
   }
 
-  return body;
+  return response.json();
 }

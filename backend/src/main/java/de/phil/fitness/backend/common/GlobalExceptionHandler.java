@@ -5,25 +5,21 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import de.phil.fitness.backend.auth.exception.InvalidRefreshTokenException;
+import org.hibernate.exception.ConstraintViolationException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
-import de.phil.fitness.backend.auth.exception.AccessDeniedException;
-import de.phil.fitness.backend.exercise.exception.ExerciseNotFoundException;
-import de.phil.fitness.backend.signup.exception.SignUpDisabledException;
-import de.phil.fitness.backend.user.exception.DefaultRoleNotFoundException;
-import de.phil.fitness.backend.user.exception.EmailAlreadyExistsException;
-import de.phil.fitness.backend.user.exception.InvalidPasswordException;
-import de.phil.fitness.backend.user.exception.UserNotFoundException;
-import de.phil.fitness.backend.user.exception.UsernameAlreadyTakenException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import tools.jackson.databind.exc.InvalidFormatException;
@@ -34,52 +30,24 @@ import tools.jackson.databind.exc.InvalidFormatException;
 @Slf4j
 public class GlobalExceptionHandler {
     /**
-     * Handles an email that is already registered to another user, on sign-up or on an account update.
-     * @param ex Accepts the exception object
-     * @return  Returns a {@link ResponseEntity} containing key information regarding the exception
-     */
-    @ExceptionHandler(EmailAlreadyExistsException.class)
-    public ResponseEntity<ErrorResponse> handleEmailAlreadyExists(EmailAlreadyExistsException ex, HttpServletRequest req) {
-        log.warn("Email already registered. {}", ex.getMessage());
-        return ResponseEntity
-                .status(HttpStatus.CONFLICT)
-                .body(new ErrorResponse(
-                        "EMAIL_ALREADY_EXISTS",
-                        ex.getMessage(),
-                        req.getRequestURI()
-                ));
-    }
-
-    /**
-     * Handles the case of missing default role during user creation process.
-     * @param ex Accepts the exception object
-     * @return  Returns a {@link ResponseEntity} containing key information regarding the exception
-     */
-    @ExceptionHandler(DefaultRoleNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleDefaultRoleNotFound(DefaultRoleNotFoundException ex, HttpServletRequest req) {
-        log.error("User creation rejected. Default role entry unavailable. {}", ex.getMessage());
-        return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorResponse(
-                        "DEFAULT_ROLE_NOT_FOUND",
-                        ex.getMessage(),
-                        req.getRequestURI()
-                ));
-    }
-
-    /**
-     * Handles the case of user's username already being in use.
+     * Handles every exception of this application. Status, code and client message come from the exception itself.
+     *
+     * <p>Server errors are logged as errors, everything else as a warning.
      * @param ex The exception object thrown
      * @return Returns a {@link ResponseEntity} containing key information regarding the exception
      */
-    @ExceptionHandler(UsernameAlreadyTakenException.class)
-    public ResponseEntity<ErrorResponse> handleUsernameTaken(UsernameAlreadyTakenException ex, HttpServletRequest req) {
-        log.warn("Username already taken. {}", ex.getMessage());
+    @ExceptionHandler(ApiException.class)
+    public ResponseEntity<ErrorResponse> handleApiException(ApiException ex, HttpServletRequest req) {
+        if (ex.getStatus().is5xxServerError()) {
+            log.error("{} path={} {}", ex.getCode(), req.getRequestURI(), ex.getMessage());
+        } else {
+            log.warn("{} path={} {}", ex.getCode(), req.getRequestURI(), ex.getMessage());
+        }
         return ResponseEntity
-                .status(HttpStatus.CONFLICT)
+                .status(ex.getStatus())
                 .body(new ErrorResponse(
-                        "USERNAME_ALREADY_TAKEN",
-                        ex.getMessage(),
+                        ex.getCode(),
+                        ex.getClientMessage(),
                         req.getRequestURI()
                 ));
     }
@@ -97,36 +65,15 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Handles the password confirming an account change or deletion not matching the stored one.
+     * Handles Spring Security authentication failures raised inside a controller or service.
      *
-     * Deliberately not 401: the caller is authenticated, only the confirmation failed, so the
-     * client must not treat the session as expired.
+     * Filter chain failures would usually not reach this, and turn into 500s.
      * @param ex The exception object thrown
      * @return Returns a {@link ResponseEntity} containing key information regarding the exception
      */
-    @ExceptionHandler(InvalidPasswordException.class)
-    public ResponseEntity<ErrorResponse> handleInvalidPassword(InvalidPasswordException ex, HttpServletRequest req) {
-        log.warn("Password confirmation failed. path={}", req.getRequestURI());
-        return ResponseEntity
-                .status(HttpStatus.FORBIDDEN)
-                .body(new ErrorResponse(
-                        "INVALID_PASSWORD",
-                        "The password is incorrect",
-                        req.getRequestURI()
-                ));
-    }
-
-    /**
-     * Handles a valid access token whose user no longer exists, e.g. after the account was deleted
-     * while the token had not expired yet.
-     *
-     * Answers like a missing token, because the session is no longer usable.
-     * @param ex The exception object thrown
-     * @return Returns a {@link ResponseEntity} containing key information regarding the exception
-     */
-    @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleUserNotFound(UserNotFoundException ex, HttpServletRequest req) {
-        log.warn("Token subject has no user. path={} {}", req.getRequestURI(), ex.getMessage());
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ErrorResponse> handleAuthentication(AuthenticationException ex, HttpServletRequest req) {
+        log.warn("Rejected unauthenticated request. path={} {}", req.getRequestURI(), ex.getMessage());
         return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
                 .body(new ErrorResponse(
@@ -137,12 +84,15 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Handles the case of an authenticated user requesting a resource owned by someone else.
+     * Handles Spring Security's access denied raised inside a controller or service, e.g. by method security.
+     *
+     * Without this handler the catch-all would turn it into a 500.
      * @param ex The exception object thrown
      * @return Returns a {@link ResponseEntity} containing key information regarding the exception
      */
-    @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<ErrorResponse> handleAccessDenied(AccessDeniedException ex, HttpServletRequest req) {
+    @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleSpringAccessDenied(org.springframework.security.access.AccessDeniedException ex,
+                                                                  HttpServletRequest req) {
         log.warn("Access denied. path={} {}", req.getRequestURI(), ex.getMessage());
         return ResponseEntity
                 .status(HttpStatus.FORBIDDEN)
@@ -239,35 +189,72 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Handles the case of an exercise not being available to the requesting user. Either because under the given exerciseId
-     * there simply is no exercise listed, because it is soft deleted, or because the requesting user is not the owner,
-     * and therefore not allowed to access it.
-     *
-     * <p>All of those causes deliberately share this response: a 403 for the unowned case would confirm to a caller
-     * that an exercise with that id exists.
+     * Handles a path variable or query parameter that cannot be converted to its type, e.g. a non numeric id.
      * @param ex The exception object thrown
      * @return Returns a {@link ResponseEntity} containing key information regarding the exception
      */
-    @ExceptionHandler(ExerciseNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleExerciseNotFound(ExerciseNotFoundException ex, HttpServletRequest req) {
-        log.warn("Exercise not available to caller. path={} {}", req.getRequestURI(), ex.getMessage());
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleTypeMismatch(MethodArgumentTypeMismatchException ex, HttpServletRequest req) {
+        log.warn("Rejected parameter of wrong type. path={} parameter={}", req.getRequestURI(), ex.getName());
         return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
+                .status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse(
-                        "EXERCISE_NOT_FOUND",
-                        "No exercise with this id is available",
+                        "INVALID_PARAMETER",
+                        "Parameter '" + ex.getName() + "' has an invalid value",
                         req.getRequestURI()
                 ));
     }
 
-    @ExceptionHandler(SignUpDisabledException.class)
-    public ResponseEntity<ErrorResponse> handleSignUpDisabled(SignUpDisabledException ex, HttpServletRequest req) {
-        log.warn("Someone tried to sign up, while signups are disabled. path={}", req.getRequestURI());
+    /**
+     * Handles a write the database rejected, e.g. a unique constraint the service did not check first.
+     *
+     * Currently only a safety-net that should not be needed, since business logic should create own exception according to the conflict.
+     * @param ex The exception object thrown
+     * @return Returns a {@link ResponseEntity} containing key information regarding the exception
+     */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorResponse> handleDataIntegrityViolation(DataIntegrityViolationException ex, HttpServletRequest req) {
+        String constraint = ex.getCause() instanceof ConstraintViolationException cause
+                ? cause.getConstraintName()
+                : "unknown";
+        log.warn("Database rejected write. path={} constraint={}", req.getRequestURI(), constraint);
         return ResponseEntity
-                .status(HttpStatus.FORBIDDEN)
+                .status(HttpStatus.CONFLICT)
                 .body(new ErrorResponse(
-                        "SIGNUP_DISABLED",
-                        "SignUps are currently disabled",
+                        "DATA_CONFLICT",
+                        "The request conflicts with existing data",
+                        req.getRequestURI()
+                ));
+    }
+
+    /**
+     * Handles everything no other handler covers.
+     *
+     * Spring's own web exceptions (405, 415, ...) know their status, they keep it and get a code derived from
+     * it. Anything else is unexpected and answers 500 without internal details, the stack trace goes to the log.
+     * @param ex The exception object thrown
+     * @return Returns a {@link ResponseEntity} containing key information regarding the exception
+     */
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleUnexpected(Exception ex, HttpServletRequest req) {
+        if (ex instanceof org.springframework.web.ErrorResponse springError) {
+            HttpStatusCode status = springError.getStatusCode();
+            HttpStatus known = HttpStatus.resolve(status.value());
+            log.warn("Rejected request. path={} status={} {}", req.getRequestURI(), status.value(), ex.getMessage());
+            return ResponseEntity
+                    .status(status)
+                    .body(new ErrorResponse(
+                            known != null ? known.name() : "REQUEST_FAILED",
+                            known != null ? known.getReasonPhrase() : "The request could not be processed",
+                            req.getRequestURI()
+                    ));
+        }
+        log.error("Unexpected exception. path={}", req.getRequestURI(), ex);
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ErrorResponse(
+                        "INTERNAL_ERROR",
+                        "An unexpected error occurred",
                         req.getRequestURI()
                 ));
     }

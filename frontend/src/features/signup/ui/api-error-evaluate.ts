@@ -1,4 +1,5 @@
 import { ApiError } from '@/shared/api/errors/api-error';
+import { fallbackErrorMessage } from '@/shared/api/errors/fallback-error-message';
 
 export function evaluateApiError(error: ApiError) {
   switch (error.code) {
@@ -18,21 +19,9 @@ export function evaluateApiError(error: ApiError) {
           'An account with this email already exists. Please use another one.',
         fieldErrors: error.fieldErrors ?? {},
       };
-    case 'DEFAULT_ROLE_NOT_FOUND':
-      return {
-        generalError:
-          'Internal error: Default user role not found. Please contact support.',
-        fieldErrors: {},
-      };
-    case 'BACKEND_UNREACHABLE':
-      return {
-        generalError:
-          'The server currently seems to be unreachable. Please try again later.',
-        fieldErrors: {},
-      };
     default:
       return {
-        generalError: error.message || 'An unknown error occurred.',
+        generalError: fallbackErrorMessage(error),
         fieldErrors: error.fieldErrors ?? {},
       };
   }
