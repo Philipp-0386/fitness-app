@@ -258,16 +258,4 @@ public class GlobalExceptionHandler {
                         req.getRequestURI()
                 ));
     }
-
-    @ExceptionHandler(InvalidRefreshTokenException.class)
-    public ResponseEntity<ErrorResponse> handleInvalidRefreshToken(InvalidRefreshTokenException ex, HttpServletRequest req) {
-        log.warn("Token is not valid refresh token. path={} {}", req.getRequestURI(), ex.getMessage());
-        return ResponseEntity
-                .status(HttpStatus.UNAUTHORIZED)
-                .body(new ErrorResponse(
-                        "UNAUTHENTICATED",
-                        "Authentication is required to access this resource",
-                        req.getRequestURI()
-                ));
-    }
 }

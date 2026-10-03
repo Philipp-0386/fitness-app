@@ -1,7 +1,11 @@
 package de.phil.fitness.backend.auth.exception;
 
-public class InvalidRefreshTokenException extends RuntimeException {
-    public InvalidRefreshTokenException(String message) {
-        super(message);
+import org.springframework.http.HttpStatus;
+
+import de.phil.fitness.backend.common.ApiException;
+
+public class InvalidRefreshTokenException extends ApiException {
+    public InvalidRefreshTokenException(String msg) {
+        super(HttpStatus.UNAUTHORIZED, "UNAUTHENTICATED", "Authentication is required to access this resource", msg);
     }
 }

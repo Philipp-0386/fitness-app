@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { ACCESS_TOKEN_COOKIE, REFRESH_TOKEN_COOKIE } from '@/shared/auth/cookies';
 
 import { clearAuthCookies } from '@/shared/auth/session';
 
