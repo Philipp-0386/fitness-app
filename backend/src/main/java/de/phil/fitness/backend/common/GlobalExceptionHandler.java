@@ -15,14 +15,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
-import de.phil.fitness.backend.auth.exception.AccessDeniedException;
-import de.phil.fitness.backend.exercise.exception.ExerciseNotFoundException;
-import de.phil.fitness.backend.signup.exception.SignUpDisabledException;
-import de.phil.fitness.backend.user.exception.DefaultRoleNotFoundException;
-import de.phil.fitness.backend.user.exception.EmailAlreadyExistsException;
-import de.phil.fitness.backend.user.exception.InvalidPasswordException;
-import de.phil.fitness.backend.user.exception.UserNotFoundException;
-import de.phil.fitness.backend.user.exception.UsernameAlreadyTakenException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import tools.jackson.databind.exc.InvalidFormatException;
@@ -33,52 +25,24 @@ import tools.jackson.databind.exc.InvalidFormatException;
 @Slf4j
 public class GlobalExceptionHandler {
     /**
-     * Handles an email that is already registered to another user, on sign-up or on an account update.
-     * @param ex Accepts the exception object
-     * @return  Returns a {@link ResponseEntity} containing key information regarding the exception
-     */
-    @ExceptionHandler(EmailAlreadyExistsException.class)
-    public ResponseEntity<ErrorResponse> handleEmailAlreadyExists(EmailAlreadyExistsException ex, HttpServletRequest req) {
-        log.warn("Email already registered. {}", ex.getMessage());
-        return ResponseEntity
-                .status(HttpStatus.CONFLICT)
-                .body(new ErrorResponse(
-                        "EMAIL_ALREADY_EXISTS",
-                        ex.getMessage(),
-                        req.getRequestURI()
-                ));
-    }
-
-    /**
-     * Handles the case of missing default role during user creation process.
-     * @param ex Accepts the exception object
-     * @return  Returns a {@link ResponseEntity} containing key information regarding the exception
-     */
-    @ExceptionHandler(DefaultRoleNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleDefaultRoleNotFound(DefaultRoleNotFoundException ex, HttpServletRequest req) {
-        log.error("User creation rejected. Default role entry unavailable. {}", ex.getMessage());
-        return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorResponse(
-                        "DEFAULT_ROLE_NOT_FOUND",
-                        ex.getMessage(),
-                        req.getRequestURI()
-                ));
-    }
-
-    /**
-     * Handles the case of user's username already being in use.
+     * Handles every exception of this application. Status, code and client message come from the exception itself.
+     *
+     * <p>Server errors are logged as errors, everything else as a warning.
      * @param ex The exception object thrown
      * @return Returns a {@link ResponseEntity} containing key information regarding the exception
      */
-    @ExceptionHandler(UsernameAlreadyTakenException.class)
-    public ResponseEntity<ErrorResponse> handleUsernameTaken(UsernameAlreadyTakenException ex, HttpServletRequest req) {
-        log.warn("Username already taken. {}", ex.getMessage());
+    @ExceptionHandler(ApiException.class)
+    public ResponseEntity<ErrorResponse> handleApiException(ApiException ex, HttpServletRequest req) {
+        if (ex.getStatus().is5xxServerError()) {
+            log.error("{} path={} {}", ex.getCode(), req.getRequestURI(), ex.getMessage());
+        } else {
+            log.warn("{} path={} {}", ex.getCode(), req.getRequestURI(), ex.getMessage());
+        }
         return ResponseEntity
-                .status(HttpStatus.CONFLICT)
+                .status(ex.getStatus())
                 .body(new ErrorResponse(
-                        "USERNAME_ALREADY_TAKEN",
-                        ex.getMessage(),
+                        ex.getCode(),
+                        ex.getClientMessage(),
                         req.getRequestURI()
                 ));
     }
@@ -91,63 +55,6 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(
                         "INVALID_CREDENTIALS",
                         "Username or password is incorrect",
-                        req.getRequestURI()
-                ));
-    }
-
-    /**
-     * Handles the password confirming an account change or deletion not matching the stored one.
-     *
-     * Deliberately not 401: the caller is authenticated, only the confirmation failed, so the
-     * client must not treat the session as expired.
-     * @param ex The exception object thrown
-     * @return Returns a {@link ResponseEntity} containing key information regarding the exception
-     */
-    @ExceptionHandler(InvalidPasswordException.class)
-    public ResponseEntity<ErrorResponse> handleInvalidPassword(InvalidPasswordException ex, HttpServletRequest req) {
-        log.warn("Password confirmation failed. path={}", req.getRequestURI());
-        return ResponseEntity
-                .status(HttpStatus.FORBIDDEN)
-                .body(new ErrorResponse(
-                        "INVALID_PASSWORD",
-                        "The password is incorrect",
-                        req.getRequestURI()
-                ));
-    }
-
-    /**
-     * Handles a valid access token whose user no longer exists, e.g. after the account was deleted
-     * while the token had not expired yet.
-     *
-     * Answers like a missing token, because the session is no longer usable.
-     * @param ex The exception object thrown
-     * @return Returns a {@link ResponseEntity} containing key information regarding the exception
-     */
-    @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleUserNotFound(UserNotFoundException ex, HttpServletRequest req) {
-        log.warn("Token subject has no user. path={} {}", req.getRequestURI(), ex.getMessage());
-        return ResponseEntity
-                .status(HttpStatus.UNAUTHORIZED)
-                .body(new ErrorResponse(
-                        "UNAUTHENTICATED",
-                        "Authentication is required to access this resource",
-                        req.getRequestURI()
-                ));
-    }
-
-    /**
-     * Handles the case of an authenticated user requesting a resource owned by someone else.
-     * @param ex The exception object thrown
-     * @return Returns a {@link ResponseEntity} containing key information regarding the exception
-     */
-    @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<ErrorResponse> handleAccessDenied(AccessDeniedException ex, HttpServletRequest req) {
-        log.warn("Access denied. path={} {}", req.getRequestURI(), ex.getMessage());
-        return ResponseEntity
-                .status(HttpStatus.FORBIDDEN)
-                .body(new ErrorResponse(
-                        "ACCESS_DENIED",
-                        "You do not have access to this resource",
                         req.getRequestURI()
                 ));
     }
@@ -233,40 +140,6 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(
                         "RESOURCE_NOT_FOUND",
                         "No resource exists at this path",
-                        req.getRequestURI()
-                ));
-    }
-
-    /**
-     * Handles the case of an exercise not being available to the requesting user. Either because under the given exerciseId
-     * there simply is no exercise listed, because it is soft deleted, or because the requesting user is not the owner,
-     * and therefore not allowed to access it.
-     *
-     * <p>All of those causes deliberately share this response: a 403 for the unowned case would confirm to a caller
-     * that an exercise with that id exists.
-     * @param ex The exception object thrown
-     * @return Returns a {@link ResponseEntity} containing key information regarding the exception
-     */
-    @ExceptionHandler(ExerciseNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleExerciseNotFound(ExerciseNotFoundException ex, HttpServletRequest req) {
-        log.warn("Exercise not available to caller. path={} {}", req.getRequestURI(), ex.getMessage());
-        return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(new ErrorResponse(
-                        "EXERCISE_NOT_FOUND",
-                        "No exercise with this id is available",
-                        req.getRequestURI()
-                ));
-    }
-
-    @ExceptionHandler(SignUpDisabledException.class)
-    public ResponseEntity<ErrorResponse> handleSignUpDisabled(SignUpDisabledException ex, HttpServletRequest req) {
-        log.warn("Someone tried to sign up, while signups are disabled. path={}", req.getRequestURI());
-        return ResponseEntity
-                .status(HttpStatus.FORBIDDEN)
-                .body(new ErrorResponse(
-                        "SIGNUP_DISABLED",
-                        "SignUps are currently disabled",
                         req.getRequestURI()
                 ));
     }
