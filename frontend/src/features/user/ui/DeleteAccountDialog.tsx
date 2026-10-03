@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
 import { ApiError } from '@/shared/api/errors/api-error';
+import { fallbackErrorMessage } from '@/shared/api/errors/fallback-error-message';
 import { deleteMe } from '../client/delete-user.client';
 
 export default function DeleteAccountDialog() {
@@ -51,11 +52,11 @@ export default function DeleteAccountDialog() {
       router.refresh();
     } catch (err) {
       setIsDeleting(false);
-      if (err instanceof ApiError) {
-        setError(evaluateError(err));
+      if (err instanceof ApiError && err.code === 'INVALID_PASSWORD') {
+        setError('The password is incorrect.');
         return;
       }
-      setError('An unexpected error occurred. Please try again later.');
+      setError(fallbackErrorMessage(err));
     }
   }
 
@@ -94,17 +95,4 @@ export default function DeleteAccountDialog() {
       </dialog>
     </>
   );
-}
-
-function evaluateError(error: ApiError): string {
-  switch (error.code) {
-    case 'INVALID_PASSWORD':
-      return 'The password is incorrect.';
-    case 'UNAUTHENTICATED':
-      return 'Your session has expired. Please log in again.';
-    case 'BACKEND_UNREACHABLE':
-      return 'The server seems to be unreachable. Please try again later.';
-    default:
-      return error.message || 'An unknown error occurred.';
-  }
 }

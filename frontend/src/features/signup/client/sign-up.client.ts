@@ -1,4 +1,4 @@
-import { ApiError } from '@/shared/api/errors/api-error';
+import { toApiError } from '@/shared/api/errors/to-api-error';
 import { SignUpPayload, SuccessfulSignUpResponse } from '../types/api.types';
 
 /**
@@ -15,18 +15,9 @@ export async function signUp(payload: SignUpPayload): Promise<SuccessfulSignUpRe
     body: JSON.stringify(payload),
   });
 
-  const body = await response.json().catch(() => null);
-
   if (!response.ok) {
-    throw new ApiError({
-      status: response.status,
-      code: body?.code || 'UNKNOWN_ERROR',
-      message: body?.message || 'An unknown error occurred',
-      path: body?.path || null,
-      fieldErrors: body?.fieldErrors || null,
-      timestamp: body?.timestamp || null,
-    });
+    throw await toApiError(response);
   }
 
-  return body;
+  return response.json();
 }

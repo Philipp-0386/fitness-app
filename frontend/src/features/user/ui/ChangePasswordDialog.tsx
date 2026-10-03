@@ -4,6 +4,7 @@ import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 import { ApiError } from '@/shared/api/errors/api-error';
+import { fallbackErrorMessage } from '@/shared/api/errors/fallback-error-message';
 import { updatePassword } from '../client/update-password.client';
 
 export default function ChangePasswordDialog() {
@@ -61,11 +62,11 @@ export default function ChangePasswordDialog() {
       close();
       toast.success('Your password has been changed.');
     } catch (err) {
-      if (err instanceof ApiError) {
-        setError(err.message);
+      if (err instanceof ApiError && err.code === 'INVALID_PASSWORD') {
+        setError('The current password is incorrect.');
         return;
       }
-      setError('An unexpected error occurred. Please try again later.');
+      setError(fallbackErrorMessage(err));
     } finally {
       setIsSaving(false);
     }

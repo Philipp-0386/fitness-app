@@ -28,6 +28,15 @@ meanings the UI must tell apart, e.g. `INVALID_CREDENTIALS` and `UNAUTHENTICATED
 error must be handled sensibly without knowing its code. The frontend mirrors this shape in
 [ApiError](../../frontend/src/shared/api/errors/api-error.ts).
 
+In the frontend, [toApiError](../../frontend/src/shared/api/errors/to-api-error.ts) turns every failed
+response into an `ApiError`. A feature checks only the codes it reacts to specifically (e.g. `INVALID_PASSWORD`
+in the account dialogs) and passes everything else to
+[fallbackErrorMessage](../../frontend/src/shared/api/errors/fallback-error-message.ts), which picks the message by status.
+User facing texts belong to the frontend, the backend `message` is not shown.
+
+`ApiError.code` is typed as [ErrorCode](../../frontend/src/shared/api/errors/error-code.ts), so a
+comparison against a misspelled code fails to compile. A new code in the backend is added there too.
+
 ### Codes in use
 
 | Code                     | Status | Raised by                                                                                                                                                   |
@@ -125,4 +134,5 @@ The first row of failures arrives as an `InvalidFormatException` wrapped in
   references the user fails on the foreign key with a 409 `DATA_CONFLICT`. Closes with the token lifecycle
   (revocation), or with a user lookup in `CurrentUser`.
 - After a password change, tokens issued before it stay valid until they expire -> adress with the token lifecycle improvement
-- Frontend handling overhaul (maybe)
+- BFF route handlers under `frontend/src/app/api/` still repeat the same forwarding block (body parsing,
+  `BACKEND_UNREACHABLE`, passing the error on); a shared helper would remove that.
