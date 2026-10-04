@@ -2,7 +2,7 @@
 
 Endpoints and request/response schemas are generated from the code with
 [springdoc-openapi](https://springdoc.org/). The error contract lives in
-[ErrorHandling.md](./ErrorHandling.md), authentication in [JwtBaseline.md](../security/JwtBaseline.md).
+[ErrorHandling.md](./ErrorHandling.md), authentication in [Authentication.md](../security/Authentication.md).
 
 ## Viewing
 
