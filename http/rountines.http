@@ -1,0 +1,47 @@
+@host = http://localhost:8080
+@frontend = http://localhost:3000
+
+###############################################################################
+###############################################################################
+# 1  Logins
+###############################################################################
+###############################################################################
+
+### 1.1  Log in as max
+# @name loginMax
+POST {{host}}/backend/auth/login
+Content-Type: application/json
+
+{
+  "username": "max",
+  "password": "password"
+}
+
+### 1.2  Log in as lena_lifts
+# @name loginLena
+POST {{host}}/backend/auth/login
+Content-Type: application/json
+
+{
+  "username": "lena_lifts",
+  "password": "password"
+}
+
+### 1.3  Log in as sina (exercise is soft deleted)
+# @name loginSina
+POST {{host}}/backend/auth/login
+Content-Type: application/json
+
+{
+  "username": "sina",
+  "password": "password"
+}
+
+###############################################################################
+###############################################################################
+# 1  Preset Rountines
+###############################################################################
+###############################################################################
+
+GET {{host}}/backend/routines/presets
+Authorization: Bearer {{loginMax.response.body.$.accessToken}}
