@@ -1,3 +1,21 @@
+### Routines
+#
+# Requires the REST Client extension (humao.rest-client).
+# Send one of the logins in section 1 first, every request below reads its token
+# from that named response.
+#
+# Preconditions:
+#   docker compose --profile full up -d
+#   test users seeded by the dev Flyway location (SPRING_PROFILES_ACTIVE=dev)
+#
+# Seeded routines (ids assume a fresh database):
+#   1 Push, 2 Pull, 3 Legs   presets (user_id NULL, slug set), V2 reference data
+#   4 Push A                 max
+#   5 Legs                   lena_lifts
+#   6 Pull                   max, copy of preset 'pull'
+#   7 Push, 8 Pull, 9 Legs   max, copies from taking the preset program
+#   marco and sina own no routines.
+
 @host = http://localhost:8080
 @frontend = http://localhost:3000
 
@@ -27,7 +45,7 @@ Content-Type: application/json
   "password": "password"
 }
 
-### 1.3  Log in as sina (exercise is soft deleted)
+### 1.3  Log in as sina (owns no routines)
 # @name loginSina
 POST {{host}}/backend/auth/login
 Content-Type: application/json
@@ -39,9 +57,156 @@ Content-Type: application/json
 
 ###############################################################################
 ###############################################################################
-# 1  Preset Rountines
+# 2  Preset routines
 ###############################################################################
 ###############################################################################
 
+# Presets are the same for every user. They are templates only: workouts and
+# programs cannot reference them, a user always works on an own copy.
+
+### 2.1  List presets -> 200, 3 entries ordered by name: Legs, Pull, Push
 GET {{host}}/backend/routines/presets
 Authorization: Bearer {{loginMax.response.body.$.accessToken}}
+
+### 2.2  Same list for another user -> identical body
+GET {{host}}/backend/routines/presets
+Authorization: Bearer {{loginLena.response.body.$.accessToken}}
+
+### 2.3  A single preset -> 200 "Push"
+GET {{host}}/backend/routines/presets/1
+Authorization: Bearer {{loginMax.response.body.$.accessToken}}
+
+### 2.4  The same preset for a user without own routines -> 200, identical body
+# The preset detail view is not ownership scoped, every user can read it.
+GET {{host}}/backend/routines/presets/1
+Authorization: Bearer {{loginSina.response.body.$.accessToken}}
+
+# The four requests below must return an identical body, just like section 5.
+
+### 2.5  An own routine through the preset path -> 404 PRESET_ROUTINE_NOT_FOUND
+# Id 4 exists and even belongs to max. The preset query filters on user_id IS NULL.
+GET {{host}}/backend/routines/presets/4
+Authorization: Bearer {{loginMax.response.body.$.accessToken}}
+
+### 2.6  A copy of a preset -> 404 PRESET_ROUTINE_NOT_FOUND
+# Id 6 is max's copy of 'pull', same name and description, but user_id is set
+# and the slug is not. A copy is an own routine, not a preset.
+GET {{host}}/backend/routines/presets/6
+Authorization: Bearer {{loginMax.response.body.$.accessToken}}
+
+### 2.7  Another user's routine through the preset path -> 404 PRESET_ROUTINE_NOT_FOUND
+GET {{host}}/backend/routines/presets/5
+Authorization: Bearer {{loginMax.response.body.$.accessToken}}
+
+### 2.8  An id that was never seeded -> 404 PRESET_ROUTINE_NOT_FOUND
+GET {{host}}/backend/routines/presets/999999
+Authorization: Bearer {{loginMax.response.body.$.accessToken}}
+
+###############################################################################
+###############################################################################
+# 3  Own routines are user-scoped
+###############################################################################
+###############################################################################
+
+# Same endpoint, different token, different result. Presets never show up here.
+
+### 3.1  max -> 200, 5 entries ordered by name: Legs, Pull, Pull, Push, Push A
+GET {{host}}/backend/routines
+Authorization: Bearer {{loginMax.response.body.$.accessToken}}
+
+### 3.2  lena_lifts -> 200, 1 entry "Legs"
+GET {{host}}/backend/routines
+Authorization: Bearer {{loginLena.response.body.$.accessToken}}
+
+### 3.3  sina -> 200 with an empty list, not 404
+GET {{host}}/backend/routines
+Authorization: Bearer {{loginSina.response.body.$.accessToken}}
+
+###############################################################################
+###############################################################################
+# 4  Detail view of an own routine
+###############################################################################
+###############################################################################
+
+### 4.1  max reads his own routine -> 200 "Push A"
+GET {{host}}/backend/routines/4
+Authorization: Bearer {{loginMax.response.body.$.accessToken}}
+
+### 4.2  lena_lifts reads her own routine -> 200 "Legs"
+GET {{host}}/backend/routines/5
+Authorization: Bearer {{loginLena.response.body.$.accessToken}}
+
+###############################################################################
+###############################################################################
+# 5  The detail view is ownership scoped
+###############################################################################
+###############################################################################
+
+# The three requests below must return an identical body. Any difference would
+# tell a caller which ids exist behind routines they cannot read.
+
+### 5.1  max asks for lena's routine -> 404 USER_ROUTINE_NOT_FOUND
+# Deliberately not 403: a 403 would confirm that id 5 exists.
+GET {{host}}/backend/routines/5
+Authorization: Bearer {{loginMax.response.body.$.accessToken}}
+
+### 5.2  A preset through the user path -> 404 USER_ROUTINE_NOT_FOUND
+# Presets are only readable under /presets, so a preset can never be treated
+# as an own, editable routine.
+GET {{host}}/backend/routines/1
+Authorization: Bearer {{loginMax.response.body.$.accessToken}}
+
+### 5.3  An id that was never seeded -> 404 USER_ROUTINE_NOT_FOUND
+GET {{host}}/backend/routines/999999
+Authorization: Bearer {{loginMax.response.body.$.accessToken}}
+
+###############################################################################
+###############################################################################
+# 6  Access control and malformed paths
+###############################################################################
+###############################################################################
+
+### 6.1  No token on the list -> 401 UNAUTHENTICATED
+GET {{host}}/backend/routines
+
+### 6.2  No token on the presets -> 401 UNAUTHENTICATED
+# Presets are public data, but the endpoint still sits behind the filter chain.
+GET {{host}}/backend/routines/presets
+
+### 6.3  Refresh token instead of an access token -> 401 UNAUTHENTICATED
+GET {{host}}/backend/routines/4
+Authorization: Bearer {{loginMax.response.body.$.refreshToken}}
+
+### 6.4  Non-numeric id -> 400 INVALID_PARAMETER
+GET {{host}}/backend/routines/abc
+Authorization: Bearer {{loginMax.response.body.$.accessToken}}
+
+### 6.5  Non-numeric preset id -> 400 INVALID_PARAMETER
+GET {{host}}/backend/routines/presets/abc
+Authorization: Bearer {{loginMax.response.body.$.accessToken}}
+
+### 6.6  Trailing slash -> 404 RESOURCE_NOT_FOUND, not USER_ROUTINE_NOT_FOUND
+GET {{host}}/backend/routines/4/
+Authorization: Bearer {{loginMax.response.body.$.accessToken}}
+
+### 6.7  No token on a single preset -> 401 UNAUTHENTICATED
+GET {{host}}/backend/routines/presets/1
+
+### 6.8  Refresh token on the presets -> 401 UNAUTHENTICATED
+GET {{host}}/backend/routines/presets
+Authorization: Bearer {{loginMax.response.body.$.refreshToken}}
+
+### 6.9  Trailing slash on a preset -> 404 RESOURCE_NOT_FOUND, not PRESET_ROUTINE_NOT_FOUND
+GET {{host}}/backend/routines/presets/1/
+Authorization: Bearer {{loginMax.response.body.$.accessToken}}
+
+###############################################################################
+###############################################################################
+# 7  To-Do/WIP
+###############################################################################
+###############################################################################
+
+### 7.1  The detail views return the list shape
+# The exercises of a routine (routine_exercise with targets) are not displayed yet.
+
+### 7.2  Copying a preset

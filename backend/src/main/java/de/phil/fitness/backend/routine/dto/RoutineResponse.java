@@ -2,7 +2,7 @@ package de.phil.fitness.backend.routine.dto;
 
 import java.time.Instant;
 
-public record RoutinePresetResponse(
+public record RoutineResponse(
      Long id,
      String name,
      String description,
