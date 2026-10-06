@@ -3,7 +3,8 @@
 How the backend reports failures, and how the responses look.
 
 Executable probes for everything described in [http/auth.http](../../http/auth.http),
-[http/exercises.http](../../http/exercises.http) and [http/me.http](../../http/me.http).
+[http/exercises.http](../../http/exercises.http), [http/me.http](../../http/me.http) and
+[http/rountines.http](../../http/rountines.http).
 
 ---
 
@@ -49,6 +50,8 @@ comparison against a misspelled code fails to compile. A new code in the backend
 | `UNAUTHENTICATED`        | 401    | security filter chain, no valid access token; `UserNotFoundException` on `/backend/me` when the token's user was deleted; `InvalidRefreshTokenException` on `/backend/auth/refresh` |
 | `ACCESS_DENIED`          | 403    | ownership checks, and the filter chain                                                                                                                      |
 | `EXERCISE_NOT_FOUND`     | 404    | `ExerciseNotFoundException` from `ExerciseService`: missing, soft deleted or owned by someone else; deliberately not 403, which would confirm the id exists |
+| `USER_ROUTINE_NOT_FOUND` | 404 | `UserRoutineNotFoundException` from `RoutineService` on `GET /backend/routines/{id}`: missing, owned by someone else or a preset; same reasoning as `EXERCISE_NOT_FOUND` |
+| `PRESET_ROUTINE_NOT_FOUND` | 404 | `PresetRoutineNotFoundException` from `RoutineService` on `GET /backend/routines/presets/{id}`: missing, or an own routine (copies of presets included) |
 | `INVALID_PASSWORD`       | 403    | `InvalidPasswordException` on `DELETE /backend/me`, `PUT /backend/me` and `PUT /backend/me/password`, wrong password; not 401, the session is still valid   |
 | `INVALID_JSON`           | 400    | unparseable request body                                                                                                                                    |
 | `VALIDATION_FAILED`      | 400    | bean validation on a `@Valid` request body, and a value outside an enum; `fieldErrors` maps each rejected field to its first message                        |
