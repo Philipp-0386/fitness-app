@@ -2,13 +2,15 @@ package de.phil.fitness.backend.routine.api;
 
 import de.phil.fitness.backend.auth.CurrentUser;
 import de.phil.fitness.backend.routine.dto.RoutineDetailResponse;
+import de.phil.fitness.backend.routine.dto.CreateRoutineRequest;
 import de.phil.fitness.backend.routine.dto.RoutineResponse;
 import de.phil.fitness.backend.routine.service.RoutineService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -40,5 +42,15 @@ public class RoutineController {
     @GetMapping("/presets/{id}")
     public RoutineDetailResponse getPresetRoutine(@PathVariable Long id) {
         return routineService.findDetailedPresetRoutine(id);
+    }
+
+    @PostMapping
+    public ResponseEntity<RoutineDetailResponse> createUserRoutine(@Valid @RequestBody CreateRoutineRequest routineRequest) {
+        RoutineDetailResponse created = routineService.createNewUserRoutine(routineRequest, currentUser.currentUserId());
+        URI location = ServletUriComponentsBuilder.fromCurrentContextPath()
+                .path("/backend/routines/{id}")
+                .buildAndExpand(created.id())
+                .toUri();
+        return ResponseEntity.created(location).body(created);
     }
 }

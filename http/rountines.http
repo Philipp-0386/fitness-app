@@ -72,7 +72,8 @@ Authorization: Bearer {{loginMax.response.body.$.accessToken}}
 GET {{host}}/backend/routines/presets
 Authorization: Bearer {{loginLena.response.body.$.accessToken}}
 
-### 2.3  A single preset -> 200 "Push"
+### 2.3  A single preset -> 200 "Push" with its exercises
+# Every entry carries "deleted": false, presets only reference global exercises.
 GET {{host}}/backend/routines/presets/1
 Authorization: Bearer {{loginMax.response.body.$.accessToken}}
 
@@ -128,7 +129,10 @@ Authorization: Bearer {{loginSina.response.body.$.accessToken}}
 ###############################################################################
 ###############################################################################
 
-### 4.1  max reads his own routine -> 200 "Push A"
+### 4.1  max reads his own routine -> 200 "Push A" with 4 exercises
+# Ordered by orderIndex 0-3: Barbell Bench Press, Seated Dumbbell Shoulder Press,
+# Triceps Rope Pushdown, Plank. Plank only sets targetSets and
+# targetDurationSeconds, its reps and rpe are null.
 GET {{host}}/backend/routines/4
 Authorization: Bearer {{loginMax.response.body.$.accessToken}}
 
@@ -202,11 +206,202 @@ Authorization: Bearer {{loginMax.response.body.$.accessToken}}
 
 ###############################################################################
 ###############################################################################
-# 7  To-Do/WIP
+# 7 Creating new routines
 ###############################################################################
 ###############################################################################
 
-### 7.1  The detail views return the list shape
-# The exercises of a routine (routine_exercise with targets) are not displayed yet.
+# Note: these requests write. Every send adds a routine, SO THE IDS BELOW MOVE!
+# Exercise ids assume a fresh database: 1 Barbell Bench Press, 2 Incline Dumbbell
+# (Press, 38 Plank (all global), 66 max, 67 lena_lifts, 68 marco, 69 sina (soft deleted))
 
-### 7.2  Copying a preset
+### 7.1  Name only -> 201, "exercises": [], Location header on the new id
+# A routine does not need exercises to be created.
+POST {{host}}/backend/routines
+Authorization: Bearer {{loginMax.response.body.$.accessToken}}
+Content-Type: application/json
+
+{
+  "name": "Empty Routine"
+}
+
+### 7.2  With exercises -> 201, orderIndex taken from the list position
+# Entry 0 is the incline press, entry 1 the bench press, entry 2 max's own
+# exercise. The plank comes last with a duration target only.
+# @name createRoutine
+POST {{host}}/backend/routines
+Authorization: Bearer {{loginMax.response.body.$.accessToken}}
+Content-Type: application/json
+
+{
+  "name": "Upper Body REST Client",
+  "description": "Created from the REST client.",
+  "exercises": [
+    { "exerciseId": 2, "targetSets": 3, "targetRepsMin": 8, "targetRepsMax": 10, "targetRpe": 8.0 },
+    { "exerciseId": 1, "targetSets": 4, "targetRepsMin": 5, "targetRepsMax": 5 },
+    { "exerciseId": 66, "targetSets": 2 },
+    { "exerciseId": 38, "targetSets": 3, "targetDurationSeconds": 45 }
+  ]
+}
+
+### 7.3  Read it back -> 200, same body as the create returned
+GET {{host}}/backend/routines/{{createRoutine.response.body.$.id}}
+Authorization: Bearer {{loginMax.response.body.$.accessToken}}
+
+### 7.4  It belongs to max alone -> lena gets 404 USER_ROUTINE_NOT_FOUND
+GET {{host}}/backend/routines/{{createRoutine.response.body.$.id}}
+Authorization: Bearer {{loginLena.response.body.$.accessToken}}
+
+### 7.5  The same exercise twice -> 201, two entries with their own targets
+# Allowed on purpose, e.g. a heavy and a light block of the same movement.
+POST {{host}}/backend/routines
+Authorization: Bearer {{loginMax.response.body.$.accessToken}}
+Content-Type: application/json
+
+{
+  "name": "Bench Twice",
+  "exercises": [
+    { "exerciseId": 1, "targetSets": 3, "targetRepsMin": 3, "targetRepsMax": 5 },
+    { "exerciseId": 1, "targetSets": 2, "targetRepsMin": 12, "targetRepsMax": 15 }
+  ]
+}
+
+###############################################################################
+###############################################################################
+# 8  Referenced exercises must be available to the caller
+###############################################################################
+###############################################################################
+
+# The foreign key only proves that an exercise exists. The three requests below
+# must return the same body apart from the id in the message, and none of them
+# may leave a routine behind: check with 3.1 afterwards.
+
+### 8.1  Another user's exercise -> 404 EXERCISE_NOT_FOUND
+# Without this check, the detail view would leak the name of marco's exercise.
+POST {{host}}/backend/routines
+Authorization: Bearer {{loginMax.response.body.$.accessToken}}
+Content-Type: application/json
+
+{
+  "name": "Borrowed Exercise",
+  "exercises": [
+    { "exerciseId": 1, "targetSets": 3 },
+    { "exerciseId": 68, "targetSets": 3 }
+  ]
+}
+
+### 8.2  An own but soft deleted exercise -> 404 EXERCISE_NOT_FOUND
+# sina is the owner of 69, so this covers the deleted_at filter.
+POST {{host}}/backend/routines
+Authorization: Bearer {{loginSina.response.body.$.accessToken}}
+Content-Type: application/json
+
+{
+  "name": "Deleted Exercise",
+  "exercises": [
+    { "exerciseId": 69, "targetSets": 3 }
+  ]
+}
+
+### 8.3  An id that was never seeded -> 404 EXERCISE_NOT_FOUND, not 409 DATA_CONFLICT
+# The service rejects it before the foreign key would.
+POST {{host}}/backend/routines
+Authorization: Bearer {{loginMax.response.body.$.accessToken}}
+Content-Type: application/json
+
+{
+  "name": "Unknown Exercise",
+  "exercises": [
+    { "exerciseId": 999999, "targetSets": 3 }
+  ]
+}
+
+###############################################################################
+###############################################################################
+# 9  Validation of the request body
+###############################################################################
+###############################################################################
+
+# Each of these answers 400 VALIDATION_FAILED with fieldErrors. Entry fields are
+# reported with their index, e.g. "exercises[0].targetRpe".
+
+### 9.1  No name -> 400 on "name"
+POST {{host}}/backend/routines
+Authorization: Bearer {{loginMax.response.body.$.accessToken}}
+Content-Type: application/json
+
+{
+  "exercises": [
+    { "exerciseId": 1, "targetSets": 3 }
+  ]
+}
+
+### 9.2  An entry without exerciseId -> 400 on "exercises[0].exerciseId"
+POST {{host}}/backend/routines
+Authorization: Bearer {{loginMax.response.body.$.accessToken}}
+Content-Type: application/json
+
+{
+  "name": "Missing Exercise Id",
+  "exercises": [
+    { "targetSets": 3 }
+  ]
+}
+
+### 9.3  Reps range turned around -> 400 on "exercises[0].repRangeValid"
+# Mirrors ck_routine_exercise_reps_range (caught before the database would)
+POST {{host}}/backend/routines
+Authorization: Bearer {{loginMax.response.body.$.accessToken}}
+Content-Type: application/json
+
+{
+  "name": "Reversed Reps",
+  "exercises": [
+    { "exerciseId": 1, "targetRepsMin": 12, "targetRepsMax": 8 }
+  ]
+}
+
+### 9.4  Targets out of range -> 400 on targetSets, targetRpe and targetDurationSeconds
+POST {{host}}/backend/routines
+Authorization: Bearer {{loginMax.response.body.$.accessToken}}
+Content-Type: application/json
+
+{
+  "name": "Bad Targets",
+  "exercises": [
+    { "exerciseId": 1, "targetSets": 0, "targetRpe": 11 },
+    { "exerciseId": 38, "targetDurationSeconds": -30 }
+  ]
+}
+
+### 9.5  orderIndex in the body -> ignored, the list position wins
+# Unknown properties are not rejected, so this answers 201 with orderIndex 0.
+POST {{host}}/backend/routines
+Authorization: Bearer {{loginMax.response.body.$.accessToken}}
+Content-Type: application/json
+
+{
+  "name": "Forged Order",
+  "exercises": [
+    { "exerciseId": 1, "orderIndex": 7, "targetSets": 3 }
+  ]
+}
+
+### 9.6  No token -> 401 UNAUTHENTICATED, body is never parsed
+POST {{host}}/backend/routines
+Content-Type: application/json
+
+{
+  "name": "Anonymous Routine"
+}
+
+###############################################################################
+###############################################################################
+# 10  To-Do/WIP
+###############################################################################
+###############################################################################
+
+### 10.1  The list views do not include exercises
+# Only the detail views do. A preview for the list (exercise names) is planned
+# for the routine list UI.
+
+### 10.2  Copying a preset

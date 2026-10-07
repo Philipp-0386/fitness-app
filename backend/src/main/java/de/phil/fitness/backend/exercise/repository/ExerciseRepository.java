@@ -1,7 +1,9 @@
 package de.phil.fitness.backend.exercise.repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -43,4 +45,19 @@ public interface ExerciseRepository extends JpaRepository<Exercise, Long> {
             AND (e.ownerUserId IS NULL OR e.ownerUserId = :userId)
         """)
     Optional<Exercise> findAvailableById(@Param("userId") Long userId, @Param("id") Long id);
+
+    /**
+     * Returns set of available IDs. Needed for creating new routine-exercises to validate referenced exercise.
+     * @param userId User creating a new resource and therefore needing the list.
+     * @param ids The chosen referenced exercises entries IDs.
+     * @return Set of available IDs based on the entered IDs.
+     */
+    @Query("""
+    SELECT e.id FROM Exercise e
+    WHERE e.id IN :ids
+        AND e.deletedAt IS NULL
+        AND (e.ownerUserId IS NULL OR e.ownerUserId = :userId)
+    """)
+    Set<Long> findAvailableIds(@Param("userId") Long userId, @Param("ids") Collection<Long> ids);
+
 }
