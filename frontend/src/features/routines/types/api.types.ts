@@ -33,3 +33,20 @@ export type RoutineExercise = {
 export type RoutineDetail = Routine & {
   exercises: RoutineExercise[];
 };
+
+/** Mirrors the backend RoutineExerciseRequest record. The order of the list sets orderIndex. */
+export type RoutineExercisePayload = {
+  exerciseId: number;
+  targetSets?: number | null;
+  targetRepsMin?: number | null;
+  targetRepsMax?: number | null;
+  targetDurationSeconds?: number | null;
+  targetDistanceMeters?: number | null;
+};
+
+/** Mirrors the backend CreateRoutineRequest record. */
+export type CreateRoutinePayload = {
+  name: string;
+  description?: string | null;
+  exercises?: RoutineExercisePayload[];
+};

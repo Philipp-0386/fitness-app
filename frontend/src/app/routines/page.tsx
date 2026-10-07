@@ -1,4 +1,4 @@
-import { RoutineJsonView, RoutineSource } from '@/features/routines';
+import { CreateRoutineForm, RoutineJsonView, RoutineSource } from '@/features/routines';
 import { requireSession } from '@/shared/auth/session';
 
 export default async function RoutinesPage({
@@ -39,6 +39,8 @@ export default async function RoutinesPage({
       </p>
 
       <RoutineJsonView source={resolvedSource} id={id} />
+
+      <CreateRoutineForm />
     </main>
   );
 }
