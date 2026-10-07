@@ -6,4 +6,4 @@ export {
   fetchUserRoutineByRoutineId,
   fetchUserRoutines,
 } from './api/routines.api';
-export type { Routine } from './types/api.types';
+export type { Routine, RoutineDetail, RoutineExercise } from './types/api.types';

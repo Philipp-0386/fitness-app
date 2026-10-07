@@ -1,6 +1,5 @@
 package de.phil.fitness.backend.routine.model;
 
-import de.phil.fitness.backend.exercise.model.Exercise;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -21,9 +20,8 @@ public class RoutineExercise {
     @JoinColumn(name = "ROUTINE_ID", nullable = false)
     private Routine routine;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "EXERCISE_ID", nullable = false)
-    private Exercise exercise;
+    @Column(name = "EXERCISE_ID", nullable = false)
+    private Long exerciseId;
 
     @Column(name = "ORDER_INDEX", nullable = false)
     private Integer orderIndex;

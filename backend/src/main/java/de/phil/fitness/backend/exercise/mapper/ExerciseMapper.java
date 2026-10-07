@@ -1,6 +1,7 @@
 package de.phil.fitness.backend.exercise.mapper;
 
 import de.phil.fitness.backend.exercise.dto.ExerciseRequest;
+import de.phil.fitness.backend.exercise.dto.ExerciseSummary;
 import org.springframework.stereotype.Component;
 
 import de.phil.fitness.backend.exercise.dto.ExerciseResponse;
@@ -42,4 +43,19 @@ public class ExerciseMapper {
         exercise.setInstructions(req.instructions());
         return exercise;
     }
+
+    /**
+     * Mapping for "routine" slice.
+     * @param exercise The referencing exercises needed.
+     * @return Compact DTO
+     */
+    public ExerciseSummary toSummary(Exercise exercise) {
+        return new ExerciseSummary(
+                exercise.getId(),
+                exercise.getName(),
+                exercise.getTrackingType(),
+                exercise.getDeletedAt() != null
+        );
+    }
+
 }

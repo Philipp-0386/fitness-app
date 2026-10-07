@@ -2,11 +2,16 @@ package de.phil.fitness.backend.routine.service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+import de.phil.fitness.backend.exercise.service.ExerciseService;
+import de.phil.fitness.backend.routine.dto.RoutineDetailResponse;
 import de.phil.fitness.backend.routine.dto.RoutineResponse;
 import de.phil.fitness.backend.routine.exception.PresetRoutineNotFoundException;
 import de.phil.fitness.backend.routine.exception.UserRoutineNotFoundException;
 import de.phil.fitness.backend.routine.model.Routine;
+import de.phil.fitness.backend.routine.model.RoutineExercise;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,10 +22,12 @@ import de.phil.fitness.backend.routine.repository.RoutineRepository;
 public class RoutineService {
     private final RoutineRepository routineRepository;
     private final RoutineMapper routineMapper;
+    private final ExerciseService exerciseService;
 
-    public RoutineService(RoutineRepository routineRepository, RoutineMapper routineMapper) {
+    public RoutineService(RoutineRepository routineRepository, RoutineMapper routineMapper, ExerciseService exerciseService) {
         this.routineRepository = routineRepository;
         this.routineMapper = routineMapper;
+        this.exerciseService = exerciseService;
     }
 
     /**
@@ -50,6 +57,23 @@ public class RoutineService {
     }
 
     /**
+     * Retrieves single user-owned routine including the exercises it includes.
+     * @param userId Id of the requesting user.
+     * @param routineId Id of the searched routine.
+     * @return Singular user-owned routine with its exercises.
+     */
+    @Transactional(readOnly = true)
+    public RoutineDetailResponse findDetailedUserRoutine(Long userId, Long routineId) {
+        Routine routine = routineRepository.getUserRoutineDetailedById(userId, routineId)
+                .orElseThrow(() -> new UserRoutineNotFoundException("The user-routine with id " + routineId + " does not exist"));
+        Set<Long> exerciseIds = routine.getExercises().stream()
+                .map(RoutineExercise::getExerciseId)
+                .collect(Collectors.toSet());
+
+        return routineMapper.toRoutineDetailResponse(routine, exerciseService.findSummariesByExerciseId(exerciseIds));
+    }
+
+    /**
      * Lists all preset-routines defined by the system as defaults to access for all users.
      * @return List of all preset-routines.
      */
@@ -71,5 +95,22 @@ public class RoutineService {
         return routineRepository.getPresetRoutineById(routineId)
                 .map(routineMapper::toRoutineResponse)
                 .orElseThrow(() -> new PresetRoutineNotFoundException("The preset-routine with id " + routineId + " does not exist"));
+    }
+
+    /**
+     * Retrieves single preset-routine including the exercises it includes.
+     * @param routineId Id of the searched routine.
+     * @return Singular preset-routine with its exercises.
+     */
+    @Transactional(readOnly = true)
+    public RoutineDetailResponse findDetailedPresetRoutine(Long routineId) {
+        Routine routine = routineRepository.getPresetRoutineDetailedById(routineId)
+                .orElseThrow(() -> new PresetRoutineNotFoundException("The preset-routine with id " + routineId + " does not exist"));
+
+        Set<Long> exerciseIds = routine.getExercises().stream()
+                .map(RoutineExercise::getExerciseId)
+                .collect(Collectors.toSet());
+
+        return routineMapper.toRoutineDetailResponse(routine, exerciseService.findSummariesByExerciseId(exerciseIds));
     }
 }

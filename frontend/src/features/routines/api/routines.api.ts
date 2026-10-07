@@ -1,7 +1,7 @@
 import 'server-only';
 
 import backendFetch from '@/shared/api/backend';
-import { Routine } from '../types/api.types';
+import { Routine, RoutineDetail } from '../types/api.types';
 import { ErrorCode } from '@/shared/api/errors/error-code';
 import { toApiError } from '@/shared/api/errors/to-api-error';
 
@@ -28,7 +28,7 @@ export async function fetchUserRoutines(): Promise<Routine[]> {
  * @param id The id of the routine to read.
  * @returns Returns an ApiError with status 404 if no routine with that id is available to the user.
  */
-export async function fetchUserRoutineByRoutineId(id: string): Promise<Routine> {
+export async function fetchUserRoutineByRoutineId(id: string): Promise<RoutineDetail> {
   return request(
     `/backend/routines/${encodeURIComponent(id)}`,
     'USER_ROUTINE_FETCH_FAILED',
@@ -48,7 +48,7 @@ export async function fetchPresetRoutines(): Promise<Routine[]> {
  * @param id The id of the preset routine to read.
  * @returns Returns an ApiError with status 404 if no preset routine with that id is available to the user.
  */
-export async function fetchPresetRoutineByRoutineId(id: string): Promise<Routine> {
+export async function fetchPresetRoutineByRoutineId(id: string): Promise<RoutineDetail> {
   return request(
     `/backend/routines/presets/${encodeURIComponent(id)}`,
     'PRESET_ROUTINE_FETCH_FAILED',

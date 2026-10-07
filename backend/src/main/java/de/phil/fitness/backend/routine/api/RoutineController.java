@@ -1,6 +1,7 @@
 package de.phil.fitness.backend.routine.api;
 
 import de.phil.fitness.backend.auth.CurrentUser;
+import de.phil.fitness.backend.routine.dto.RoutineDetailResponse;
 import de.phil.fitness.backend.routine.dto.RoutineResponse;
 import de.phil.fitness.backend.routine.service.RoutineService;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,8 +28,8 @@ public class RoutineController {
     }
 
     @GetMapping("/{id}")
-    public RoutineResponse getUserRoutine(@PathVariable Long id) {
-        return routineService.findSpecificUserRoutine(currentUser.currentUserId(), id);
+    public RoutineDetailResponse getUserRoutine(@PathVariable Long id) {
+        return routineService.findDetailedUserRoutine(currentUser.currentUserId(), id);
     }
 
     @GetMapping("/presets")
@@ -37,7 +38,7 @@ public class RoutineController {
     }
 
     @GetMapping("/presets/{id}")
-    public RoutineResponse getPresetRoutine(@PathVariable Long id) {
-        return routineService.findSpecificPresetRoutine(id);
+    public RoutineDetailResponse getPresetRoutine(@PathVariable Long id) {
+        return routineService.findDetailedPresetRoutine(id);
     }
 }

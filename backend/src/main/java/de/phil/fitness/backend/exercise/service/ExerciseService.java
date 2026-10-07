@@ -1,7 +1,11 @@
 package de.phil.fitness.backend.exercise.service;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
+import de.phil.fitness.backend.exercise.dto.ExerciseSummary;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -65,5 +69,17 @@ public class ExerciseService {
     public ExerciseResponse createNewExercise(ExerciseRequest req, Long userId) {
         Exercise newExercise = exerciseMapper.mapRequestToExerciseEntity(req, userId);
         return exerciseMapper.toResponse(exerciseRepository.save(newExercise));
+    }
+
+    /**
+     * Resolves exercises being referenced by other slices, like "routine". No ownership validation here. That happens in other slices.
+     * @param exerciseIds Ids to resolve.
+     * @return Summaries keyed by their Ids.
+     */
+    @Transactional(readOnly = true)
+    public Map<Long, ExerciseSummary> findSummariesByExerciseId(Collection<Long> exerciseIds) {
+        return exerciseRepository.findAllById(exerciseIds)
+                .stream()
+                .collect(Collectors.toMap(Exercise::getId, exerciseMapper::toSummary));
     }
 }
