@@ -25,7 +25,6 @@ export type RoutineExercise = {
   targetSets: number | null;
   targetRepsMin: number | null;
   targetRepsMax: number | null;
-  targetRpe: number | null;
   targetDurationSeconds: number | null;
   targetDistanceMeters: number | null;
 };

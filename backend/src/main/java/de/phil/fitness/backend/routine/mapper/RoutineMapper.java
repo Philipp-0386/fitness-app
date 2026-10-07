@@ -48,7 +48,6 @@ public class RoutineMapper {
                 re.getTargetSets(),
                 re.getTargetRepsMin(),
                 re.getTargetRepsMax(),
-                re.getTargetRpe(),
                 re.getTargetDurationSeconds(),
                 re.getTargetDistanceMeters()
         );
@@ -80,7 +79,6 @@ public class RoutineMapper {
         exercise.setTargetSets(request.targetSets());
         exercise.setTargetRepsMin(request.targetRepsMin());
         exercise.setTargetRepsMax(request.targetRepsMax());
-        exercise.setTargetRpe(request.targetRpe());
         exercise.setTargetDurationSeconds(request.targetDurationSeconds());
         exercise.setTargetDistanceMeters(request.targetDistanceMeters());
         return exercise;

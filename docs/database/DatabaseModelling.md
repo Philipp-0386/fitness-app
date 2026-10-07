@@ -39,11 +39,11 @@ Global exercises carry a unique `slug`. Their ids differ between environments on
 
 ### Routine
 
-A `routine` is one training day. `routine_exercise` holds its exercises with aggregate targets per exercise ("3 x 8-12 @ RPE 8"), only the targets matching the `tracking_type` are filled.
+A `routine` is one training day. `routine_exercise` holds its exercises with aggregate targets per exercise ("3 x 8-12"), only the targets matching the `tracking_type` are filled.
 
 Preset routines (Push, Pull, Legs... more in the future) have `user_id IS NULL` and a unique `slug`, seeded in `V2`. Taking a preset always creates an own copy, programs and workouts never reference a preset. The composite keys enforce this, they require the same user on both sides.
 
-TODO: auto-generate targets from the user's own history (rep range preferences, last weights at target RPE).
+TODO: auto-generate targets from the user's own history (rep range preferences, last achieved reps and weights).
 
 ### Program
 

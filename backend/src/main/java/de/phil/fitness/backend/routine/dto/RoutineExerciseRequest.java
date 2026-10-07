@@ -9,7 +9,6 @@ public record RoutineExerciseRequest(
         @Positive Integer targetSets,
         @Positive Integer targetRepsMin,
         @Positive Integer targetRepsMax,
-        @DecimalMin("1.0") @DecimalMax("10.0") @Digits(integer = 2, fraction = 1) BigDecimal targetRpe,
         @Positive Integer targetDurationSeconds,
         @Positive @Digits(integer = 6, fraction = 2) BigDecimal targetDistanceMeters
 ) {

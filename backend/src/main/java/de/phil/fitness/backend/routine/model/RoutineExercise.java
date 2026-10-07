@@ -35,9 +35,6 @@ public class RoutineExercise {
     @Column(name = "TARGET_REPS_MAX")
     private Integer targetRepsMax;
 
-    @Column(name = "TARGET_RPE", precision = 3, scale = 1)
-    private BigDecimal targetRpe;
-
     @Column(name = "TARGET_DURATION_SECONDS")
     private Integer targetDurationSeconds;
 

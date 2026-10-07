@@ -132,7 +132,7 @@ Authorization: Bearer {{loginSina.response.body.$.accessToken}}
 ### 4.1  max reads his own routine -> 200 "Push A" with 4 exercises
 # Ordered by orderIndex 0-3: Barbell Bench Press, Seated Dumbbell Shoulder Press,
 # Triceps Rope Pushdown, Plank. Plank only sets targetSets and
-# targetDurationSeconds, its reps and rpe are null.
+# targetDurationSeconds, its reps are null.
 GET {{host}}/backend/routines/4
 Authorization: Bearer {{loginMax.response.body.$.accessToken}}
 
@@ -236,7 +236,7 @@ Content-Type: application/json
   "name": "Upper Body REST Client",
   "description": "Created from the REST client.",
   "exercises": [
-    { "exerciseId": 2, "targetSets": 3, "targetRepsMin": 8, "targetRepsMax": 10, "targetRpe": 8.0 },
+    { "exerciseId": 2, "targetSets": 3, "targetRepsMin": 8, "targetRepsMax": 10 },
     { "exerciseId": 1, "targetSets": 4, "targetRepsMin": 5, "targetRepsMax": 5 },
     { "exerciseId": 66, "targetSets": 2 },
     { "exerciseId": 38, "targetSets": 3, "targetDurationSeconds": 45 }
@@ -322,7 +322,7 @@ Content-Type: application/json
 ###############################################################################
 
 # Each of these answers 400 VALIDATION_FAILED with fieldErrors. Entry fields are
-# reported with their index, e.g. "exercises[0].targetRpe".
+# reported with their index, e.g. "exercises[0].targetSets".
 
 ### 9.1  No name -> 400 on "name"
 POST {{host}}/backend/routines
@@ -360,7 +360,7 @@ Content-Type: application/json
   ]
 }
 
-### 9.4  Targets out of range -> 400 on targetSets, targetRpe and targetDurationSeconds
+### 9.4  Targets out of range -> 400 on targetSets, targetRepsMin and targetDurationSeconds
 POST {{host}}/backend/routines
 Authorization: Bearer {{loginMax.response.body.$.accessToken}}
 Content-Type: application/json
@@ -368,7 +368,7 @@ Content-Type: application/json
 {
   "name": "Bad Targets",
   "exercises": [
-    { "exerciseId": 1, "targetSets": 0, "targetRpe": 11 },
+    { "exerciseId": 1, "targetSets": 0, "targetRepsMin": 0 },
     { "exerciseId": 38, "targetDurationSeconds": -30 }
   ]
 }

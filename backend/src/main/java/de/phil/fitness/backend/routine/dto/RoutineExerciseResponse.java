@@ -11,7 +11,6 @@ public record RoutineExerciseResponse(
         Integer targetSets,
         Integer targetRepsMin,
         Integer targetRepsMax,
-        BigDecimal targetRpe,
         Integer targetDurationSeconds,
         BigDecimal targetDistanceMeters
 ) {
