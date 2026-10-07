@@ -5,6 +5,16 @@ import { ErrorCode } from '@/shared/api/errors/error-code';
 import { toApiError } from '@/shared/api/errors/to-api-error';
 import { Exercise } from '../types/api.types';
 
+async function request<T>(path: string, fallbackCode: ErrorCode): Promise<T> {
+  const response = await backendFetch(path);
+
+  if (!response.ok) {
+    throw await toApiError(response, fallbackCode);
+  }
+
+  return response.json();
+}
+
 /**
  * Reads the exercises available to the current user.
  *
@@ -25,14 +35,4 @@ export async function fetchExercises(): Promise<Exercise[]> {
  */
 export async function fetchExerciseById(id: string): Promise<Exercise> {
   return request(`/backend/exercises/${encodeURIComponent(id)}`, 'EXERCISE_FETCH_FAILED');
-}
-
-async function request<T>(path: string, fallbackCode: ErrorCode): Promise<T> {
-  const response = await backendFetch(path);
-
-  if (!response.ok) {
-    throw await toApiError(response, fallbackCode);
-  }
-
-  return response.json();
 }
