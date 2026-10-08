@@ -129,7 +129,7 @@ public class RoutineService {
                 .map(RoutineExercise::getExerciseId)
                 .collect(Collectors.toSet());
 
-        exerciseService.idAvailablityCheck(userId, exerciseIds);
+        exerciseService.idAvailabilityCheck(userId, exerciseIds);
         return routineMapper.toRoutineDetailResponse(routineRepository.save(routine), exerciseService.findSummariesByExerciseId(exerciseIds));
     }
 }
