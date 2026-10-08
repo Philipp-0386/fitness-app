@@ -74,6 +74,18 @@ public class RoutineService {
     }
 
     /**
+     * Deletes a user-owned routine including its exercises.
+     * @param userId Id of the requesting user.
+     * @param routineId Id of the routine to delete.
+     */
+    @Transactional
+    public void deleteUserRoutine(Long userId, Long routineId) {
+        Routine routine = routineRepository.getUserRoutineById(userId, routineId)
+                .orElseThrow(() -> new UserRoutineNotFoundException("The user-routine with id " + routineId + " does not exist"));
+        routineRepository.delete(routine);
+    }
+
+    /**
      * Lists all preset-routines defined by the system as defaults to access for all users.
      * @return List of all preset-routines.
      */

@@ -55,6 +55,19 @@ public class RoutineController {
         return routineService.findDetailedUserRoutine(currentUser.currentUserId(), id);
     }
 
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Delete an own routine", description = "Deletes the routine including its exercises, provided "
+            + "it is owned by the caller. Workouts and program days referencing it keep existing without the reference.")
+    @ApiResponse(responseCode = "204", description = "Routine deleted")
+    @ApiResponse(responseCode = "401", description = "UNAUTHENTICATED: missing, invalid or expired access token, or a refresh token",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    @ApiResponse(responseCode = "404", description = "USER_ROUTINE_NOT_FOUND: no routine with this id is owned by the caller",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    public ResponseEntity<Void> deleteUserRoutine(@PathVariable Long id) {
+        routineService.deleteUserRoutine(currentUser.currentUserId(), id);
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/presets")
     @Operation(summary = "List preset routines", description = "Routines defined by the system for all users, "
             + "without their exercises.")
