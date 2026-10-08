@@ -92,7 +92,7 @@ public class ExerciseService {
      *         not exist, is soft deleted or belongs to someone else
      */
     @Transactional(readOnly = true)
-    public void idAvailablityCheck(Long userId, Set<Long> exerciseIds) {
+    public void idAvailabilityCheck(Long userId, Set<Long> exerciseIds) {
         if (exerciseIds.isEmpty()) return;
 
         Set<Long> available = exerciseRepository.findAvailableIds(userId, exerciseIds);

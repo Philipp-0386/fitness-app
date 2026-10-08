@@ -4,7 +4,7 @@ import de.phil.fitness.backend.common.ApiException;
 import org.springframework.http.HttpStatus;
 
 /**
- * Thrown, when a specific user-owned routine is called by Id, but no routine exists under said Id.
+ * Thrown, when a specific preset-routine is called by Id, but no preset-routine exists under said Id.
  */
 public class PresetRoutineNotFoundException extends ApiException {
     public PresetRoutineNotFoundException(String message) {
