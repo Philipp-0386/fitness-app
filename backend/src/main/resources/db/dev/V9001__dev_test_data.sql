@@ -42,10 +42,10 @@ BEGIN
     VALUES (v_user, 'Push A', 'Chest, shoulders and triceps.')
     RETURNING id INTO v_routine;
 
-    INSERT INTO routine_exercise (routine_id, exercise_id, order_index, target_sets, target_reps_min, target_reps_max, target_rpe) VALUES
-        (v_routine, (SELECT id FROM exercise WHERE slug = 'barbell-bench-press'), 0, 3, 8, 10, 8.0),
-        (v_routine, (SELECT id FROM exercise WHERE slug = 'seated-dumbbell-shoulder-press'), 1, 3, 10, 12, 8.0),
-        (v_routine, (SELECT id FROM exercise WHERE slug = 'triceps-rope-pushdown'), 2, 3, 12, 15, 8.5);
+    INSERT INTO routine_exercise (routine_id, exercise_id, order_index, target_sets, target_reps_min, target_reps_max) VALUES
+        (v_routine, (SELECT id FROM exercise WHERE slug = 'barbell-bench-press'), 0, 3, 8, 10),
+        (v_routine, (SELECT id FROM exercise WHERE slug = 'seated-dumbbell-shoulder-press'), 1, 3, 10, 12),
+        (v_routine, (SELECT id FROM exercise WHERE slug = 'triceps-rope-pushdown'), 2, 3, 12, 15);
     INSERT INTO routine_exercise (routine_id, exercise_id, order_index, target_sets, target_duration_seconds)
     VALUES (v_routine, (SELECT id FROM exercise WHERE slug = 'plank'), 3, 3, 60);
 
@@ -53,8 +53,8 @@ BEGIN
     VALUES (v_user, v_routine, 'Push A', TIMESTAMPTZ '2026-09-28 18:00:00+02', 'COMPLETED', TIMESTAMPTZ '2026-09-28 19:05:00+02')
     RETURNING id INTO v_workout;
 
-    INSERT INTO workout_exercise (workout_id, exercise_id, order_index, target_sets_snapshot, target_reps_min_snapshot, target_reps_max_snapshot, target_rpe_snapshot)
-    VALUES (v_workout, (SELECT id FROM exercise WHERE slug = 'barbell-bench-press'), 0, 3, 8, 10, 8.0)
+    INSERT INTO workout_exercise (workout_id, exercise_id, order_index, target_sets_snapshot, target_reps_min_snapshot, target_reps_max_snapshot)
+    VALUES (v_workout, (SELECT id FROM exercise WHERE slug = 'barbell-bench-press'), 0, 3, 8, 10)
     RETURNING id INTO v_entry;
     INSERT INTO workout_set (workout_exercise_id, set_number, set_type, reps, weight_kg, rpe) VALUES
         (v_entry, 1, 'WARMUP', 10, 20, NULL),
@@ -64,8 +64,8 @@ BEGIN
         (v_entry, 5, 'WORKING', 8, 80, 9.0);
 
     -- dumbbells: weight_kg is the weight of one dumbbell
-    INSERT INTO workout_exercise (workout_id, exercise_id, order_index, target_sets_snapshot, target_reps_min_snapshot, target_reps_max_snapshot, target_rpe_snapshot)
-    VALUES (v_workout, (SELECT id FROM exercise WHERE slug = 'seated-dumbbell-shoulder-press'), 1, 3, 10, 12, 8.0)
+    INSERT INTO workout_exercise (workout_id, exercise_id, order_index, target_sets_snapshot, target_reps_min_snapshot, target_reps_max_snapshot)
+    VALUES (v_workout, (SELECT id FROM exercise WHERE slug = 'seated-dumbbell-shoulder-press'), 1, 3, 10, 12)
     RETURNING id INTO v_entry;
     INSERT INTO workout_set (workout_exercise_id, set_number, set_type, reps, weight_kg, rpe) VALUES
         (v_entry, 1, 'WORKING', 12, 24, 7.5),
@@ -73,8 +73,8 @@ BEGIN
         (v_entry, 3, 'WORKING', 10, 24, 8.5);
 
     -- planned but not done: the row stays without sets
-    INSERT INTO workout_exercise (workout_id, exercise_id, order_index, target_sets_snapshot, target_reps_min_snapshot, target_reps_max_snapshot, target_rpe_snapshot)
-    VALUES (v_workout, (SELECT id FROM exercise WHERE slug = 'triceps-rope-pushdown'), 2, 3, 12, 15, 8.5);
+    INSERT INTO workout_exercise (workout_id, exercise_id, order_index, target_sets_snapshot, target_reps_min_snapshot, target_reps_max_snapshot)
+    VALUES (v_workout, (SELECT id FROM exercise WHERE slug = 'triceps-rope-pushdown'), 2, 3, 12, 15);
 
     INSERT INTO workout_exercise (workout_id, exercise_id, order_index, target_sets_snapshot, target_duration_seconds_snapshot)
     VALUES (v_workout, (SELECT id FROM exercise WHERE slug = 'plank'), 3, 3, 60)
@@ -117,27 +117,27 @@ BEGIN
     VALUES (v_user, 'Legs')
     RETURNING id INTO v_routine;
 
-    INSERT INTO routine_exercise (routine_id, exercise_id, order_index, target_sets, target_reps_min, target_reps_max, target_rpe) VALUES
-        (v_routine, (SELECT id FROM exercise WHERE slug = 'barbell-back-squat'), 0, 4, 5, 8, 8.0),
-        (v_routine, (SELECT id FROM exercise WHERE slug = 'romanian-deadlift'), 1, 3, 8, 10, 8.0),
-        (v_routine, (SELECT id FROM exercise WHERE slug = 'standing-calf-raise'), 2, 3, 10, 15, 9.0);
+    INSERT INTO routine_exercise (routine_id, exercise_id, order_index, target_sets, target_reps_min, target_reps_max) VALUES
+        (v_routine, (SELECT id FROM exercise WHERE slug = 'barbell-back-squat'), 0, 4, 5, 8),
+        (v_routine, (SELECT id FROM exercise WHERE slug = 'romanian-deadlift'), 1, 3, 8, 10),
+        (v_routine, (SELECT id FROM exercise WHERE slug = 'standing-calf-raise'), 2, 3, 10, 15);
 
     -- started eagerly: every exercise of the routine is copied at the start, the later ones have no sets yet
     INSERT INTO workout (user_id, routine_id, name, started_at, status)
     VALUES (v_user, v_routine, 'Legs', TIMESTAMPTZ '2026-09-30 17:30:00+02', 'IN_PROGRESS')
     RETURNING id INTO v_workout;
 
-    INSERT INTO workout_exercise (workout_id, exercise_id, order_index, target_sets_snapshot, target_reps_min_snapshot, target_reps_max_snapshot, target_rpe_snapshot)
-    VALUES (v_workout, (SELECT id FROM exercise WHERE slug = 'barbell-back-squat'), 0, 4, 5, 8, 8.0)
+    INSERT INTO workout_exercise (workout_id, exercise_id, order_index, target_sets_snapshot, target_reps_min_snapshot, target_reps_max_snapshot)
+    VALUES (v_workout, (SELECT id FROM exercise WHERE slug = 'barbell-back-squat'), 0, 4, 5, 8)
     RETURNING id INTO v_entry;
     INSERT INTO workout_set (workout_exercise_id, set_number, set_type, reps, weight_kg, rpe) VALUES
         (v_entry, 1, 'WARMUP', 8, 40, NULL),
         (v_entry, 2, 'WORKING', 6, 70, 7.5),
         (v_entry, 3, 'WORKING', 6, 70, 8.0);
 
-    INSERT INTO workout_exercise (workout_id, exercise_id, order_index, target_sets_snapshot, target_reps_min_snapshot, target_reps_max_snapshot, target_rpe_snapshot) VALUES
-        (v_workout, (SELECT id FROM exercise WHERE slug = 'romanian-deadlift'), 1, 3, 8, 10, 8.0),
-        (v_workout, (SELECT id FROM exercise WHERE slug = 'standing-calf-raise'), 2, 3, 10, 15, 9.0);
+    INSERT INTO workout_exercise (workout_id, exercise_id, order_index, target_sets_snapshot, target_reps_min_snapshot, target_reps_max_snapshot) VALUES
+        (v_workout, (SELECT id FROM exercise WHERE slug = 'romanian-deadlift'), 1, 3, 8, 10),
+        (v_workout, (SELECT id FROM exercise WHERE slug = 'standing-calf-raise'), 2, 3, 10, 15);
 
     INSERT INTO workout (user_id, routine_id, name, started_at, status, ended_at)
     VALUES (v_user, NULL, 'Zone 2 run', TIMESTAMPTZ '2026-09-27 09:00:00+02', 'COMPLETED', TIMESTAMPTZ '2026-09-27 09:40:00+02')
@@ -209,8 +209,8 @@ BEGIN
     INSERT INTO routine (user_id, name, description)
     SELECT v_user, name, description FROM routine WHERE slug = 'pull'
     RETURNING id INTO v_pull;
-    INSERT INTO routine_exercise (routine_id, exercise_id, order_index, target_sets, target_reps_min, target_reps_max, target_rpe, target_duration_seconds, target_distance_meters)
-    SELECT v_pull, exercise_id, order_index, target_sets, target_reps_min, target_reps_max, target_rpe, target_duration_seconds, target_distance_meters
+    INSERT INTO routine_exercise (routine_id, exercise_id, order_index, target_sets, target_reps_min, target_reps_max, target_duration_seconds, target_distance_meters)
+    SELECT v_pull, exercise_id, order_index, target_sets, target_reps_min, target_reps_max, target_duration_seconds, target_distance_meters
     FROM routine_exercise WHERE routine_id = (SELECT id FROM routine WHERE slug = 'pull');
 
     INSERT INTO program (user_id, name, is_active)
@@ -278,8 +278,8 @@ BEGIN
             INSERT INTO routine (user_id, name, description)
             SELECT v_user, name, description FROM routine WHERE id = v_slot.routine_id
             RETURNING id INTO v_copy;
-            INSERT INTO routine_exercise (routine_id, exercise_id, order_index, target_sets, target_reps_min, target_reps_max, target_rpe, target_duration_seconds, target_distance_meters)
-            SELECT v_copy, exercise_id, order_index, target_sets, target_reps_min, target_reps_max, target_rpe, target_duration_seconds, target_distance_meters
+            INSERT INTO routine_exercise (routine_id, exercise_id, order_index, target_sets, target_reps_min, target_reps_max, target_duration_seconds, target_distance_meters)
+            SELECT v_copy, exercise_id, order_index, target_sets, target_reps_min, target_reps_max, target_duration_seconds, target_distance_meters
             FROM routine_exercise WHERE routine_id = v_slot.routine_id;
         END IF;
         INSERT INTO program_day (user_id, program_id, routine_id, order_index)

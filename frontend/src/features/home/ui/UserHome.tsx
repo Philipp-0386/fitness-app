@@ -26,7 +26,7 @@ const shortcuts = [
     icon: ClipboardList,
     title: 'Training plans',
     text: 'Create and edit your routines.',
-    href: '/',
+    href: './routines',
   },
   {
     icon: Dumbbell,
