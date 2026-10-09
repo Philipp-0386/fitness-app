@@ -6,6 +6,7 @@ import de.phil.fitness.backend.routine.dto.RoutineDetailResponse;
 import de.phil.fitness.backend.routine.dto.CreateRoutineRequest;
 import de.phil.fitness.backend.routine.dto.RoutineResponse;
 import de.phil.fitness.backend.routine.service.RoutineService;
+import de.phil.fitness.backend.routine.dto.UpdateRoutineRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -66,6 +67,24 @@ public class RoutineController {
     public ResponseEntity<Void> deleteUserRoutine(@PathVariable Long id) {
         routineService.deleteUserRoutine(currentUser.currentUserId(), id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{id}")
+    @Operation(summary = "Update an own routine", description = "Replaces name, description and exercises of the routine, "
+            + "provided it is owned by the caller. The body describes the complete new state: an omitted description is "
+            + "cleared and omitted exercises are removed. The order of the exercises is taken from the list.")
+    @ApiResponse(responseCode = "200", description = "The updated routine with its exercises")
+    @ApiResponse(responseCode = "400", description = "INVALID_JSON or VALIDATION_FAILED: name missing or too long, "
+            + "description too long, more than 50 exercises, an exerciseId missing, a non-positive target value "
+            + "or targetRepsMin above targetRepsMax",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    @ApiResponse(responseCode = "401", description = "UNAUTHENTICATED: missing, invalid or expired access token, or a refresh token",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    @ApiResponse(responseCode = "404", description = "USER_ROUTINE_NOT_FOUND: no routine with this id is owned by the caller, "
+            + "or EXERCISE_NOT_FOUND: a referenced exercise is not available to the caller",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    public RoutineDetailResponse updateUserRoutine(@PathVariable Long id, @Valid @RequestBody UpdateRoutineRequest request) {
+        return routineService.updateUserRoutine(currentUser.currentUserId(), id, request);
     }
 
     @GetMapping("/presets")
