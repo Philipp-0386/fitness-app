@@ -50,6 +50,7 @@ public class RoutineService {
      * @param userId Id of the requesting user.
      * @param routineId Id of the searched routine.
      * @return Singular user-owned routine.
+     * @throws UserRoutineNotFoundException if no routine with this id is owned by the user
      */
     @Transactional(readOnly = true)
     public RoutineResponse findSpecificUserRoutine(Long userId, Long routineId) {
@@ -63,6 +64,7 @@ public class RoutineService {
      * @param userId Id of the requesting user.
      * @param routineId Id of the searched routine.
      * @return Singular user-owned routine with its exercises.
+     * @throws UserRoutineNotFoundException if no routine with this id is owned by the user
      */
     @Transactional(readOnly = true)
     public RoutineDetailResponse findDetailedUserRoutine(Long userId, Long routineId) {
@@ -79,6 +81,7 @@ public class RoutineService {
      * Deletes a user-owned routine including its exercises.
      * @param userId Id of the requesting user.
      * @param routineId Id of the routine to delete.
+     * @throws UserRoutineNotFoundException if no routine with this id is owned by the user
      */
     @Transactional
     public void deleteUserRoutine(Long userId, Long routineId) {
@@ -93,6 +96,7 @@ public class RoutineService {
      * @param routineId Id of the routine to update.
      * @param request Request containing information to update the routine with.
      * @return The updated routine with its exercises.
+     * @throws UserRoutineNotFoundException if no routine with this id is owned by the user
      * @throws de.phil.fitness.backend.exercise.exception.ExerciseNotFoundException if a referenced exercise is not
      *         available to the user
      */
@@ -131,6 +135,7 @@ public class RoutineService {
      * Retrieves single preset-routine by its Id.
      * @param routineId Id of the searched routine.
      * @return Singular preset-routine.
+     * @throws PresetRoutineNotFoundException if no preset-routine with this id exists
      */
     @Transactional(readOnly = true)
     public RoutineResponse findSpecificPresetRoutine(Long routineId) {
@@ -143,6 +148,7 @@ public class RoutineService {
      * Retrieves single preset-routine including the exercises it includes.
      * @param routineId Id of the searched routine.
      * @return Singular preset-routine with its exercises.
+     * @throws PresetRoutineNotFoundException if no preset-routine with this id exists
      */
     @Transactional(readOnly = true)
     public RoutineDetailResponse findDetailedPresetRoutine(Long routineId) {
