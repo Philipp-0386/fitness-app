@@ -396,12 +396,77 @@ Content-Type: application/json
 
 ###############################################################################
 ###############################################################################
-# 10  To-Do/WIP
+# 10  Deleting own routines
 ###############################################################################
 ###############################################################################
 
-### 10.1  The list views do not include exercises
+# Note: these requests write. Every routine deleted here is created in 10.1
+# first, the seeded routines stay untouched. Send 10.1 again to repeat a step.
+
+### 10.1  Create a routine to delete -> 201
+# @name deleteTarget
+POST {{host}}/backend/routines
+Authorization: Bearer {{loginMax.response.body.$.accessToken}}
+Content-Type: application/json
+
+{
+  "name": "Delete Me Pls Thanks",
+  "exercises": [
+    { "exerciseId": 1, "targetSets": 3, "targetRepsMin": 8, "targetRepsMax": 10 },
+    { "exerciseId": 38, "targetSets": 3, "targetDurationSeconds": 45 }
+  ]
+}
+
+### 10.2  lena tries to delete it -> 404 USER_ROUTINE_NOT_FOUND
+# Same body as 10.6 and 10.7, so lena cannot tell that the id exists.
+DELETE {{host}}/backend/routines/{{deleteTarget.response.body.$.id}}
+Authorization: Bearer {{loginLena.response.body.$.accessToken}}
+
+### 10.3  It is still there for max -> 200 "Delete Me" with 2 exercises
+GET {{host}}/backend/routines/{{deleteTarget.response.body.$.id}}
+Authorization: Bearer {{loginMax.response.body.$.accessToken}}
+
+### 10.4  max deletes it -> 204, empty body
+# The routine_exercise rows go with it.
+DELETE {{host}}/backend/routines/{{deleteTarget.response.body.$.id}}
+Authorization: Bearer {{loginMax.response.body.$.accessToken}}
+
+### 10.5  Read it back -> 404 USER_ROUTINE_NOT_FOUND
+GET {{host}}/backend/routines/{{deleteTarget.response.body.$.id}}
+Authorization: Bearer {{loginMax.response.body.$.accessToken}}
+
+### 10.6  Delete it a second time -> 404 USER_ROUTINE_NOT_FOUND
+DELETE {{host}}/backend/routines/{{deleteTarget.response.body.$.id}}
+Authorization: Bearer {{loginMax.response.body.$.accessToken}}
+
+### 10.7  A preset through the user path -> 404 USER_ROUTINE_NOT_FOUND
+# Presets can never be deleted, check with 2.1 afterwards.
+DELETE {{host}}/backend/routines/1
+Authorization: Bearer {{loginMax.response.body.$.accessToken}}
+
+### 10.8  No token -> 401 UNAUTHENTICATED
+DELETE {{host}}/backend/routines/4
+
+### 10.9  Refresh token instead of an access token -> 401 UNAUTHENTICATED
+DELETE {{host}}/backend/routines/4
+Authorization: Bearer {{loginMax.response.body.$.refreshToken}}
+
+### 10.10  Non-numeric id -> 400 INVALID_PARAMETER
+DELETE {{host}}/backend/routines/abc
+Authorization: Bearer {{loginMax.response.body.$.accessToken}}
+
+### 10.11  Without an id -> 405 METHOD_NOT_ALLOWED, the collection itself cannot be deleted
+DELETE {{host}}/backend/routines
+Authorization: Bearer {{loginMax.response.body.$.accessToken}}
+
+###############################################################################
+###############################################################################
+# 11  To-Do/WIP
+###############################################################################
+###############################################################################
+
+### 11.1  The list views do not include exercises
 # Only the detail views do. A preview for the list (exercise names) is planned
 # for the routine list UI.
 
-### 10.2  Copying a preset
+### 11.2  Copying a preset

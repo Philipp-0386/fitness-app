@@ -7,11 +7,13 @@ import java.util.stream.Collectors;
 import de.phil.fitness.backend.exercise.service.ExerciseService;
 import de.phil.fitness.backend.routine.dto.CreateRoutineRequest;
 import de.phil.fitness.backend.routine.dto.RoutineDetailResponse;
+import de.phil.fitness.backend.routine.dto.RoutineExerciseRequest;
 import de.phil.fitness.backend.routine.dto.RoutineResponse;
 import de.phil.fitness.backend.routine.exception.PresetRoutineNotFoundException;
 import de.phil.fitness.backend.routine.exception.UserRoutineNotFoundException;
 import de.phil.fitness.backend.routine.model.Routine;
 import de.phil.fitness.backend.routine.model.RoutineExercise;
+import de.phil.fitness.backend.routine.dto.UpdateRoutineRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,6 +50,7 @@ public class RoutineService {
      * @param userId Id of the requesting user.
      * @param routineId Id of the searched routine.
      * @return Singular user-owned routine.
+     * @throws UserRoutineNotFoundException if no routine with this id is owned by the user
      */
     @Transactional(readOnly = true)
     public RoutineResponse findSpecificUserRoutine(Long userId, Long routineId) {
@@ -61,6 +64,7 @@ public class RoutineService {
      * @param userId Id of the requesting user.
      * @param routineId Id of the searched routine.
      * @return Singular user-owned routine with its exercises.
+     * @throws UserRoutineNotFoundException if no routine with this id is owned by the user
      */
     @Transactional(readOnly = true)
     public RoutineDetailResponse findDetailedUserRoutine(Long userId, Long routineId) {
@@ -71,6 +75,48 @@ public class RoutineService {
                 .collect(Collectors.toSet());
 
         return routineMapper.toRoutineDetailResponse(routine, exerciseService.findSummariesByExerciseId(exerciseIds));
+    }
+
+    /**
+     * Deletes a user-owned routine including its exercises.
+     * @param userId Id of the requesting user.
+     * @param routineId Id of the routine to delete.
+     * @throws UserRoutineNotFoundException if no routine with this id is owned by the user
+     */
+    @Transactional
+    public void deleteUserRoutine(Long userId, Long routineId) {
+        Routine routine = routineRepository.getUserRoutineById(userId, routineId)
+                .orElseThrow(() -> new UserRoutineNotFoundException("The user-routine with id " + routineId + " does not exist"));
+        routineRepository.delete(routine);
+    }
+
+    /**
+     * Updates a user-owned routine including its exercises.
+     * @param userId Id of the requesting user.
+     * @param routineId Id of the routine to update.
+     * @param request Request containing information to update the routine with.
+     * @return The updated routine with its exercises.
+     * @throws UserRoutineNotFoundException if no routine with this id is owned by the user
+     * @throws de.phil.fitness.backend.exercise.exception.ExerciseNotFoundException if a referenced exercise is not
+     *         available to the user
+     */
+    @Transactional
+    public RoutineDetailResponse updateUserRoutine(Long userId, Long routineId, UpdateRoutineRequest request) {
+        Routine routine = routineRepository.getUserRoutineDetailedById(userId, routineId)
+                .orElseThrow(() -> new UserRoutineNotFoundException("The user-routine with id " + routineId + " does not exist"));
+
+        Set<Long> exerciseIds;
+        if (request.exercises() == null) {
+            exerciseIds = Set.of();
+        } else {
+            exerciseIds = request.exercises().stream()
+                    .map(RoutineExerciseRequest::exerciseId)
+                    .collect(Collectors.toSet());
+        }
+
+        exerciseService.idAvailabilityCheck(userId, exerciseIds);
+        routineMapper.applyUpdateOfUserRoutine(routine, request);
+        return routineMapper.toRoutineDetailResponse(routineRepository.saveAndFlush(routine), exerciseService.findSummariesByExerciseId(exerciseIds));
     }
 
     /**
@@ -89,6 +135,7 @@ public class RoutineService {
      * Retrieves single preset-routine by its Id.
      * @param routineId Id of the searched routine.
      * @return Singular preset-routine.
+     * @throws PresetRoutineNotFoundException if no preset-routine with this id exists
      */
     @Transactional(readOnly = true)
     public RoutineResponse findSpecificPresetRoutine(Long routineId) {
@@ -101,6 +148,7 @@ public class RoutineService {
      * Retrieves single preset-routine including the exercises it includes.
      * @param routineId Id of the searched routine.
      * @return Singular preset-routine with its exercises.
+     * @throws PresetRoutineNotFoundException if no preset-routine with this id exists
      */
     @Transactional(readOnly = true)
     public RoutineDetailResponse findDetailedPresetRoutine(Long routineId) {

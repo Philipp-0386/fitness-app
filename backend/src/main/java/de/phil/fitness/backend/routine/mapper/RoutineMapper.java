@@ -6,6 +6,7 @@ import de.phil.fitness.backend.routine.model.Routine;
 import de.phil.fitness.backend.routine.model.RoutineExercise;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
@@ -82,6 +83,23 @@ public class RoutineMapper {
         exercise.setTargetDurationSeconds(request.targetDurationSeconds());
         exercise.setTargetDistanceMeters(request.targetDistanceMeters());
         return exercise;
+    }
+
+    public void applyUpdateOfUserRoutine(Routine routine, UpdateRoutineRequest request) {
+        routine.setName(request.name());
+        routine.setDescription(request.description());
+        routine.clearExercises();
+        routine.setUpdatedAt(Instant.now());
+        List<RoutineExerciseRequest> exercises;
+        if(request.exercises() == null) {
+            exercises = List.of();
+        } else {
+            exercises = request.exercises();
+        }
+
+        for (int i = 0; i < exercises.size(); i++) {
+            routine.addExercise(toRoutineExerciseEntity(exercises.get(i), i));
+        }
     }
 
 }
