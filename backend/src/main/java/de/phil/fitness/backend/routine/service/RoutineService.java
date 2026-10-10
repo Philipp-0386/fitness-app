@@ -1,15 +1,20 @@
 package de.phil.fitness.backend.routine.service;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import de.phil.fitness.backend.exercise.dto.ExerciseSummary;
+import de.phil.fitness.backend.exercise.model.TrackingType;
 import de.phil.fitness.backend.exercise.service.ExerciseService;
 import de.phil.fitness.backend.routine.dto.CreateRoutineRequest;
 import de.phil.fitness.backend.routine.dto.RoutineDetailResponse;
 import de.phil.fitness.backend.routine.dto.RoutineExerciseRequest;
 import de.phil.fitness.backend.routine.dto.RoutineResponse;
 import de.phil.fitness.backend.routine.exception.PresetRoutineNotFoundException;
+import de.phil.fitness.backend.routine.exception.RoutineTargetMismatchException;
 import de.phil.fitness.backend.routine.exception.UserRoutineNotFoundException;
 import de.phil.fitness.backend.routine.model.Routine;
 import de.phil.fitness.backend.routine.model.RoutineExercise;
@@ -99,6 +104,7 @@ public class RoutineService {
      * @throws UserRoutineNotFoundException if no routine with this id is owned by the user
      * @throws de.phil.fitness.backend.exercise.exception.ExerciseNotFoundException if a referenced exercise is not
      *         available to the user
+     * @throws RoutineTargetMismatchException if a target is set that the tracking type of its exercise does not use
      */
     @Transactional
     public RoutineDetailResponse updateUserRoutine(Long userId, Long routineId, UpdateRoutineRequest request) {
@@ -115,8 +121,24 @@ public class RoutineService {
         }
 
         exerciseService.idAvailabilityCheck(userId, exerciseIds);
+        Map<Long, ExerciseSummary> exercises = exerciseService.findSummariesByExerciseId(exerciseIds);
         routineMapper.applyUpdateOfUserRoutine(routine, request);
-        return routineMapper.toRoutineDetailResponse(routineRepository.saveAndFlush(routine), exerciseService.findSummariesByExerciseId(exerciseIds));
+
+        Map<String, String> fieldErrors = new LinkedHashMap<>();
+        for (RoutineExercise re : routine.getExercises()) {
+            TrackingType type = exercises.get(re.getExerciseId()).trackingType();
+            String path = "exercises[" + re.getOrderIndex() + "].";
+            String message = "not used by tracking type " + type;
+            if (re.getTargetRepsMin() != null && !type.holdsReps()) fieldErrors.put(path + "targetRepsMin", message);
+            if (re.getTargetRepsMax() != null && !type.holdsReps()) fieldErrors.put(path + "targetRepsMax", message);
+            if (re.getTargetDurationSeconds() != null && !type.holdsDuration()) fieldErrors.put(path + "targetDurationSeconds", message);
+            if (re.getTargetDistanceMeters() != null && !type.holdsDistance()) fieldErrors.put(path + "targetDistanceMeters", message);
+        }
+        if (!fieldErrors.isEmpty()) {
+            throw new RoutineTargetMismatchException("Targets of routine " + routineId + " do not match the tracking types: " + fieldErrors.keySet(), fieldErrors);
+        }
+
+        return routineMapper.toRoutineDetailResponse(routineRepository.saveAndFlush(routine), exercises);
     }
 
     /**
@@ -168,6 +190,7 @@ public class RoutineService {
      * @return The created routine with its exercises.
      * @throws de.phil.fitness.backend.exercise.exception.ExerciseNotFoundException if a referenced exercise is not
      *         available to the user
+     * @throws RoutineTargetMismatchException if a target is set that the tracking type of its exercise does not use
      */
     @Transactional
     public RoutineDetailResponse createNewUserRoutine(CreateRoutineRequest createRoutineRequest, Long userId) {
@@ -178,6 +201,22 @@ public class RoutineService {
                 .collect(Collectors.toSet());
 
         exerciseService.idAvailabilityCheck(userId, exerciseIds);
-        return routineMapper.toRoutineDetailResponse(routineRepository.save(routine), exerciseService.findSummariesByExerciseId(exerciseIds));
+        Map<Long, ExerciseSummary> exercises = exerciseService.findSummariesByExerciseId(exerciseIds);
+
+        Map<String, String> fieldErrors = new LinkedHashMap<>();
+        for (RoutineExercise re : routine.getExercises()) {
+            TrackingType type = exercises.get(re.getExerciseId()).trackingType();
+            String path = "exercises[" + re.getOrderIndex() + "].";
+            String message = "not used by tracking type " + type;
+            if (re.getTargetRepsMin() != null && !type.holdsReps()) fieldErrors.put(path + "targetRepsMin", message);
+            if (re.getTargetRepsMax() != null && !type.holdsReps()) fieldErrors.put(path + "targetRepsMax", message);
+            if (re.getTargetDurationSeconds() != null && !type.holdsDuration()) fieldErrors.put(path + "targetDurationSeconds", message);
+            if (re.getTargetDistanceMeters() != null && !type.holdsDistance()) fieldErrors.put(path + "targetDistanceMeters", message);
+        }
+        if (!fieldErrors.isEmpty()) {
+            throw new RoutineTargetMismatchException("Targets of a new routine do not match the tracking types: " + fieldErrors.keySet(), fieldErrors);
+        }
+
+        return routineMapper.toRoutineDetailResponse(routineRepository.save(routine), exercises);
     }
 }

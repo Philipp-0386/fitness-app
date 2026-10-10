@@ -54,7 +54,7 @@ comparison against a misspelled code fails to compile. A new code in the backend
 | `PRESET_ROUTINE_NOT_FOUND` | 404 | `PresetRoutineNotFoundException` from `RoutineService` on `GET /backend/routines/presets/{id}`: missing, or an own routine (copies of presets included) |
 | `INVALID_PASSWORD`       | 403    | `InvalidPasswordException` on `DELETE /backend/me`, `PUT /backend/me` and `PUT /backend/me/password`, wrong password; not 401, the session is still valid   |
 | `INVALID_JSON`           | 400    | unparseable request body                                                                                                                                    |
-| `VALIDATION_FAILED`      | 400    | bean validation on a `@Valid` request body, and a value outside an enum; `fieldErrors` maps each rejected field to its first message                        |
+| `VALIDATION_FAILED`      | 400    | bean validation on a `@Valid` request body, a value outside an enum, and a routine target the exercise's `tracking_type` does not use (`RoutineTargetMismatchException`); `fieldErrors` maps each rejected field to its first message |
 | `RESOURCE_NOT_FOUND`     | 404    | no handler mapped to the path                                                                                                                               |
 | `INVALID_PARAMETER`      | 400    | path variable or query parameter of the wrong type, e.g. `/backend/exercises/abc`                                                                           |
 | `DATA_CONFLICT`          | 409    | the database rejected a write (unique or foreign key constraint) the service did not check first; a safety net, only the constraint name is logged          |
