@@ -76,7 +76,7 @@ public class RoutineController {
     @ApiResponse(responseCode = "200", description = "The updated routine with its exercises")
     @ApiResponse(responseCode = "400", description = "INVALID_JSON or VALIDATION_FAILED: name missing or too long, "
             + "description too long, more than 50 exercises, an exerciseId missing, a non-positive target value "
-            + "or targetRepsMin above targetRepsMax",
+            + "targetRepsMin above targetRepsMax, or a target the tracking type of its exercise does not use",
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     @ApiResponse(responseCode = "401", description = "UNAUTHENTICATED: missing, invalid or expired access token, or a refresh token",
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
@@ -114,7 +114,7 @@ public class RoutineController {
     @ApiResponse(responseCode = "201", description = "The created routine with its exercises")
     @ApiResponse(responseCode = "400", description = "INVALID_JSON or VALIDATION_FAILED: name missing or too long, "
             + "description too long, more than 50 exercises, an exerciseId missing, a non-positive target value "
-            + "or targetRepsMin above targetRepsMax",
+            + "targetRepsMin above targetRepsMax, or a target the tracking type of its exercise does not use",
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     @ApiResponse(responseCode = "401", description = "UNAUTHENTICATED: missing, invalid or expired access token, or a refresh token",
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
