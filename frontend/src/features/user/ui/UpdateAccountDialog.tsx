@@ -133,6 +133,9 @@ function evaluateError(error: unknown): string {
         return 'This username is already taken. Please choose another one.';
       case 'EMAIL_ALREADY_EXISTS':
         return 'An account with this email already exists. Please use another one.';
+      case 'VALIDATION_FAILED':
+        if (error.fieldErrors) return Object.values(error.fieldErrors).join(' ');
+        break;
     }
   }
   return fallbackErrorMessage(error);
