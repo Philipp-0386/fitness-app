@@ -62,6 +62,7 @@ export default function UserForm() {
       case 'username':
         if (!value.trim()) return 'Username is required';
         if (value.length < 5) return 'Username must be at least 5 characters long';
+        if (value.length > 32) return 'Username must be at most 32 characters long';
         return undefined;
       case 'email':
         if (!value.trim()) return 'Email is required';

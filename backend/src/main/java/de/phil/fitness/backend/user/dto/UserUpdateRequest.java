@@ -10,7 +10,7 @@ import jakarta.validation.constraints.Size;
  * @param currentPassword Confirms the change, must match the stored password
  */
 public record UserUpdateRequest(
-        @NotBlank @Size(min=3, max=32) String username,
+        @NotBlank @Size(min=5, max=32) String username,
         @NotBlank @Email @Size(max=64) String email,
         @NotBlank String currentPassword
 ) {}
