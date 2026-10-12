@@ -1,4 +1,10 @@
-import { CreateRoutineForm, RoutineJsonView, RoutineSource } from '@/features/routines';
+import {
+  CreateRoutineForm,
+  DeleteRoutineForm,
+  RoutineJsonView,
+  RoutineSource,
+  UpdateRoutineForm,
+} from '@/features/routines';
 import { requireSession } from '@/shared/auth/session';
 
 export default async function RoutinesPage({
@@ -41,6 +47,10 @@ export default async function RoutinesPage({
       <RoutineJsonView source={resolvedSource} id={id} />
 
       <CreateRoutineForm />
+
+      <UpdateRoutineForm />
+
+      <DeleteRoutineForm />
     </main>
   );
 }
