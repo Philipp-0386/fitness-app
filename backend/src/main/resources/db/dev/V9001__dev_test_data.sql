@@ -1,16 +1,16 @@
 -- Test users and the data owned by them. Development and CI only (dev profile).
 
--- userdata (all password hashes are bcrypt of 'password', cost 10)
+-- userdata (all password hashes are bcrypt of 'NewPassword1', cost 10)
 INSERT INTO userdata (username, email, password_hashed, role_id)
-VALUES ('admin', 'admin@fitness.local', '$2a$10$N9qo8uLOickgx2ZMRZoMye8fOsiTWZqYtkxvXkKm8BMzjT7t/vIdq', 0);
+VALUES ('admin', 'admin@fitness.local', '$2a$10$syQkcl4BG846.L5Yma/JC.flOG176qY9dWyZK74up67TYI6l4MYie', 0);
 INSERT INTO userdata (username, email, password_hashed, role_id)
-VALUES ('max12', 'max@fitness.local', '$2a$10$N9qo8uLOickgx2ZMRZoMye8fOsiTWZqYtkxvXkKm8BMzjT7t/vIdq', 1);
+VALUES ('max12', 'max@fitness.local', '$2a$10$syQkcl4BG846.L5Yma/JC.flOG176qY9dWyZK74up67TYI6l4MYie', 1);
 INSERT INTO userdata (username, email, password_hashed, role_id)
-VALUES ('lena_lifts', 'lena@fitness.local', '$2a$10$N9qo8uLOickgx2ZMRZoMye8fOsiTWZqYtkxvXkKm8BMzjT7t/vIdq', 1);
+VALUES ('lena_lifts', 'lena@fitness.local', '$2a$10$syQkcl4BG846.L5Yma/JC.flOG176qY9dWyZK74up67TYI6l4MYie', 1);
 INSERT INTO userdata (username, email, password_hashed, role_id)
-VALUES ('marco', 'marco@fitness.local', '$2a$10$N9qo8uLOickgx2ZMRZoMye8fOsiTWZqYtkxvXkKm8BMzjT7t/vIdq', 1);
+VALUES ('marco', 'marco@fitness.local', '$2a$10$syQkcl4BG846.L5Yma/JC.flOG176qY9dWyZK74up67TYI6l4MYie', 1);
 INSERT INTO userdata (username, email, password_hashed, role_id)
-VALUES ('sina1', 'sina@fitness.local', '$2a$10$N9qo8uLOickgx2ZMRZoMye8fOsiTWZqYtkxvXkKm8BMzjT7t/vIdq', 1);
+VALUES ('sina1', 'sina@fitness.local', '$2a$10$syQkcl4BG846.L5Yma/JC.flOG176qY9dWyZK74up67TYI6l4MYie', 1);
 
 -- custom exercises
 INSERT INTO exercise (owner_user_id, name, exercise_type, tracking_type, description, instructions) VALUES ((SELECT id FROM userdata WHERE username = 'max12'), 'Slow Tempo Push-Up', 'STRENGTH', 'BODYWEIGHT_REPS', 'Custom push-up variation with a 4 second eccentric.', 'Lower for four seconds, pause briefly at the bottom, press up explosively.');

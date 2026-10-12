@@ -72,7 +72,7 @@ class AuthTests {
         mockMvc.perform(post("/backend/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"username": "max12", "password": "password"}
+                                {"username": "max12", "password": "NewPassword1"}
                                 """))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.accessToken").isNotEmpty())
@@ -93,7 +93,7 @@ class AuthTests {
         String unknownUser = mockMvc.perform(post("/backend/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"username": "does-not-exist", "password": "password"}
+                                {"username": "does-not-exist", "password": "NewPassword1"}
                                 """))
                 .andExpect(status().isUnauthorized())
                 .andReturn().getResponse().getContentAsString();
