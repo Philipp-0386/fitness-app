@@ -74,10 +74,10 @@ class RoutineWriteTests {
         return "Bearer " + jwtService.generateAccessToken(userId(username).toString());
     }
 
-    /** Creates a routine for max and returns the response body. */
+    /** Creates a routine for max12 and returns the response body. */
     private String createRoutine(String json) throws Exception {
         return mockMvc.perform(post("/backend/routines")
-                        .header("Authorization", tokenFor("max"))
+                        .header("Authorization", tokenFor("max12"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
                 .andExpect(status().isCreated())
@@ -99,7 +99,7 @@ class RoutineWriteTests {
     @DisplayName("a routine without exercises can be created, the Location header points to it")
     void createWithoutExercises() throws Exception {
         MockHttpServletResponse response = mockMvc.perform(post("/backend/routines")
-                        .header("Authorization", tokenFor("max"))
+                        .header("Authorization", tokenFor("max12"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                         {"name": "Empty Routine"}
@@ -129,7 +129,7 @@ class RoutineWriteTests {
         flushAndClear();
 
         mockMvc.perform(get("/backend/routines/" + routineId)
-                        .header("Authorization", tokenFor("max")))
+                        .header("Authorization", tokenFor("max12")))
                 .andExpect(jsonPath("$.exercises[0].exercise.id").value(38))
                 .andExpect(jsonPath("$.exercises[0].orderIndex").value(0))
                 .andExpect(jsonPath("$.exercises[1].exercise.id").value(1))
@@ -153,7 +153,7 @@ class RoutineWriteTests {
         flushAndClear();
 
         mockMvc.perform(get("/backend/routines/" + routineId)
-                        .header("Authorization", tokenFor("max")))
+                        .header("Authorization", tokenFor("max12")))
                 .andExpect(jsonPath("$.exercises.length()").value(2))
                 .andExpect(jsonPath("$.exercises[0].targetRepsMax").value(5))
                 .andExpect(jsonPath("$.exercises[1].targetRepsMax").value(15));
@@ -177,7 +177,7 @@ class RoutineWriteTests {
         flushAndClear();
 
         mockMvc.perform(get("/backend/routines/" + routineId)
-                        .header("Authorization", tokenFor("max")))
+                        .header("Authorization", tokenFor("max12")))
                 .andExpect(jsonPath("$.exercises[0].targetRepsMax").value(10))
                 .andExpect(jsonPath("$.exercises[1].targetDurationSeconds").value(60))
                 .andExpect(jsonPath("$.exercises[2].targetDistanceMeters").value(40.0));
@@ -188,7 +188,7 @@ class RoutineWriteTests {
     @DisplayName("a target the tracking type does not use is rejected per field, nothing is stored")
     void createRejectsTargetsTheTrackingTypeDoesNotUse() throws Exception {
         mockMvc.perform(post("/backend/routines")
-                        .header("Authorization", tokenFor("max"))
+                        .header("Authorization", tokenFor("max12"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                         {
@@ -231,7 +231,7 @@ class RoutineWriteTests {
         flushAndClear();
 
         mockMvc.perform(put("/backend/routines/" + routineId)
-                        .header("Authorization", tokenFor("max"))
+                        .header("Authorization", tokenFor("max12"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                         {
@@ -253,7 +253,7 @@ class RoutineWriteTests {
         flushAndClear();
 
         mockMvc.perform(get("/backend/routines/" + routineId)
-                        .header("Authorization", tokenFor("max")))
+                        .header("Authorization", tokenFor("max12")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.exercises.length()").value(1))
                 .andExpect(jsonPath("$.exercises[0].exercise.id").value(2));
@@ -278,7 +278,7 @@ class RoutineWriteTests {
         flushAndClear();
 
         String updated = mockMvc.perform(put("/backend/routines/" + routineId)
-                        .header("Authorization", tokenFor("max"))
+                        .header("Authorization", tokenFor("max12"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                         {
@@ -311,7 +311,7 @@ class RoutineWriteTests {
         flushAndClear();
 
         mockMvc.perform(put("/backend/routines/" + routineId)
-                        .header("Authorization", tokenFor("max"))
+                        .header("Authorization", tokenFor("max12"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                         {"name": "Name Only"}
@@ -320,7 +320,7 @@ class RoutineWriteTests {
         flushAndClear();
 
         mockMvc.perform(get("/backend/routines/" + routineId)
-                        .header("Authorization", tokenFor("max")))
+                        .header("Authorization", tokenFor("max12")))
                 .andExpect(jsonPath("$.name").value("Name Only"))
                 .andExpect(jsonPath("$.description").value(nullValue()))
                 .andExpect(jsonPath("$.exercises.length()").value(0));
@@ -336,7 +336,7 @@ class RoutineWriteTests {
         Integer routineId = JsonPath.read(created, "$.id");
 
         mockMvc.perform(put("/backend/routines/" + routineId)
-                        .header("Authorization", tokenFor("max"))
+                        .header("Authorization", tokenFor("max12"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                         {
@@ -367,7 +367,7 @@ class RoutineWriteTests {
         flushAndClear();
 
         mockMvc.perform(put("/backend/routines/" + routineId)
-                        .header("Authorization", tokenFor("max"))
+                        .header("Authorization", tokenFor("max12"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                         {
@@ -383,7 +383,7 @@ class RoutineWriteTests {
         entityManager.clear();
 
         mockMvc.perform(get("/backend/routines/" + routineId)
-                        .header("Authorization", tokenFor("max")))
+                        .header("Authorization", tokenFor("max12")))
                 .andExpect(jsonPath("$.name").value("Before"))
                 .andExpect(jsonPath("$.exercises.length()").value(1))
                 .andExpect(jsonPath("$.exercises[0].exercise.id").value(1));
@@ -409,12 +409,12 @@ class RoutineWriteTests {
         Integer routineId = JsonPath.read(created, "$.id");
 
         mockMvc.perform(delete("/backend/routines/" + routineId)
-                        .header("Authorization", tokenFor("max")))
+                        .header("Authorization", tokenFor("max12")))
                 .andExpect(status().isNoContent());
         flushAndClear();
 
         mockMvc.perform(get("/backend/routines/" + routineId)
-                        .header("Authorization", tokenFor("max")))
+                        .header("Authorization", tokenFor("max12")))
                 .andExpect(status().isNotFound());
         assertThat(jdbcTemplate.queryForObject(
                 "SELECT COUNT(*) FROM routine_exercise WHERE routine_id = ?", Long.class, routineId))

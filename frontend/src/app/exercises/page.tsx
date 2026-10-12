@@ -26,7 +26,7 @@ export default async function ExercisesPage({
 
       {/* Seeded ids from main.sql */}
       <p>
-        ids 1-63 global, 64 max, 65 lena_lifts, 66 marco, 67 sina (soft deleted). Anything
+        ids 1-63 global, 64 max12, 65 lena_lifts, 66 marco, 67 sina1 (soft deleted). Anything
         but your own or a global one answers 404.
       </p>
 

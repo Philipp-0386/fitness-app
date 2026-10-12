@@ -93,7 +93,7 @@ class ExerciseAccessTests {
     @DisplayName("a global exercise is readable by anyone")
     void globalExerciseIsVisible() throws Exception {
         mockMvc.perform(get("/backend/exercises/" + idOfGlobalExercise())
-                        .header("Authorization", "Bearer " + tokenFor("max")))
+                        .header("Authorization", "Bearer " + tokenFor("max12")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.custom").value(false));
     }
@@ -101,8 +101,8 @@ class ExerciseAccessTests {
     @Test
     @DisplayName("an own exercise is readable by its owner")
     void ownExerciseIsVisible() throws Exception {
-        mockMvc.perform(get("/backend/exercises/" + idOfOwnedExercise("max"))
-                        .header("Authorization", "Bearer " + tokenFor("max")))
+        mockMvc.perform(get("/backend/exercises/" + idOfOwnedExercise("max12"))
+                        .header("Authorization", "Bearer " + tokenFor("max12")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.custom").value(true));
     }
@@ -112,7 +112,7 @@ class ExerciseAccessTests {
     void foreignExerciseIsNotFound() throws Exception {
         // 404 rather than 403 on purpose: a 403 would confirm that the id exists.
         mockMvc.perform(get("/backend/exercises/" + idOfOwnedExercise("lena_lifts"))
-                        .header("Authorization", "Bearer " + tokenFor("max")))
+                        .header("Authorization", "Bearer " + tokenFor("max12")))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value("EXERCISE_NOT_FOUND"));
     }
@@ -121,7 +121,7 @@ class ExerciseAccessTests {
     @DisplayName("a soft deleted exercise is gone even for its owner")
     void softDeletedExerciseIsNotFound() throws Exception {
         mockMvc.perform(get("/backend/exercises/" + idOfSoftDeletedExercise())
-                        .header("Authorization", "Bearer " + tokenFor("sina")))
+                        .header("Authorization", "Bearer " + tokenFor("sina1")))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value("EXERCISE_NOT_FOUND"));
     }
@@ -129,10 +129,10 @@ class ExerciseAccessTests {
     @Test
     @DisplayName("the list holds own exercises but no foreign ones")
     void listIsScopedToTheCaller() throws Exception {
-        int ownId = (int) idOfOwnedExercise("max");
+        int ownId = (int) idOfOwnedExercise("max12");
         int foreignId = (int) idOfOwnedExercise("lena_lifts");
 
-        assertThat(visibleIds("max"))
+        assertThat(visibleIds("max12"))
                 .contains(ownId)
                 .doesNotContain(foreignId);
 
@@ -144,6 +144,6 @@ class ExerciseAccessTests {
     @Test
     @DisplayName("no soft deleted exercise ever appears in the list")
     void listExcludesSoftDeleted() throws Exception {
-        assertThat(visibleIds("sina")).doesNotContain((int) idOfSoftDeletedExercise());
+        assertThat(visibleIds("sina1")).doesNotContain((int) idOfSoftDeletedExercise());
     }
 }

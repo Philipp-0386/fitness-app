@@ -40,7 +40,7 @@ export default async function RoutinesPage({
 
       {/* Seeded ids from V2 reference data and V9001 dev data */}
       <p>
-        ids 1-3 presets, 4 and 6-9 max, 5 lena_lifts. Presets answer only under presets,
+        ids 1-3 presets, 4 and 6-9 max12, 5 lena_lifts. Presets answer only under presets,
         own routines only under mine, anything else answers 404.
       </p>
 

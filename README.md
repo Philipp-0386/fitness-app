@@ -71,7 +71,7 @@ layout and the rules.
 
 - The database container starts empty. Nothing is mounted into
   `/docker-entrypoint-initdb.d` anymore.
-- Test users (`max`, `lena_lifts`, etc., all with the password `password`) come from
+- Test users (`max12`, `lena_lifts`, etc., all with the password `password`) come from
   the `dev` Flyway location and require `SPRING_PROFILES_ACTIVE=dev`.
   `compose.yaml` sets that by default; a deployed environment must not.
 - Reset: `docker compose down -v` followed by `up`. Dropping the `pgdata` volume is
