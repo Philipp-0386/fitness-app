@@ -9,10 +9,10 @@
 #   test users seeded by the dev Flyway location (SPRING_PROFILES_ACTIVE=dev)
 #
 # Seeded ownership (63 global entries plus one per user):
-#   user 2 max        -> 'Slow Tempo Push-Up'
+#   user 2 max12        -> 'Slow Tempo Push-Up'
 #   user 3 lena_lifts -> 'Zone 2 Treadmill Run'
 #   user 4 marco      -> one own exercise
-#   user 5 sina       -> one own exercise, soft deleted (deleted_at set)
+#   user 5 sina1       -> one own exercise, soft deleted (deleted_at set)
 
 @host = http://localhost:8080
 @frontend = http://localhost:3000
@@ -22,13 +22,13 @@
 ###############################################################################
 ###############################################################################
 
-### 1.1  Log in as max
+### 1.1  Log in as max12
 # @name loginMax
 POST {{host}}/backend/auth/login
 Content-Type: application/json
 
 {
-  "username": "max",
+  "username": "max12",
   "password": "password"
 }
 
@@ -42,13 +42,13 @@ Content-Type: application/json
   "password": "password"
 }
 
-### 1.3  Log in as sina (exercise is soft deleted)
+### 1.3  Log in as sina1 (exercise is soft deleted)
 # @name loginSina
 POST {{host}}/backend/auth/login
 Content-Type: application/json
 
 {
-  "username": "sina",
+  "username": "sina1",
   "password": "password"
 }
 
@@ -61,7 +61,7 @@ Content-Type: application/json
 # Same endpoint, different token, different result. This is what the whole auth
 # setup buys: ownership is decided server-side, never by the client.
 
-### 2.1  max -> 64 entries, one of them "Slow Tempo Push-Up" with "custom": true
+### 2.1  max12 -> 64 entries, one of them "Slow Tempo Push-Up" with "custom": true
 GET {{host}}/backend/exercises
 Authorization: Bearer {{loginMax.response.body.$.accessToken}}
 
@@ -69,7 +69,7 @@ Authorization: Bearer {{loginMax.response.body.$.accessToken}}
 GET {{host}}/backend/exercises
 Authorization: Bearer {{loginLena.response.body.$.accessToken}}
 
-### 2.3  sina -> 63, because her own exercise carries a deleted_at
+### 2.3  sina1 -> 63, because her own exercise carries a deleted_at
 # Proves the soft delete filter, not just the ownership filter.
 GET {{host}}/backend/exercises
 Authorization: Bearer {{loginSina.response.body.$.accessToken}}
@@ -94,15 +94,15 @@ Authorization: Bearer {{loginMax.response.body.$.refreshToken}}
 ###############################################################################
 ###############################################################################
 
-# Seeded ids: 1-63 global, 64 max, 65 lena_lifts, 66 marco,
-# 67 sina (soft deleted).
+# Seeded ids: 1-63 global, 64 max12, 65 lena_lifts, 66 marco,
+# 67 sina1 (soft deleted).
 
 ### 4.1  A global exercise -> 200, "custom": false
 # Visible to every user because owner_user_id is NULL.
 GET {{host}}/backend/exercises/1
 Authorization: Bearer {{loginMax.response.body.$.accessToken}}
 
-### 4.2  max reads his own exercise -> 200 "Slow Tempo Push-Up", "custom": true
+### 4.2  max12 reads his own exercise -> 200 "Slow Tempo Push-Up", "custom": true
 GET {{host}}/backend/exercises/64
 Authorization: Bearer {{loginMax.response.body.$.accessToken}}
 
@@ -119,12 +119,12 @@ Authorization: Bearer {{loginLena.response.body.$.accessToken}}
 # The three requests below must return an identical body. Any difference between
 # them would tell a caller which ids exist behind exercises they cannot read.
 
-### 5.1  max asks for lena's exercise -> 404 EXERCISE_NOT_FOUND
+### 5.1  max12 asks for lena's exercise -> 404 EXERCISE_NOT_FOUND
 # Deliberately not 403: a 403 would confirm that id 65 exists.
 GET {{host}}/backend/exercises/65
 Authorization: Bearer {{loginMax.response.body.$.accessToken}}
 
-### 5.2  sina asks for her own, soft deleted exercise -> 404 EXERCISE_NOT_FOUND
+### 5.2  sina1 asks for her own, soft deleted exercise -> 404 EXERCISE_NOT_FOUND
 # She is the owner, so this covers the deleted_at filter rather than ownership.
 GET {{host}}/backend/exercises/67
 Authorization: Bearer {{loginSina.response.body.$.accessToken}}
@@ -172,7 +172,7 @@ Authorization: Bearer {{loginMax.response.body.$.accessToken}}
 # Note: these requests write. Every send adds a row, so the ids below move.
 # The path is /exercises/new rather than a POST on /exercises.
 
-### 7.1  max creates one -> 201, "custom": true, Location header on the new id
+### 7.1  max12 creates one -> 201, "custom": true, Location header on the new id
 # @name createExercise
 POST {{host}}/backend/exercises/new
 Authorization: Bearer {{loginMax.response.body.$.accessToken}}
@@ -190,7 +190,7 @@ Content-Type: application/json
 GET {{host}}/backend/exercises/{{createExercise.response.body.$.id}}
 Authorization: Bearer {{loginMax.response.body.$.accessToken}}
 
-### 7.3  It belongs to max alone -> lena gets 404 EXERCISE_NOT_FOUND
+### 7.3  It belongs to max12 alone -> lena gets 404 EXERCISE_NOT_FOUND
 GET {{host}}/backend/exercises/{{createExercise.response.body.$.id}}
 Authorization: Bearer {{loginLena.response.body.$.accessToken}}
 
@@ -295,7 +295,7 @@ Content-Type: application/json
 # None of these has a handler of its own. They used to answer in Spring Boot's
 # default shape (or as a 500), now every one carries the ErrorResponse shape.
 
-### 9.1  Name max already uses -> 409 DATA_CONFLICT
+### 9.1  Name max12 already uses -> 409 DATA_CONFLICT
 # No service check yet, so uq_exercise_name rejects the insert. The log shows
 # constraint=uq_exercise_name, but not the name itself.
 POST {{host}}/backend/exercises/new

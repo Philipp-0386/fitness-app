@@ -3,7 +3,7 @@
 # REST Client (humao.rest-client). Send the login in section 1 first - every request below
 # reads its token from that named response.
 #
-# Section 3 deletes 'sina' for good
+# Section 3 deletes 'sina1' for good
 # Sections 4 and 5 change 'lena_lifts' and restore her at the end of each section. 
 # Skipping a restore step leaves her renamed or with the new password.
 
@@ -23,13 +23,13 @@ Content-Type: application/json
   "password": "password"
 }
 
-### 1.2  Log in as sina (deleted in section 3)
+### 1.2  Log in as sina1 (deleted in section 3)
 # @name loginSina
 POST {{host}}/backend/auth/login
 Content-Type: application/json
 
 {
-  "username": "sina",
+  "username": "sina1",
   "password": "password"
 }
 
@@ -85,7 +85,7 @@ POST {{host}}/backend/auth/login
 Content-Type: application/json
 
 {
-  "username": "sina",
+  "username": "sina1",
   "password": "password"
 }
 
@@ -121,7 +121,7 @@ Authorization: Bearer {{loginLena.response.body.$.accessToken}}
 Content-Type: application/json
 
 {
-  "username": "max",
+  "username": "max12",
   "email": "lena@fitness.local",
   "currentPassword": "password"
 }

@@ -9,7 +9,7 @@
 # (all seeded users have the password 'password')
 
 @host = http://localhost:8080
-@username = max
+@username = max12
 @password = password
 
 ###############################################################################
@@ -59,7 +59,7 @@ Content-Type: application/json
 POST {{host}}/backend/auth/login
 Content-Type: application/json
 
-{ "username": "max", "password": }
+{ "username": "max12", "password": }
 
 ### Registered email -> 409 EMAIL_ALREADY_EXISTS
 POST {{host}}/backend/auth/signup
@@ -76,7 +76,7 @@ POST {{host}}/backend/auth/signup
 Content-Type: application/json
 
 {
-  "username": "max",
+  "username": "max12",
   "email": "brand-new-address@fitness.local",
   "password": "password"
 }
