@@ -34,7 +34,7 @@ Content-Type: application/json
 
 {
   "username": "max12",
-  "password": "password"
+  "password": "NewPassword1"
 }
 
 ### 1.2  Log in as lena_lifts
@@ -44,7 +44,7 @@ Content-Type: application/json
 
 {
   "username": "lena_lifts",
-  "password": "password"
+  "password": "NewPassword1"
 }
 
 ### 1.3  Log in as sina1 (owns no routines)
@@ -54,7 +54,7 @@ Content-Type: application/json
 
 {
   "username": "sina1",
-  "password": "password"
+  "password": "NewPassword1"
 }
 
 ###############################################################################

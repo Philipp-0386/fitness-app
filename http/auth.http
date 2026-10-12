@@ -6,11 +6,11 @@
 # Preconditions: docker compose --profile full up -d
 # The test users are set by the dev Flyway location, which needs
 # SPRING_PROFILES_ACTIVE=dev (compose.yaml sets it by default).
-# (all seeded users have the password 'password')
+# (all seeded users have the password 'NewPassword1')
 
 @host = http://localhost:8080
 @username = max12
-@password = password
+@password = NewPassword1
 
 ###############################################################################
 # 1  Baseline
@@ -68,7 +68,7 @@ Content-Type: application/json
 {
   "username": "brand-new-name",
   "email": "max@fitness.local",
-  "password": "password"
+  "password": "NewPassword1"
 }
 
 ### Taken username -> 409 USERNAME_ALREADY_TAKEN
@@ -78,7 +78,7 @@ Content-Type: application/json
 {
   "username": "max12",
   "email": "brand-new-address@fitness.local",
-  "password": "password"
+  "password": "NewPassword1"
 }
 
 ###############################################################################
@@ -178,6 +178,6 @@ Content-Type: application/json
 {
   "username": "blocked-user",
   "email": "blocked@fitness.local",
-  "password": "password"
+  "password": "NewPassword1"
 }
 

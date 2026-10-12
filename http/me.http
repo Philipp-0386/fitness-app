@@ -20,7 +20,7 @@ Content-Type: application/json
 
 {
   "username": "marco",
-  "password": "password"
+  "password": "NewPassword1"
 }
 
 ### 1.2  Log in as sina1 (deleted in section 3)
@@ -30,7 +30,7 @@ Content-Type: application/json
 
 {
   "username": "sina1",
-  "password": "password"
+  "password": "NewPassword1"
 }
 
 ### 1.3  Log in as lena_lifts (changed and restored in sections 4 and 5)
@@ -40,7 +40,7 @@ Content-Type: application/json
 
 {
   "username": "lena_lifts",
-  "password": "password"
+  "password": "NewPassword1"
 }
 
 ###############################################################################
@@ -73,7 +73,7 @@ Authorization: Bearer {{loginSina.response.body.$.accessToken}}
 Content-Type: application/json
 
 {
-  "password": "password"
+  "password": "NewPassword1"
 }
 
 ### 3.3  Token issued before the deletion -> 401 UNAUTHENTICATED
@@ -86,7 +86,7 @@ Content-Type: application/json
 
 {
   "username": "sina1",
-  "password": "password"
+  "password": "NewPassword1"
 }
 
 ###############################################################################
@@ -101,7 +101,7 @@ Content-Type: application/json
 {
   "username": "lena_lifts",
   "email": "lena@fitness.local",
-  "currentPassword": "password"
+  "currentPassword": "NewPassword1"
 }
 
 ### 4.2  Wrong password -> 403 INVALID_PASSWORD, nothing changed
@@ -123,7 +123,7 @@ Content-Type: application/json
 {
   "username": "max12",
   "email": "lena@fitness.local",
-  "currentPassword": "password"
+  "currentPassword": "NewPassword1"
 }
 
 ### 4.4  Email of another user -> 409 EMAIL_ALREADY_EXISTS
@@ -134,7 +134,7 @@ Content-Type: application/json
 {
   "username": "lena_lifts",
   "email": "max@fitness.local",
-  "currentPassword": "password"
+  "currentPassword": "NewPassword1"
 }
 
 ### 4.5  Invalid fields -> 400 VALIDATION_FAILED for username, email and currentPassword
@@ -155,7 +155,7 @@ Content-Type: application/json
 {
   "username": "lena_renamed",
   "email": "lena.renamed@fitness.local",
-  "currentPassword": "password"
+  "currentPassword": "NewPassword1"
 }
 
 ### 4.7  New username and email -> 200 with the new values
@@ -166,7 +166,7 @@ Content-Type: application/json
 {
   "username": "lena_renamed",
   "email": "lena.renamed@fitness.local",
-  "currentPassword": "password"
+  "currentPassword": "NewPassword1"
 }
 
 ### 4.8  Token issued before the rename -> 200, the subject is the id, not the username
@@ -179,7 +179,7 @@ Content-Type: application/json
 
 {
   "username": "lena_renamed",
-  "password": "password"
+  "password": "NewPassword1"
 }
 
 ### 4.10  Restore -> 200 lena_lifts / lena@fitness.local
@@ -190,11 +190,11 @@ Content-Type: application/json
 {
   "username": "lena_lifts",
   "email": "lena@fitness.local",
-  "currentPassword": "password"
+  "currentPassword": "NewPassword1"
 }
 
 ###############################################################################
-# 5  Update password (restored in 5.7)
+# 5  Update password (restored in 5.9)
 ###############################################################################
 
 ### 5.1  Wrong current password -> 403 INVALID_PASSWORD, nothing changed
@@ -204,7 +204,7 @@ Content-Type: application/json
 
 {
   "currentPassword": "definitely-not-the-password",
-  "newPassword": "new-password"
+  "newPassword": "OtherPassword2"
 }
 
 ### 5.2  New password too short -> 400 VALIDATION_FAILED for newPassword
@@ -213,53 +213,73 @@ Authorization: Bearer {{loginLena.response.body.$.accessToken}}
 Content-Type: application/json
 
 {
-  "currentPassword": "password",
+  "currentPassword": "NewPassword1",
   "newPassword": "short"
 }
 
-### 5.3  No token -> 401 UNAUTHENTICATED
-PUT {{host}}/backend/me/password
-Content-Type: application/json
-
-{
-  "currentPassword": "password",
-  "newPassword": "new-password"
-}
-
-### 5.4  Correct current password -> 204
+### 5.3  New password without uppercase letter and number -> 400 VALIDATION_FAILED for newPassword
 PUT {{host}}/backend/me/password
 Authorization: Bearer {{loginLena.response.body.$.accessToken}}
 Content-Type: application/json
 
 {
-  "currentPassword": "password",
-  "newPassword": "new-password"
+  "currentPassword": "NewPassword1",
+  "newPassword": "lowercaseonly"
 }
 
-### 5.5  Login with the old password -> 401 INVALID_CREDENTIALS
-POST {{host}}/backend/auth/login
+### 5.4  No token -> 401 UNAUTHENTICATED
+PUT {{host}}/backend/me/password
 Content-Type: application/json
 
 {
-  "username": "lena_lifts",
-  "password": "password"
+  "currentPassword": "NewPassword1",
+  "newPassword": "OtherPassword2"
 }
 
-### 5.6  Login with the new password -> 200
-POST {{host}}/backend/auth/login
-Content-Type: application/json
-
-{
-  "username": "lena_lifts",
-  "password": "new-password"
-}
-
-### 5.7  Restore -> 204, back to 'password'
+### 5.5  Correct current password -> 204
 PUT {{host}}/backend/me/password
 Authorization: Bearer {{loginLena.response.body.$.accessToken}}
 Content-Type: application/json
 
 {
-  "currentPassword": "new-password",
-  "newPassword": "password"
+  "currentPassword": "NewPassword1",
+  "newPassword": "OtherPassword2"
+}
+
+### 5.6  Login with the old password -> 401 INVALID_CREDENTIALS
+POST {{host}}/backend/auth/login
+Content-Type: application/json
+
+{
+  "username": "lena_lifts",
+  "password": "NewPassword1"
+}
+
+### 5.7  Login with the new password -> 200
+POST {{host}}/backend/auth/login
+Content-Type: application/json
+
+{
+  "username": "lena_lifts",
+  "password": "OtherPassword2"
+}
+
+### 5.8  New password equals the current one -> 400 VALIDATION_FAILED for newPassword
+PUT {{host}}/backend/me/password
+Authorization: Bearer {{loginLena.response.body.$.accessToken}}
+Content-Type: application/json
+
+{
+  "currentPassword": "OtherPassword2",
+  "newPassword": "OtherPassword2"
+}
+
+### 5.9  Restore -> 204, back to 'NewPassword1'
+PUT {{host}}/backend/me/password
+Authorization: Bearer {{loginLena.response.body.$.accessToken}}
+Content-Type: application/json
+
+{
+  "currentPassword": "OtherPassword2",
+  "newPassword": "NewPassword1"
 }
