@@ -122,13 +122,13 @@ class RoutineAccessTests {
     @DisplayName("the list holds own routines but no foreign ones and no presets")
     void listIsScopedToTheCaller() throws Exception {
         String body = mockMvc.perform(get("/backend/routines")
-                        .header("Authorization", tokenFor("max")))
+                        .header("Authorization", tokenFor("max12")))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
         List<Integer> ids = JsonPath.read(body, "$[*].id");
 
         assertThat(ids)
-                .contains((int) idOfOwnedRoutine("max"))
+                .contains((int) idOfOwnedRoutine("max12"))
                 .doesNotContain((int) idOfOwnedRoutine("lena_lifts"), (int) idOfPresetRoutine());
     }
 
@@ -136,11 +136,11 @@ class RoutineAccessTests {
     @DisplayName("someone else's routine is indistinguishable from a missing one")
     void foreignRoutineIsNotFound() throws Exception {
         String foreign = mockMvc.perform(get("/backend/routines/" + idOfOwnedRoutine("lena_lifts"))
-                        .header("Authorization", tokenFor("max")))
+                        .header("Authorization", tokenFor("max12")))
                 .andExpect(status().isNotFound())
                 .andReturn().getResponse().getContentAsString();
         String missing = mockMvc.perform(get("/backend/routines/" + UNKNOWN_ID)
-                        .header("Authorization", tokenFor("max")))
+                        .header("Authorization", tokenFor("max12")))
                 .andExpect(status().isNotFound())
                 .andReturn().getResponse().getContentAsString();
 
@@ -156,7 +156,7 @@ class RoutineAccessTests {
         String before = detailBody("lena_lifts", lenasRoutine);
 
         mockMvc.perform(put("/backend/routines/" + lenasRoutine)
-                        .header("Authorization", tokenFor("max"))
+                        .header("Authorization", tokenFor("max12"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {"name": "Hijacked"}
@@ -174,7 +174,7 @@ class RoutineAccessTests {
         long lenasRoutine = idOfOwnedRoutine("lena_lifts");
 
         mockMvc.perform(delete("/backend/routines/" + lenasRoutine)
-                        .header("Authorization", tokenFor("max")))
+                        .header("Authorization", tokenFor("max12")))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value("USER_ROUTINE_NOT_FOUND"));
 
@@ -190,7 +190,7 @@ class RoutineAccessTests {
     @DisplayName("a preset is not readable through the user path")
     void presetIsNotAnOwnRoutine() throws Exception {
         mockMvc.perform(get("/backend/routines/" + idOfPresetRoutine())
-                        .header("Authorization", tokenFor("max")))
+                        .header("Authorization", tokenFor("max12")))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value("USER_ROUTINE_NOT_FOUND"));
     }
@@ -201,12 +201,12 @@ class RoutineAccessTests {
     void presetCannotBeChanged() throws Exception {
         long preset = idOfPresetRoutine();
         String before = mockMvc.perform(get("/backend/routines/presets/" + preset)
-                        .header("Authorization", tokenFor("max")))
+                        .header("Authorization", tokenFor("max12")))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
 
         mockMvc.perform(put("/backend/routines/" + preset)
-                        .header("Authorization", tokenFor("max"))
+                        .header("Authorization", tokenFor("max12"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {"name": "Hijacked Preset"}
@@ -214,12 +214,12 @@ class RoutineAccessTests {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value("USER_ROUTINE_NOT_FOUND"));
         mockMvc.perform(delete("/backend/routines/" + preset)
-                        .header("Authorization", tokenFor("max")))
+                        .header("Authorization", tokenFor("max12")))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value("USER_ROUTINE_NOT_FOUND"));
 
         String after = mockMvc.perform(get("/backend/routines/presets/" + preset)
-                        .header("Authorization", tokenFor("max")))
+                        .header("Authorization", tokenFor("max12")))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
         assertThat(after).isEqualTo(before);
@@ -228,8 +228,8 @@ class RoutineAccessTests {
     @Test
     @DisplayName("an own routine is not readable through the preset path")
     void ownRoutineIsNotAPreset() throws Exception {
-        mockMvc.perform(get("/backend/routines/presets/" + idOfOwnedRoutine("max"))
-                        .header("Authorization", tokenFor("max")))
+        mockMvc.perform(get("/backend/routines/presets/" + idOfOwnedRoutine("max12"))
+                        .header("Authorization", tokenFor("max12")))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value("PRESET_ROUTINE_NOT_FOUND"));
     }
@@ -242,16 +242,16 @@ class RoutineAccessTests {
     @Transactional
     @DisplayName("a routine cannot be created with someone else's exercise")
     void createWithForeignExerciseIsRefused() throws Exception {
-        int before = routineRepository.getAllUserRoutinesByUserId(userId("max")).size();
+        int before = routineRepository.getAllUserRoutinesByUserId(userId("max12")).size();
 
         mockMvc.perform(post("/backend/routines")
-                        .header("Authorization", tokenFor("max"))
+                        .header("Authorization", tokenFor("max12"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(routineWithExercise(idOfOwnedExercise("lena_lifts"))))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value("EXERCISE_NOT_FOUND"));
 
-        assertThat(routineRepository.getAllUserRoutinesByUserId(userId("max"))).hasSize(before);
+        assertThat(routineRepository.getAllUserRoutinesByUserId(userId("max12"))).hasSize(before);
     }
 
     @Test
@@ -259,13 +259,13 @@ class RoutineAccessTests {
     @DisplayName("a routine cannot be created with an own but soft deleted exercise")
     void createWithSoftDeletedExerciseIsRefused() throws Exception {
         mockMvc.perform(post("/backend/routines")
-                        .header("Authorization", tokenFor("sina"))
+                        .header("Authorization", tokenFor("sina1"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(routineWithExercise(idOfSoftDeletedExercise())))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value("EXERCISE_NOT_FOUND"));
 
-        assertThat(routineRepository.getAllUserRoutinesByUserId(userId("sina"))).isEmpty();
+        assertThat(routineRepository.getAllUserRoutinesByUserId(userId("sina1"))).isEmpty();
     }
 
     @Test
@@ -274,7 +274,7 @@ class RoutineAccessTests {
     void createWithUnknownExerciseIsNotFound() throws Exception {
         // Without the service check this would surface as 409 DATA_CONFLICT.
         mockMvc.perform(post("/backend/routines")
-                        .header("Authorization", tokenFor("max"))
+                        .header("Authorization", tokenFor("max12"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(routineWithExercise(UNKNOWN_ID)))
                 .andExpect(status().isNotFound())
@@ -285,33 +285,33 @@ class RoutineAccessTests {
     @Transactional
     @DisplayName("an own routine cannot be updated with someone else's exercise")
     void updateWithForeignExerciseIsRefused() throws Exception {
-        long ownRoutine = idOfOwnedRoutine("max");
-        String before = detailBody("max", ownRoutine);
+        long ownRoutine = idOfOwnedRoutine("max12");
+        String before = detailBody("max12", ownRoutine);
 
         mockMvc.perform(put("/backend/routines/" + ownRoutine)
-                        .header("Authorization", tokenFor("max"))
+                        .header("Authorization", tokenFor("max12"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(routineWithExercise(idOfOwnedExercise("lena_lifts"))))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value("EXERCISE_NOT_FOUND"));
 
-        assertThat(detailBody("max", ownRoutine)).isEqualTo(before);
+        assertThat(detailBody("max12", ownRoutine)).isEqualTo(before);
     }
 
     @Test
     @Transactional
     @DisplayName("an update with an unknown exercise is refused before anything changes")
     void updateWithUnknownExerciseIsNotFound() throws Exception {
-        long ownRoutine = idOfOwnedRoutine("max");
-        String before = detailBody("max", ownRoutine);
+        long ownRoutine = idOfOwnedRoutine("max12");
+        String before = detailBody("max12", ownRoutine);
 
         mockMvc.perform(put("/backend/routines/" + ownRoutine)
-                        .header("Authorization", tokenFor("max"))
+                        .header("Authorization", tokenFor("max12"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(routineWithExercise(UNKNOWN_ID)))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value("EXERCISE_NOT_FOUND"));
 
-        assertThat(detailBody("max", ownRoutine)).isEqualTo(before);
+        assertThat(detailBody("max12", ownRoutine)).isEqualTo(before);
     }
 }

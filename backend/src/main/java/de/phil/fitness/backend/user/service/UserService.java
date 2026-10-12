@@ -12,6 +12,7 @@ import de.phil.fitness.backend.user.dto.UserUpdateRequest;
 import de.phil.fitness.backend.user.exception.DefaultRoleNotFoundException;
 import de.phil.fitness.backend.user.exception.EmailAlreadyExistsException;
 import de.phil.fitness.backend.user.exception.InvalidPasswordException;
+import de.phil.fitness.backend.user.exception.PasswordUnchangedException;
 import de.phil.fitness.backend.user.exception.UserNotFoundException;
 import de.phil.fitness.backend.user.exception.UsernameAlreadyTakenException;
 import de.phil.fitness.backend.user.mapper.UserMapper;
@@ -153,6 +154,9 @@ public class UserService {
     public void updatePassword(Long userId, PasswordUpdateRequest req) {
         User user = loadUser(userId);
         verifyPassword(user, req.currentPassword());
+        if(req.newPassword().equals(req.currentPassword())) {
+            throw new PasswordUnchangedException("New password equals the current one for userId=" + userId);
+        }
         user.setPasswordHashed(passwordEncoder.encode(req.newPassword()));
         log.info("Password updated. userId={}", userId);
     }

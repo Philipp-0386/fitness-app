@@ -1,23 +1,23 @@
 -- Test users and the data owned by them. Development and CI only (dev profile).
 
--- userdata (all password hashes are bcrypt of 'password', cost 10)
+-- userdata (all password hashes are bcrypt of 'NewPassword1', cost 10)
 INSERT INTO userdata (username, email, password_hashed, role_id)
-VALUES ('admin', 'admin@fitness.local', '$2a$10$N9qo8uLOickgx2ZMRZoMye8fOsiTWZqYtkxvXkKm8BMzjT7t/vIdq', 0);
+VALUES ('admin', 'admin@fitness.local', '$2a$10$syQkcl4BG846.L5Yma/JC.flOG176qY9dWyZK74up67TYI6l4MYie', 0);
 INSERT INTO userdata (username, email, password_hashed, role_id)
-VALUES ('max', 'max@fitness.local', '$2a$10$N9qo8uLOickgx2ZMRZoMye8fOsiTWZqYtkxvXkKm8BMzjT7t/vIdq', 1);
+VALUES ('max12', 'max@fitness.local', '$2a$10$syQkcl4BG846.L5Yma/JC.flOG176qY9dWyZK74up67TYI6l4MYie', 1);
 INSERT INTO userdata (username, email, password_hashed, role_id)
-VALUES ('lena_lifts', 'lena@fitness.local', '$2a$10$N9qo8uLOickgx2ZMRZoMye8fOsiTWZqYtkxvXkKm8BMzjT7t/vIdq', 1);
+VALUES ('lena_lifts', 'lena@fitness.local', '$2a$10$syQkcl4BG846.L5Yma/JC.flOG176qY9dWyZK74up67TYI6l4MYie', 1);
 INSERT INTO userdata (username, email, password_hashed, role_id)
-VALUES ('marco', 'marco@fitness.local', '$2a$10$N9qo8uLOickgx2ZMRZoMye8fOsiTWZqYtkxvXkKm8BMzjT7t/vIdq', 1);
+VALUES ('marco', 'marco@fitness.local', '$2a$10$syQkcl4BG846.L5Yma/JC.flOG176qY9dWyZK74up67TYI6l4MYie', 1);
 INSERT INTO userdata (username, email, password_hashed, role_id)
-VALUES ('sina', 'sina@fitness.local', '$2a$10$N9qo8uLOickgx2ZMRZoMye8fOsiTWZqYtkxvXkKm8BMzjT7t/vIdq', 1);
+VALUES ('sina1', 'sina@fitness.local', '$2a$10$syQkcl4BG846.L5Yma/JC.flOG176qY9dWyZK74up67TYI6l4MYie', 1);
 
 -- custom exercises
-INSERT INTO exercise (owner_user_id, name, exercise_type, tracking_type, description, instructions) VALUES ((SELECT id FROM userdata WHERE username = 'max'), 'Slow Tempo Push-Up', 'STRENGTH', 'BODYWEIGHT_REPS', 'Custom push-up variation with a 4 second eccentric.', 'Lower for four seconds, pause briefly at the bottom, press up explosively.');
+INSERT INTO exercise (owner_user_id, name, exercise_type, tracking_type, description, instructions) VALUES ((SELECT id FROM userdata WHERE username = 'max12'), 'Slow Tempo Push-Up', 'STRENGTH', 'BODYWEIGHT_REPS', 'Custom push-up variation with a 4 second eccentric.', 'Lower for four seconds, pause briefly at the bottom, press up explosively.');
 INSERT INTO exercise (owner_user_id, name, exercise_type, tracking_type, description, instructions) VALUES ((SELECT id FROM userdata WHERE username = 'lena_lifts'), 'Zone 2 Treadmill Run', 'CARDIO', 'DISTANCE_DURATION', 'Custom steady state run in heart rate zone 2.', 'Run 30 to 45 minutes at a pace that still allows talking.');
 INSERT INTO exercise (owner_user_id, name, exercise_type, tracking_type, description, instructions) VALUES ((SELECT id FROM userdata WHERE username = 'marco'), 'Assault Bike Intervals', 'CARDIO', 'DURATION', 'Custom HIIT on the air bike.', '10 rounds of 20 seconds all out, 40 seconds easy.');
 -- soft deleted exercise
-INSERT INTO exercise (owner_user_id, name, exercise_type, tracking_type, description, instructions, deleted_at) VALUES ((SELECT id FROM userdata WHERE username = 'sina'), 'Old Smith Machine Press', 'STRENGTH', 'WEIGHT_REPS', 'Custom exercise that was removed again.', 'No longer in use.', TIMESTAMPTZ '2026-05-14 18:22:00+02');
+INSERT INTO exercise (owner_user_id, name, exercise_type, tracking_type, description, instructions, deleted_at) VALUES ((SELECT id FROM userdata WHERE username = 'sina1'), 'Old Smith Machine Press', 'STRENGTH', 'WEIGHT_REPS', 'Custom exercise that was removed again.', 'No longer in use.', TIMESTAMPTZ '2026-05-14 18:22:00+02');
 
 -- custom exercises
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE name = 'Slow Tempo Push-Up'), (SELECT id FROM muscle_group WHERE name = 'Chest'), 'PRIMARY');
@@ -30,10 +30,10 @@ INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((S
 -- routines and workouts
 -- One DO block per user, so generated ids can be kept in variables instead of nested lookups per row.
 
--- max: a routine, a completed workout started from it, and a freestyle workout
+-- max12: a routine, a completed workout started from it, and a freestyle workout
 DO $$
 DECLARE
-    v_user BIGINT := (SELECT id FROM userdata WHERE username = 'max');
+    v_user BIGINT := (SELECT id FROM userdata WHERE username = 'max12');
     v_routine BIGINT;
     v_workout BIGINT;
     v_entry BIGINT;
@@ -175,10 +175,10 @@ BEGIN
     VALUES (v_entry, 1, 'WORKING', 600);
 END $$;
 
--- sina: history on an exercise that was soft deleted afterwards, which history reads must still show
+-- sina1: history on an exercise that was soft deleted afterwards, which history reads must still show
 DO $$
 DECLARE
-    v_user BIGINT := (SELECT id FROM userdata WHERE username = 'sina');
+    v_user BIGINT := (SELECT id FROM userdata WHERE username = 'sina1');
     v_workout BIGINT;
     v_entry BIGINT;
 BEGIN
@@ -196,11 +196,11 @@ END $$;
 
 -- programs
 
--- max: an active program with a copied preset and a rest day, plus an inactive one for planning
+-- max12: an active program with a copied preset and a rest day, plus an inactive one for planning
 DO $$
 DECLARE
-    v_user BIGINT := (SELECT id FROM userdata WHERE username = 'max');
-    v_push BIGINT := (SELECT id FROM routine WHERE user_id = (SELECT id FROM userdata WHERE username = 'max') AND name = 'Push A');
+    v_user BIGINT := (SELECT id FROM userdata WHERE username = 'max12');
+    v_push BIGINT := (SELECT id FROM routine WHERE user_id = (SELECT id FROM userdata WHERE username = 'max12') AND name = 'Push A');
     v_pull BIGINT;
     v_program BIGINT;
     v_first_day BIGINT;
@@ -258,10 +258,10 @@ BEGIN
     WHERE user_id = v_user AND status = 'IN_PROGRESS';
 END $$;
 
--- max: the preset program taken over, as the copy endpoint will do it (program, slots and an own copy of every routine)
+-- max12: the preset program taken over, as the copy endpoint will do it (program, slots and an own copy of every routine)
 DO $$
 DECLARE
-    v_user BIGINT := (SELECT id FROM userdata WHERE username = 'max');
+    v_user BIGINT := (SELECT id FROM userdata WHERE username = 'max12');
     v_preset BIGINT := (SELECT id FROM program WHERE slug = 'push-pull-legs');
     v_program BIGINT;
     v_slot RECORD;

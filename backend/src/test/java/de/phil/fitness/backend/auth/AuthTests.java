@@ -72,7 +72,7 @@ class AuthTests {
         mockMvc.perform(post("/backend/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"username": "max", "password": "password"}
+                                {"username": "max12", "password": "NewPassword1"}
                                 """))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.accessToken").isNotEmpty())
@@ -85,7 +85,7 @@ class AuthTests {
         String wrongPassword = mockMvc.perform(post("/backend/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"username": "max", "password": "not-the-password"}
+                                {"username": "max12", "password": "not-the-password"}
                                 """))
                 .andExpect(status().isUnauthorized())
                 .andReturn().getResponse().getContentAsString();
@@ -93,7 +93,7 @@ class AuthTests {
         String unknownUser = mockMvc.perform(post("/backend/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"username": "does-not-exist", "password": "password"}
+                                {"username": "does-not-exist", "password": "NewPassword1"}
                                 """))
                 .andExpect(status().isUnauthorized())
                 .andReturn().getResponse().getContentAsString();
@@ -110,7 +110,7 @@ class AuthTests {
     @Test
     @DisplayName("a valid access token reaches the protected endpoint")
     void validAccessTokenIsAccepted() throws Exception {
-        mockMvc.perform(get(PROTECTED_PATH).header("Authorization", "Bearer " + accessTokenFor("max")))
+        mockMvc.perform(get(PROTECTED_PATH).header("Authorization", "Bearer " + accessTokenFor("max12")))
                 .andExpect(status().isOk());
     }
 
@@ -170,7 +170,7 @@ class AuthTests {
     @Test
     @DisplayName("a refresh token is not accepted as a bearer token")
     void refreshTokenIsNotAnAccessToken() throws Exception {
-        Long maxId = userRepository.findByUsername("max").orElseThrow().getId();
+        Long maxId = userRepository.findByUsername("max12").orElseThrow().getId();
         String refreshToken = jwtService.generateRefreshToken(maxId.toString());
 
         mockMvc.perform(get(PROTECTED_PATH).header("Authorization", "Bearer " + refreshToken))
@@ -190,7 +190,7 @@ class AuthTests {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
-                                  "username": "max",
+                                  "username": "max12",
                                   "email": "brand-new-address@fitness.local",
                                   "password": "Password1"
                                 }

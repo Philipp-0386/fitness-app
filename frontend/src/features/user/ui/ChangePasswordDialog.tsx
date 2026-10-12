@@ -66,6 +66,14 @@ export default function ChangePasswordDialog() {
         setError('The current password is incorrect.');
         return;
       }
+      if (
+        err instanceof ApiError &&
+        err.code === 'VALIDATION_FAILED' &&
+        err.fieldErrors
+      ) {
+        setError(Object.values(err.fieldErrors).join(' '));
+        return;
+      }
       setError(fallbackErrorMessage(err));
     } finally {
       setIsSaving(false);
