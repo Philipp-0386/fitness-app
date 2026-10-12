@@ -50,3 +50,10 @@ export type CreateRoutinePayload = {
   description?: string | null;
   exercises?: RoutineExercisePayload[];
 };
+
+/** Mirrors the backend UpdateRoutineRequest record. Describes the complete new state, omitted fields are cleared. */
+export type UpdateRoutinePayload = {
+  name: string;
+  description?: string | null;
+  exercises?: RoutineExercisePayload[];
+};

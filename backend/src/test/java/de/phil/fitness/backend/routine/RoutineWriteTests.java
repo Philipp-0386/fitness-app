@@ -32,11 +32,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 /**
  * Create, update and delete of own routines: the logic built on top of plain persistence, like the
- * order of exercises, replacing instead of appending, and what a delete takes along.
+ * order of exercises, replacing instead of appending, the targets a tracking type allows, and what a
+ * delete takes along.
  *
  * <p>Every test creates the routine it works on, so no test depends on the seeded routines, and
  * runs in a transaction that is rolled back afterwards. Exercise ids are global exercises from the
- * V2 reference data: 1 Barbell Bench Press, 2 Incline Dumbbell Press, 38 Plank.
+ * V2 reference data: 1 Barbell Bench Press (WEIGHT_REPS), 2 Incline Dumbbell Press (WEIGHT_REPS),
+ * 13 Farmers Walk (WEIGHT_DISTANCE), 38 Plank (DURATION).
  *
  * <p>Within that transaction all requests share one persistence context, unlike the real
  * application where every request gets its own. Tests therefore call {@link #flushAndClear()}
@@ -155,6 +157,57 @@ class RoutineWriteTests {
                 .andExpect(jsonPath("$.exercises.length()").value(2))
                 .andExpect(jsonPath("$.exercises[0].targetRepsMax").value(5))
                 .andExpect(jsonPath("$.exercises[1].targetRepsMax").value(15));
+    }
+
+    @Test
+    @Transactional
+    @DisplayName("each exercise keeps the targets its tracking type uses")
+    void createStoresTargetsOfEachTrackingType() throws Exception {
+        String created = createRoutine("""
+                {
+                  "name": "Mixed",
+                  "exercises": [
+                    { "exerciseId": 1, "targetSets": 3, "targetRepsMin": 8, "targetRepsMax": 10 },
+                    { "exerciseId": 38, "targetSets": 3, "targetDurationSeconds": 60 },
+                    { "exerciseId": 13, "targetSets": 2, "targetDistanceMeters": 40 }
+                  ]
+                }
+                """);
+        Integer routineId = JsonPath.read(created, "$.id");
+        flushAndClear();
+
+        mockMvc.perform(get("/backend/routines/" + routineId)
+                        .header("Authorization", tokenFor("max")))
+                .andExpect(jsonPath("$.exercises[0].targetRepsMax").value(10))
+                .andExpect(jsonPath("$.exercises[1].targetDurationSeconds").value(60))
+                .andExpect(jsonPath("$.exercises[2].targetDistanceMeters").value(40.0));
+    }
+
+    @Test
+    @Transactional
+    @DisplayName("a target the tracking type does not use is rejected per field, nothing is stored")
+    void createRejectsTargetsTheTrackingTypeDoesNotUse() throws Exception {
+        mockMvc.perform(post("/backend/routines")
+                        .header("Authorization", tokenFor("max"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                        {
+                          "name": "Mismatch",
+                          "exercises": [
+                            { "exerciseId": 38, "targetSets": 3, "targetRepsMin": 8 },
+                            { "exerciseId": 1, "targetSets": 3, "targetRepsMin": 8, "targetDurationSeconds": 60 }
+                          ]
+                        }
+                        """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
+                .andExpect(jsonPath("$.fieldErrors.length()").value(2))
+                .andExpect(jsonPath("$.fieldErrors['exercises[0].targetRepsMin']").exists())
+                .andExpect(jsonPath("$.fieldErrors['exercises[1].targetDurationSeconds']").exists());
+
+        assertThat(jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM routine WHERE name = 'Mismatch'", Long.class))
+                .isZero();
     }
 
     // -----------------------------------------------------------------------
@@ -296,6 +349,44 @@ class RoutineWriteTests {
                 .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
                 .andExpect(jsonPath("$.fieldErrors.name").exists())
                 .andExpect(jsonPath("$.fieldErrors['exercises[0].repRangeValid']").exists());
+    }
+
+    @Test
+    @Transactional
+    @DisplayName("update with a target the tracking type does not use is rejected and changes nothing")
+    void updateRejectsTargetsTheTrackingTypeDoesNotUse() throws Exception {
+        String created = createRoutine("""
+                {
+                  "name": "Before",
+                  "exercises": [
+                    { "exerciseId": 1, "targetSets": 3, "targetRepsMin": 8 }
+                  ]
+                }
+                """);
+        Integer routineId = JsonPath.read(created, "$.id");
+        flushAndClear();
+
+        mockMvc.perform(put("/backend/routines/" + routineId)
+                        .header("Authorization", tokenFor("max"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                        {
+                          "name": "After",
+                          "exercises": [
+                            { "exerciseId": 38, "targetDistanceMeters": 100 }
+                          ]
+                        }
+                        """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
+                .andExpect(jsonPath("$.fieldErrors['exercises[0].targetDistanceMeters']").exists());
+        entityManager.clear();
+
+        mockMvc.perform(get("/backend/routines/" + routineId)
+                        .header("Authorization", tokenFor("max")))
+                .andExpect(jsonPath("$.name").value("Before"))
+                .andExpect(jsonPath("$.exercises.length()").value(1))
+                .andExpect(jsonPath("$.exercises[0].exercise.id").value(1));
     }
 
     // -----------------------------------------------------------------------

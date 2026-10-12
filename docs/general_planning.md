@@ -14,6 +14,7 @@ The current goal is to finish these tasks:
   - fix frontend "hanging token bug"
 - Add `workout` tracking feature
   - requires completion of `exercise` slice to higher degree
+  - add routine feature (almost as done as of now)
   - accidental browser close -> session gone?
 - Actually develop a frontend-concept
   - most pages are currently basic/generic or even simply json-looking

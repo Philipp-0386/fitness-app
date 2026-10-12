@@ -9,5 +9,17 @@ public enum TrackingType {
     ASSISTED_REPS,
     DURATION,
     WEIGHT_DISTANCE,
-    DISTANCE_DURATION
+    DISTANCE_DURATION;
+
+    public boolean holdsReps() {
+        return this == WEIGHT_REPS || this == BODYWEIGHT_REPS || this == ASSISTED_REPS;
+    }
+
+    public boolean holdsDuration() {
+        return this == DURATION || this == DISTANCE_DURATION;
+    }
+
+    public boolean holdsDistance() {
+        return this == WEIGHT_DISTANCE || this == DISTANCE_DURATION;
+    }
 }

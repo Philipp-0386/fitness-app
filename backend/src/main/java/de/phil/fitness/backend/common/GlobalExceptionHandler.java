@@ -48,7 +48,8 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(
                         ex.getCode(),
                         ex.getClientMessage(),
-                        req.getRequestURI()
+                        req.getRequestURI(),
+                        ex.getFieldErrors()
                 ));
     }
 

@@ -10,7 +10,7 @@ import { clearAuthCookies } from '@/shared/auth/session';
 type ForwardResult = { response: Response } | { error: NextResponse };
 
 /**
- * Forwards a route handler's JSON body to the backend.
+ * Forwards a route handler's request to the backend, with its JSON body if it has one.
  *
  * Returns the backend response if it is ok, otherwise an error response,
  * ready to be returned by the route handler. 401 clears the auth cookies, because the session
@@ -23,23 +23,25 @@ export async function forwardToBackend(
 ): Promise<ForwardResult> {
   const path = request.nextUrl.pathname;
 
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    return {
-      error: errorResponse(
-        400,
-        'INVALID_JSON',
-        'Request body contains invalid JSON',
-        path,
-      ),
-    };
+  const body = await request.text();
+  if (body) {
+    try {
+      JSON.parse(body);
+    } catch {
+      return {
+        error: errorResponse(
+          400,
+          'INVALID_JSON',
+          'Request body contains invalid JSON',
+          path,
+        ),
+      };
+    }
   }
 
   let response: Response;
   try {
-    response = await backendFetch(backendPath, { method, body: JSON.stringify(body) });
+    response = await backendFetch(backendPath, { method, body: body || undefined });
   } catch (error) {
     if (error instanceof NetworkError) {
       return {
