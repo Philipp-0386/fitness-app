@@ -69,14 +69,4 @@ public interface ExerciseRepository extends JpaRepository<Exercise, Long> {
      */
     @Query(value = "SELECT EXISTS (SELECT 1 FROM routine_exercise WHERE exercise_id = :id)", nativeQuery = true)
     boolean isReferenced(@Param("id") Long id);
-
-    /**
-     * Removes the exercise from every routine containing it. Native for the same reason as {@link #isReferenced(Long)}.
-     * Workouts are left untouched, they keep referencing the soft deleted exercise.
-     * @param id Exercise id
-     */
-    @Modifying
-    @Query(value = "DELETE FROM routine_exercise WHERE exercise_id = :id", nativeQuery = true)
-    void removeFromRoutines(@Param("id") Long id);
-
 }
