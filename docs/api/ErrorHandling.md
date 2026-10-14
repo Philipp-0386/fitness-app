@@ -50,6 +50,8 @@ comparison against a misspelled code fails to compile. A new code in the backend
 | `UNAUTHENTICATED`        | 401    | security filter chain, no valid access token; `UserNotFoundException` on `/backend/me` when the token's user was deleted; `InvalidRefreshTokenException` on `/backend/auth/refresh` |
 | `ACCESS_DENIED`          | 403    | ownership checks, and the filter chain                                                                                                                      |
 | `EXERCISE_NOT_FOUND`     | 404    | `ExerciseNotFoundException` from `ExerciseService`: missing, soft deleted or owned by someone else; deliberately not 403, which would confirm the id exists |
+| `GLOBAL_EXERCISE_NOT_EDITABLE` | 403 | `GlobalExerciseNotEditableException` on `PUT /backend/exercises/{id}` for a global catalog entry; 403 instead of 404, global exercises are visible to everyone |
+| `TRACKING_TYPE_LOCKED`   | 409    | `TrackingTypeLockedException` on `PUT /backend/exercises/{id}` when the tracking type changes while a routine references the exercise |
 | `USER_ROUTINE_NOT_FOUND` | 404 | `UserRoutineNotFoundException` from `RoutineService` on `GET /backend/routines/{id}`: missing, owned by someone else or a preset; same reasoning as `EXERCISE_NOT_FOUND` |
 | `PRESET_ROUTINE_NOT_FOUND` | 404 | `PresetRoutineNotFoundException` from `RoutineService` on `GET /backend/routines/presets/{id}`: missing, or an own routine (copies of presets included) |
 | `INVALID_PASSWORD`       | 403    | `InvalidPasswordException` on `DELETE /backend/me`, `PUT /backend/me` and `PUT /backend/me/password`, wrong password; not 401, the session is still valid   |

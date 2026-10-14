@@ -2,6 +2,7 @@ package de.phil.fitness.backend.exercise.mapper;
 
 import de.phil.fitness.backend.exercise.dto.ExerciseRequest;
 import de.phil.fitness.backend.exercise.dto.ExerciseSummary;
+import de.phil.fitness.backend.exercise.dto.UpdateExerciseRequest;
 import org.springframework.stereotype.Component;
 
 import de.phil.fitness.backend.exercise.dto.ExerciseResponse;
@@ -56,6 +57,19 @@ public class ExerciseMapper {
                 exercise.getTrackingType(),
                 exercise.getDeletedAt() != null
         );
+    }
+
+    /**
+     * Overwrites the editable fields of a managed entity. An omitted description or instruction is cleared.
+     * @param exercise the entity to update
+     * @param req the complete new state
+     */
+    public void applyUpdate(Exercise exercise, UpdateExerciseRequest req) {
+        exercise.setName(req.name());
+        exercise.setExerciseType(req.exerciseType());
+        exercise.setTrackingType(req.trackingType());
+        exercise.setDescription(req.description());
+        exercise.setInstructions(req.instructions());
     }
 
 }
