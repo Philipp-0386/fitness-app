@@ -3,6 +3,7 @@ package de.phil.fitness.backend.exercise;
 import com.jayway.jsonpath.JsonPath;
 import de.phil.fitness.backend.TestDatabase;
 import de.phil.fitness.backend.auth.JwtService;
+import de.phil.fitness.backend.exercise.model.Exercise;
 import de.phil.fitness.backend.exercise.repository.ExerciseRepository;
 import de.phil.fitness.backend.user.repository.UserRepository;
 import jakarta.persistence.EntityManager;
@@ -18,16 +19,33 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.nullValue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+/**
+ * Create and update of own exercises: who may change what, and when the tracking type is locked.
+ *
+ * <p>Every test creates the exercise it works on and runs in a transaction that is rolled back
+ * afterwards. Exercise id 1 is the global Barbell Bench Press from the V2 reference data.
+ *
+ * <p>All requests of a test share one persistence context, see {@code RoutineWriteTests}. Tests call
+ * {@link #flushAndClear()} before an update and before a read, so both hit the database.
+ */
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles({"dev", "test"})
 @Import(TestDatabase.class)
-public class ExerciseWriteTests {
+class ExerciseWriteTests {
+
+    private static final String UPDATE_BODY = """
+            {"name": "Updated Curl", "exerciseType": "STRENGTH", "trackingType": "WEIGHT_REPS"}
+            """;
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -57,19 +75,27 @@ public class ExerciseWriteTests {
         entityManager.clear();
     }
 
-    private String createExercise(String json) throws Exception {
-        return mockMvc.perform(post("/backend/exercises")
-                        .header("Authorization", tokenFor("max12"))
+    /** Creates a WEIGHT_REPS exercise for the given user and returns its id. */
+    private Integer createExercise(String username, String name) throws Exception {
+        String body = mockMvc.perform(post("/backend/exercises")
+                        .header("Authorization", tokenFor(username))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(json))
+                        .content("""
+                        {"name": "%s", "exerciseType": "STRENGTH", "trackingType": "WEIGHT_REPS"}
+                        """.formatted(name)))
                 .andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString();
+        return JsonPath.read(body, "$.id");
     }
+
+    // -----------------------------------------------------------------------
+    // Create
+    // -----------------------------------------------------------------------
 
     @Test
     @Transactional
-    @DisplayName("an owned exercise can be created")
-    void createExercise() throws Exception {
+    @DisplayName("an own exercise can be created, the Location header points to it")
+    void createReturnsLocation() throws Exception {
         MockHttpServletResponse response = mockMvc.perform(post("/backend/exercises")
                 .header("Authorization", tokenFor("max12"))
                 .contentType(MediaType.APPLICATION_JSON)
@@ -82,5 +108,151 @@ public class ExerciseWriteTests {
         Integer id = JsonPath.read(response.getContentAsString(), "$.id");
 
         assertThat(response.getHeader("Location")).endsWith("/backend/exercises/" + id);
+    }
+
+    // -----------------------------------------------------------------------
+    // Update
+    // -----------------------------------------------------------------------
+
+    @Test
+    @Transactional
+    @DisplayName("an update replaces every field, an omitted description is cleared")
+    void updateReplacesFields() throws Exception {
+        String created = mockMvc.perform(post("/backend/exercises")
+                        .header("Authorization", tokenFor("max12"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                        {"name": "Plank Hold", "exerciseType": "STRENGTH", "trackingType": "WEIGHT_REPS",
+                         "description": "to be cleared"}
+                        """))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        Integer id = JsonPath.read(created, "$.id");
+        flushAndClear();
+
+        mockMvc.perform(put("/backend/exercises/" + id)
+                        .header("Authorization", tokenFor("max12"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                        {"name": "Side Plank", "exerciseType": "MOBILITY", "trackingType": "DURATION"}
+                        """))
+                .andExpect(status().isOk());
+        flushAndClear();
+
+        mockMvc.perform(get("/backend/exercises/" + id)
+                        .header("Authorization", tokenFor("max12")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("Side Plank"))
+                .andExpect(jsonPath("$.exerciseType").value("MOBILITY"))
+                .andExpect(jsonPath("$.trackingType").value("DURATION"))
+                .andExpect(jsonPath("$.description").value(nullValue()))
+                .andExpect(jsonPath("$.custom").value(true));
+    }
+
+    @Test
+    @Transactional
+    @DisplayName("a global exercise can not be changed and stays as it was")
+    void globalExerciseIsForbidden() throws Exception {
+        mockMvc.perform(put("/backend/exercises/1")
+                        .header("Authorization", tokenFor("max12"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(UPDATE_BODY))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value("GLOBAL_EXERCISE_NOT_EDITABLE"));
+
+        // Guards the order in the service: a change applied before the check would be flushed here.
+        flushAndClear();
+
+        mockMvc.perform(get("/backend/exercises/1")
+                        .header("Authorization", tokenFor("max12")))
+                .andExpect(jsonPath("$.name").value("Barbell Bench Press"));
+    }
+
+    @Test
+    @Transactional
+    @DisplayName("someone else's exercise is indistinguishable from a missing one")
+    void foreignExerciseIsNotFound() throws Exception {
+        Integer id = createExercise("lena_lifts", "Lena Curl");
+        flushAndClear();
+
+        mockMvc.perform(put("/backend/exercises/" + id)
+                        .header("Authorization", tokenFor("max12"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(UPDATE_BODY))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("EXERCISE_NOT_FOUND"));
+    }
+
+    @Test
+    @Transactional
+    @DisplayName("a soft deleted exercise can not be changed, even by its owner")
+    void softDeletedExerciseIsNotFound() throws Exception {
+        Long id = exerciseRepository.findAll().stream()
+                .filter(e -> e.getDeletedAt() != null)
+                .map(Exercise::getId)
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("seed has no soft deleted exercise"));
+
+        mockMvc.perform(put("/backend/exercises/" + id)
+                        .header("Authorization", tokenFor("sina1"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(UPDATE_BODY))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("EXERCISE_NOT_FOUND"));
+    }
+
+    // -----------------------------------------------------------------------
+    // Tracking type lock
+    // -----------------------------------------------------------------------
+
+    @Test
+    @Transactional
+    @DisplayName("the tracking type can change while no routine references the exercise")
+    void trackingTypeChangesWhileUnreferenced() throws Exception {
+        Integer id = createExercise("max12", "Free Curl");
+        flushAndClear();
+
+        mockMvc.perform(put("/backend/exercises/" + id)
+                        .header("Authorization", tokenFor("max12"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                        {"name": "Free Curl", "exerciseType": "STRENGTH", "trackingType": "DURATION"}
+                        """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.trackingType").value("DURATION"));
+    }
+
+    @Test
+    @Transactional
+    @DisplayName("the tracking type is locked once a routine references the exercise, other fields are not")
+    void trackingTypeLockedWhileReferenced() throws Exception {
+        Integer id = createExercise("max12", "Locked Curl");
+        mockMvc.perform(post("/backend/routines")
+                        .header("Authorization", tokenFor("max12"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                        {"name": "Arms", "exercises": [{"exerciseId": %d, "targetSets": 3}]}
+                        """.formatted(id)))
+                .andExpect(status().isCreated());
+        // isReferenced is a native query, the routine has to be in the database before it runs.
+        flushAndClear();
+
+        mockMvc.perform(put("/backend/exercises/" + id)
+                        .header("Authorization", tokenFor("max12"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                        {"name": "Locked Curl", "exerciseType": "STRENGTH", "trackingType": "DURATION"}
+                        """))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("TRACKING_TYPE_LOCKED"));
+
+        mockMvc.perform(put("/backend/exercises/" + id)
+                        .header("Authorization", tokenFor("max12"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                        {"name": "Renamed Curl", "exerciseType": "STRENGTH", "trackingType": "WEIGHT_REPS"}
+                        """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("Renamed Curl"));
     }
 }
