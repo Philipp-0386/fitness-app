@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import de.phil.fitness.backend.exercise.event.ExerciseDeletedEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +22,8 @@ import de.phil.fitness.backend.exercise.repository.ExerciseRepository;
 import de.phil.fitness.backend.exercise.dto.ExerciseSummary;
 import de.phil.fitness.backend.exercise.dto.UpdateExerciseRequest;
 
+import static java.time.Instant.now;
+
 /**
  * Read and write access to the exercise catalog.
  */
@@ -28,11 +32,13 @@ public class ExerciseService {
 
     private final ExerciseRepository exerciseRepository;
     private final ExerciseMapper exerciseMapper;
+    private final ApplicationEventPublisher eventPublisher;
 
-    public ExerciseService(ExerciseRepository exerciseRepository,
-                           ExerciseMapper exerciseMapper) {
+    public ExerciseService(ExerciseRepository exerciseRepository, ExerciseMapper exerciseMapper, ApplicationEventPublisher eventPublisher) {
         this.exerciseRepository = exerciseRepository;
         this.exerciseMapper = exerciseMapper;
+        this.eventPublisher = eventPublisher;
+
     }
 
     /**
@@ -42,7 +48,7 @@ public class ExerciseService {
      */
     @Transactional(readOnly = true)
     public List<ExerciseResponse> findAvailable(Long userId) {
-        return exerciseRepository.findAvailableTo(userId)
+        return exerciseRepository.findAllAvailableToUser(userId)
                 .stream()
                 .map(exerciseMapper::toResponse)
                 .toList();
@@ -114,7 +120,7 @@ public class ExerciseService {
      * @param req the complete new state of the exercise
      * @return the updated exercise
      * @throws ExerciseNotFoundException if the exercise does not exist, is soft deleted or belongs to someone else
-     * @throws GlobalExerciseNotEditableException if the exercise is part of the global catalog
+     * @throws GlobalExerciseNotEditableException if the exercise is part of the global catalog, and therefore not editable
      * @throws TrackingTypeLockedException if the tracking type changes while the exercise is referenced
      */
     @Transactional
@@ -131,5 +137,28 @@ public class ExerciseService {
 
         exerciseMapper.applyUpdate(exercise, req);
         return exerciseMapper.toResponse(exerciseRepository.saveAndFlush(exercise));
+    }
+
+    /**
+     * Deletes an exercise owned by the requesting user.
+     *
+     * Important note: Deletes the exercise also from all routines which include said exercise, NOT workouts though.
+     * @param userId id of the requesting user
+     * @param exerciseId id of the exercise to delete
+     * @throws ExerciseNotFoundException if the exercise does not exist, or is already soft deleted or belongs to someone else
+     * @throws GlobalExerciseNotEditableException if the exercise is part of the global catalog, and therefore not editable
+     */
+    @Transactional
+    public void deleteUserExercise(Long userId, Long exerciseId) {
+        Exercise exercise = exerciseRepository.findAvailableById(userId, exerciseId)
+                .orElseThrow(() -> new ExerciseNotFoundException("The exercise with id=" + exerciseId + " can not be found"));
+
+        if (exercise.getOwnerUserId() == null) {
+            throw new GlobalExerciseNotEditableException("User " + userId + " tried to delete global exercise " + exerciseId);
+        }
+
+        eventPublisher.publishEvent(new ExerciseDeletedEvent(userId, exerciseId));
+        exercise.setDeletedAt(now());
+        exerciseRepository.save(exercise);
     }
 }

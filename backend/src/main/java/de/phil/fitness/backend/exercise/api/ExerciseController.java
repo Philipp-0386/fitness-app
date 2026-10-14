@@ -117,4 +117,26 @@ public class ExerciseController {
     public ResponseEntity<ExerciseResponse> updateExercise(@PathVariable Long id, @Valid @RequestBody UpdateExerciseRequest req) {
         return ResponseEntity.ok(exerciseService.updateExercise(currentUser.currentUserId(), id, req));
     }
+
+    /**
+     * Deletes an exercise owned by the authenticated user.
+     * @param id exercise id
+     * @return no content
+     */
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Delete an own exercise", description = "Deletes the exercise, provided it is owned by the "
+            + "caller. It is also removed from all of the caller's routines, the remaining exercises keep their order. "
+            + "Workouts keep the exercise in their history. Its name can be used for a new exercise afterwards.")
+    @ApiResponse(responseCode = "204", description = "Exercise deleted")
+    @ApiResponse(responseCode = "401", description = "UNAUTHENTICATED: missing, invalid or expired access token, or a refresh token",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    @ApiResponse(responseCode = "403", description = "GLOBAL_EXERCISE_NOT_EDITABLE: the exercise is part of the global catalog",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    @ApiResponse(responseCode = "404", description = "EXERCISE_NOT_FOUND: no exercise with this id is available to the "
+            + "caller, including one that is already deleted",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    public ResponseEntity<Void> deleteExercise(@PathVariable Long id) {
+        exerciseService.deleteUserExercise(currentUser.currentUserId(), id);
+        return ResponseEntity.noContent().build();
+    }
 }

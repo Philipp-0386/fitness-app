@@ -70,7 +70,7 @@ Rule: **what a workout copies is hard deleted, what it references is soft delete
 - **Routines: hard delete.** Their `routine_exercise` rows go with them, workouts only lose `routine_id` (`ON DELETE SET NULL (routine_id)`; the column list is required, a plain `SET NULL` would also null `user_id`).
 - **Routines in programs:** a deleted routine turns its program slots into rest days (`ON DELETE SET NULL (routine_id)` on `program_day`). Slots never shift on their own.
 - **Programs: hard delete,** their slots cascade, workouts only lose `program_day_id` (`ON DELETE SET NULL (program_day_id)`).
-- **Exercises: soft delete.** `workout_exercise.exercise_id` is their identity for progression, PRs and 1RM.
+- **Exercises: soft delete.** `workout_exercise.exercise_id` is their identity for progression, PRs and 1RM. Their `routine_exercise` rows are hard deleted, routines are templates and workouts snapshot the targets (history relevant).
 - **Workouts: hard delete,** sets and exercises cascade.
 - **Accounts: hard delete,** everything owned cascades. References between owned rows that point at an own exercise are `DEFERRABLE`, and `UserService.deleteUser` defers them, because Postgres works through the cascades one after the other. A new table holding user data needs `ON DELETE CASCADE` on its path to `userdata` and `DEFERRABLE` on references to other owned rows.
 
@@ -102,6 +102,7 @@ The schema cannot express these, so the code has to.
 - **Referenced exercises must be global or own and not deleted.** One guard in `ExerciseService` for every write path that sets an `exercise_id`, covered by access tests. A missed check leaks the foreign exercise and blocks the other user's account deletion.
 - **Children are loaded through the root,** always filtered by the root's `user_id`, like `ExerciseRepository.findAvailableById`.
 - **History reads include soft deleted exercises.** No global soft delete filter (`@SQLRestriction`) on `Exercise`.
+- **Deleting an exercise removes it from the owner's routines.** `ExerciseService` publishes `ExerciseDeletedEvent`, `RoutineService` removes the rows and renumbers the remaining ones. The exercise slice never writes routine tables, the routine slice keeps its own rules (`orderIndex` 0..n, `updated_at`). Plain `@EventListener`, so it runs in the same transaction; `@TransactionalEventListener` would run after the commit.
 - **Sets are validated against `tracking_type`** in the service. The wide `workout_set` table (all values nullable) cannot check that itself.
 - **Presets are listed separately** (`user_id IS NULL`). A user's own routines are queried with `user_id = :userId`, copying a preset copies its `routine_exercise` rows too.
 - **At most three programs per user,** checked in the service before creating one.

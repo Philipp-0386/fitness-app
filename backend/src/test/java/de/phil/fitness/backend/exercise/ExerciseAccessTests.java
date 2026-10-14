@@ -68,7 +68,7 @@ class ExerciseAccessTests {
 
     private long idOfOwnedExercise(String username) {
         Long ownerId = userRepository.findByUsername(username).orElseThrow().getId();
-        return exerciseRepository.findAvailableTo(ownerId).stream()
+        return exerciseRepository.findAllAvailableToUser(ownerId).stream()
                 .filter(e -> ownerId.equals(e.getOwnerUserId()))
                 .map(Exercise::getId)
                 .findFirst()

@@ -79,4 +79,19 @@ public interface RoutineRepository extends JpaRepository<Routine, Long> {
         WHERE pr.id = :id AND pr.userId IS NULL
     """)
     Optional<Routine> getPresetRoutineDetailedById(@Param("id") Long id);
+
+    /**
+     * Returns list of routines for a specific user, that contain a certain exercise.
+     * @param userId Id of the authenticated user
+     * @param exerciseId Id of the contained exercise
+     * @return List of routines
+     */
+    @Query("""
+        SELECT r FROM Routine r
+            LEFT JOIN FETCH r.exercises
+        WHERE r.userId = :userId
+            AND r.id IN (SELECT re.routine.id FROM RoutineExercise re
+                          WHERE re.exerciseId = :exerciseId) 
+    """)
+    List<Routine> getUserRoutinesContainingExercise(@Param("userId") Long userId, @Param("exerciseId") Long exerciseId);
 }

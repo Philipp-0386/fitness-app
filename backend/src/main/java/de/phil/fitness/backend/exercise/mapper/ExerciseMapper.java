@@ -71,5 +71,4 @@ public class ExerciseMapper {
         exercise.setDescription(req.description());
         exercise.setInstructions(req.instructions());
     }
-
 }

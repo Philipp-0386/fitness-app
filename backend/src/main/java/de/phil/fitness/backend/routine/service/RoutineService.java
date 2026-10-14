@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import de.phil.fitness.backend.exercise.dto.ExerciseSummary;
+import de.phil.fitness.backend.exercise.event.ExerciseDeletedEvent;
 import de.phil.fitness.backend.exercise.model.TrackingType;
 import de.phil.fitness.backend.exercise.service.ExerciseService;
 import de.phil.fitness.backend.routine.dto.CreateRoutineRequest;
@@ -19,11 +20,14 @@ import de.phil.fitness.backend.routine.exception.UserRoutineNotFoundException;
 import de.phil.fitness.backend.routine.model.Routine;
 import de.phil.fitness.backend.routine.model.RoutineExercise;
 import de.phil.fitness.backend.routine.dto.UpdateRoutineRequest;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import de.phil.fitness.backend.routine.mapper.RoutineMapper;
 import de.phil.fitness.backend.routine.repository.RoutineRepository;
+
+import static java.time.Instant.now;
 
 @Service
 public class RoutineService {
@@ -218,5 +222,21 @@ public class RoutineService {
         }
 
         return routineMapper.toRoutineDetailResponse(routineRepository.save(routine), exercises);
+    }
+
+    /**
+     * Removes the exercise from user owned routine, when a user is deleting an exercise.
+     * @param event
+     */
+    @EventListener
+    @Transactional
+    public void removeDeletedExercise(ExerciseDeletedEvent event) {
+        for(Routine routine: routineRepository.getUserRoutinesContainingExercise(event.userId(), event.exerciseId())) {
+            routine.getExercises().removeIf(re -> re.getExerciseId().equals(event.exerciseId()));
+            for(int i=0; i < routine.getExercises().size(); i++) {
+                routine.getExercises().get(i).setOrderIndex(i);
+            }
+            routine.setUpdatedAt(now());
+        }
     }
 }
