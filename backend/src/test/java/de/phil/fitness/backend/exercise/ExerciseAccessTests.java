@@ -3,6 +3,8 @@ package de.phil.fitness.backend.exercise;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,7 +68,7 @@ class ExerciseAccessTests {
 
     private long idOfOwnedExercise(String username) {
         Long ownerId = userRepository.findByUsername(username).orElseThrow().getId();
-        return exerciseRepository.findAvailableTo(ownerId).stream()
+        return exerciseRepository.findAllAvailableToUser(ownerId).stream()
                 .filter(e -> ownerId.equals(e.getOwnerUserId()))
                 .map(Exercise::getId)
                 .findFirst()

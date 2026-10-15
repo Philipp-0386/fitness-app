@@ -6,6 +6,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -27,7 +28,7 @@ public interface ExerciseRepository extends JpaRepository<Exercise, Long> {
           AND (e.ownerUserId IS NULL OR e.ownerUserId = :userId)
         ORDER BY e.name ASC
             """)
-    List<Exercise> findAvailableTo(@Param("userId") Long userId);
+    List<Exercise> findAllAvailableToUser(@Param("userId") Long userId);
 
     /**
      * Returns specific exercise by its id, if the user requesting is either owner or the exercise is part of the global catalog.
@@ -60,4 +61,12 @@ public interface ExerciseRepository extends JpaRepository<Exercise, Long> {
     """)
     Set<Long> findAvailableIds(@Param("userId") Long userId, @Param("ids") Collection<Long> ids);
 
+    /**
+     * Checks whether any routine references the exercise. Native, so the exercise slice does not depend on the
+     * routine entities. The workout slice has to extend this with {@code workout_exercise}.
+     * @param id Exercise id
+     * @return true if at least one routine exercise points at it
+     */
+    @Query(value = "SELECT EXISTS (SELECT 1 FROM routine_exercise WHERE exercise_id = :id)", nativeQuery = true)
+    boolean isReferenced(@Param("id") Long id);
 }
