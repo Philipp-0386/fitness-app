@@ -9,13 +9,13 @@ The application is a fitness app. In its final state, the software should suppor
 - Core
   - Exercise catalog (lexicon, instructions, maybe GIFs?)
   - Custom exercise definition
-  - Set tracker (reps, weight, RPE, rest)
-  - Workout tracker (logging and saving of sessions)
+  - Set tracker (reps, weight, RPE, duration, distance, set type)
+  - Workout tracker (logging and saving of workouts)
   - Bodyweight tracker
 
-- Routines
-  - Workout templates
-  - Weekly programme/schedule (multi-week plans)
+- Planning
+  - Routines (template for one training day)
+  - Programs (ordered sequence of routines and rest days)
 
 - Analytics
   - Personal records
