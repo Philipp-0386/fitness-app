@@ -10,16 +10,14 @@ For the last week, i have focussed heavily on making changes to allow the applic
 
 The current goal is to finish these tasks:
 
-- Add refresh endpoint (auth)
-  - fix frontend "hanging token bug"
-- Add `workout` tracking feature
-  - requires completion of `exercise` slice to higher degree
-  - add routine feature (almost as done as of now)
-  - accidental browser close -> session gone?
-- Actually develop a frontend-concept
+- Complete `exercise` and `routine` slice to a point, where actual tracking (`workout`) becomes sensible (WIP)
+- Actually develop a frontend-concept (WIP)
   - most pages are currently basic/generic or even simply json-looking
+  - rework current frontend/ui
 - Research open-source visual sources (pictures, gifs) for `exercise` catalog
   - S3 storing? -> Research
+- Add token revocation (not started)
+  - see issue #128
 - [Demo account](./general_planning.md#demo-account-idea)
   - add temporary accounts allowing outsiders to test for limited time
 
@@ -122,6 +120,16 @@ Ultimately issue #122 mentions everything relevant, but the idea is, to rework t
 ### UUID for `workout_set`s (idea)
 
 The idea is, that due to bad network logging sets might come in multiple times. Generating a UUID in the frontend that i send and save with every request could be a way to negate duplicate tracking of the same instance of done set.
+
+### UI Planning (WIP)
+
+I am currently planning the UI. For now i am gonna settle for a mainly achromatic design using colors to display meaning. I originally wanted to use violet (see current state of minimal styling), but it looks too generic and feels purposeless.
+
+### UI Tutorial And User Settings (idea)
+
+Regradless of how the UI will look, i want to make a tutorial on first log, which runs the user through all the possiblity somewhat hidden options. Could keep it simple, by just using localStorage to keep track of this, but might implement `user_ui_state` database table already (or something like that). But i don`t think i really need that, since i could handle unit display without serverside user-sate. But i would need it for user settings. Storing those in localStorage will not work, since the backend needs the timezone in the context of calculating timeframe dependent analytics/data.
+-> disclaimer banner seen handling, last chosen filter option: localStorage
+-> general user settings (unit, timezone, language(will be only english for now anyway, but who knows), ): database table (should make issue for this, /me/settings)
 
 ## Key Decisions
 
