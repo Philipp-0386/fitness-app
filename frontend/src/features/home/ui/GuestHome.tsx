@@ -27,7 +27,7 @@ export default function GuestHome() {
         <p className="text-title">Fitness App</p>
       </header>
 
-      <section className="pt-6">
+      <section className="pt-4">
         <h1 className="text-display text-balance">Train with a plan.</h1>
         <p className="mt-3 text-text-secondary">
           Create your training plans, log your sessions and keep track of your progress in
@@ -35,7 +35,7 @@ export default function GuestHome() {
         </p>
       </section>
 
-      <section className="mt-8" aria-labelledby="features-title">
+      <section className="mt-6" aria-labelledby="features-title">
         <h2 id="features-title" className="mb-3 text-title">
           What it does
         </h2>
@@ -63,15 +63,18 @@ export default function GuestHome() {
         </ul>
       </section>
 
-      <div className="sticky bottom-0 mt-auto bg-bg pt-8 pb-6 sm:static sm:mt-0">
+      <div className="sticky bottom-0 mt-auto bg-bg pt-4 pb-4 sm:static sm:mt-0 sm:pt-8">
         <Button asChild variant="primary" size="lg">
           <Link href="/login">Log in</Link>
         </Button>
-        <Button asChild variant="secondary" size="lg" className="mt-3">
-          <Link href="/signup">Sign up</Link>
-        </Button>
-        <p className="mt-3 text-center text-meta text-text-tertiary">
-          Sign-ups are closed. Accounts are created on invitation.
+        <p className="mt-4 text-center text-meta text-text-secondary">
+          No account yet?{' '}
+          <Link
+            href="/signup"
+            className="relative font-semibold text-text-primary underline underline-offset-2 before:absolute before:-inset-x-2 before:-inset-y-3.5"
+          >
+            Sign up
+          </Link>
         </p>
       </div>
     </main>
