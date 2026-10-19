@@ -67,6 +67,9 @@ export default function GuestHome() {
         <Button asChild variant="primary" size="lg">
           <Link href="/login">Log in</Link>
         </Button>
+        <Button asChild variant="secondary" size="lg" className="mt-3">
+          <Link href="/signup">Sign up</Link>
+        </Button>
         <p className="mt-3 text-center text-meta text-text-tertiary">
           Sign-ups are closed. Accounts are created on invitation.
         </p>
