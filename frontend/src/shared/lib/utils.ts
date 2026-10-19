@@ -12,7 +12,7 @@ export const cn = createCn({
         'caption',
         'label',
         'button',
-        'input',
+        'field',
       ],
       spacing: ['tap', 'tap-primary'],
       radius: ['field', 'card', 'sheet'],

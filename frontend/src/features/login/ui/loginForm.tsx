@@ -5,9 +5,10 @@ import { login } from '../client/login.client';
 import { ApiError } from '@/shared/api/errors/api-error';
 import { fallbackErrorMessage } from '@/shared/api/errors/fallback-error-message';
 import { useRouter } from 'next/navigation';
-import { Eye, EyeOff } from 'lucide-react';
-
-import styles from './longForm.module.css';
+import { CircleAlert, Eye, EyeOff } from 'lucide-react';
+import { Button } from '@/shared/ui/button';
+import { Input } from '@/shared/ui/input';
+import { Label } from '@/shared/ui/label';
 
 type LoginFormValues = {
   username: string;
@@ -31,14 +32,14 @@ export default function LoginForm() {
   }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    if (isSubmitting) return;
     e.preventDefault();
+    if (isSubmitting) return;
     setGeneralError(null);
     setFieldErrors({});
 
     const errors: FormError = {};
-    if (!form.username.trim()) errors.username = 'Username is required';
-    if (!form.password.trim()) errors.password = 'Password is required';
+    if (!form.username.trim()) errors.username = 'Enter your username';
+    if (!form.password.trim()) errors.password = 'Enter your password';
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
       return;
@@ -53,7 +54,7 @@ export default function LoginForm() {
     } catch (error) {
       //401 means wrong credentials, not an expired session
       if (error instanceof ApiError && error.code === 'INVALID_CREDENTIALS') {
-        setGeneralError('Username or password is incorrect.');
+        setGeneralError('Wrong username or password. Check both and try again.');
         return;
       }
       setGeneralError(fallbackErrorMessage(error));
@@ -63,50 +64,87 @@ export default function LoginForm() {
   }
 
   return (
-    <div>
-      <form onSubmit={handleSubmit} noValidate className={styles.form}>
-        <div className={styles.inputBlock}>
-          <label>Username:</label>
-          <input
-            type="text"
-            name="username"
-            value={form.username}
+    <form onSubmit={handleSubmit} noValidate>
+      <div className="mb-4">
+        <Label className="mb-1.5" htmlFor="username">
+          Username
+        </Label>
+        <Input
+          type="text"
+          name="username"
+          id="username"
+          value={form.username}
+          onChange={handleChange}
+          autoComplete="username"
+          aria-invalid={!!fieldErrors.username}
+          aria-describedby={fieldErrors.username ? 'username-error' : undefined}
+        />
+        {fieldErrors.username && (
+          <p
+            id="username-error"
+            className="mt-1 flex items-center gap-1.5 text-meta text-danger"
+          >
+            <CircleAlert className="size-4" aria-hidden="true" />
+            {fieldErrors.username}
+          </p>
+        )}
+      </div>
+      <div className="mb-4">
+        <Label className="mb-1.5" htmlFor="password">
+          Password
+        </Label>
+        <div className="relative">
+          <Input
+            className="pr-13"
+            type={showPassword ? 'text' : 'password'}
+            name="password"
+            id="password"
+            value={form.password}
             onChange={handleChange}
-            autoComplete="username"
+            autoComplete="current-password"
+            aria-invalid={!!fieldErrors.password}
+            aria-describedby={fieldErrors.password ? 'password-error' : undefined}
           />
-          {fieldErrors.username && (
-            <p className={styles.fieldError}>{fieldErrors.username}</p>
-          )}
+          <Button
+            className="absolute top-0.5 right-0.5"
+            type="button"
+            size="icon"
+            variant="text"
+            aria-label={showPassword ? 'Hide password' : 'Show password'}
+            aria-pressed={showPassword}
+            onClick={() => setShowPassword(!showPassword)}
+          >
+            {showPassword ? <EyeOff /> : <Eye />}
+          </Button>
         </div>
-        <div className={styles.inputBlock}>
-          <label>Password:</label>
-          <div className={styles.passwordInputWrapper}>
-            <input
-              type={showPassword ? 'text' : 'password'}
-              name="password"
-              value={form.password}
-              onChange={handleChange}
-              autoComplete="current-password"
-            />
-            <button
-              type="button"
-              className={styles.togglePasswordBtn}
-              onClick={() => setShowPassword(!showPassword)}
-            >
-              {showPassword ? <EyeOff /> : <Eye />}
-            </button>
-          </div>
-          {fieldErrors.password && (
-            <p className={styles.fieldError}>{fieldErrors.password}</p>
-          )}
+        {fieldErrors.password && (
+          <p
+            id="password-error"
+            className="mt-1 flex items-center gap-1.5 text-meta text-danger"
+          >
+            <CircleAlert className="size-4" aria-hidden="true" />
+            {fieldErrors.password}
+          </p>
+        )}
+      </div>
+      {generalError && (
+        <div
+          role="alert"
+          className="mb-2 flex items-start gap-2.5 rounded-field bg-danger-subtle p-3 text-meta"
+        >
+          <CircleAlert className="size-5 shrink-0 text-danger" aria-hidden="true" />
+          <span>{generalError}</span>
         </div>
-        <div className={styles.errorBox}>{generalError && <div>{generalError}</div>}</div>
-        <div>
-          <button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Logging in...' : 'Log In'}
-          </button>
-        </div>
-      </form>
-    </div>
+      )}
+      <Button
+        className="mt-2"
+        type="submit"
+        variant="primary"
+        size="lg"
+        disabled={isSubmitting}
+      >
+        {isSubmitting ? 'Logging in...' : 'Log in'}
+      </Button>
+    </form>
   );
 }
