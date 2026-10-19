@@ -63,7 +63,7 @@ export default function GuestHome() {
         </ul>
       </section>
 
-      <div className="sticky bottom-0 mt-auto bg-bg pt-8 pb-6">
+      <div className="sticky bottom-0 mt-auto bg-bg pt-8 pb-6 sm:static sm:mt-0">
         <Button asChild variant="primary" size="lg">
           <Link href="/login">Log in</Link>
         </Button>

@@ -163,6 +163,10 @@
   textarea {
     @apply caret-text-primary;
   }
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
 }
 
 body {
