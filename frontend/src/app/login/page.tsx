@@ -1,6 +1,7 @@
 import { LoginForm } from '@/features/login';
 import { redirectIfAuthenticated } from '@/shared/auth/session';
-import Link from 'next/dist/client/link';
+import Link from 'next/link';
+import { Button } from '@/shared/ui/button';
 
 export default async function LoginPage() {
   await redirectIfAuthenticated();
@@ -15,6 +16,16 @@ export default async function LoginPage() {
 
       <h1 className="pt-6 pb-8 text-display">Log in</h1>
       <LoginForm />
+
+      <p className="mt-5 text-center text-meta text-text-secondary">
+        No account yet?{' '}
+        <Link
+          href="/signup"
+          className="relative font-semibold text-text-primary underline underline-offset-2 before:absolute before:-inset-x-2 before:-inset-y-3.5"
+        >
+          Sign up
+        </Link>
+      </p>
     </main>
   );
 }
