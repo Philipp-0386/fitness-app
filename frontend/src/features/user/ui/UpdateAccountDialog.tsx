@@ -4,8 +4,14 @@ import { useRef, useState } from 'react';
 import { updateMe } from '../client/update-user.client';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+import { ChevronRight, CircleAlert } from 'lucide-react';
 import { ApiError } from '@/shared/api/errors/api-error';
 import { fallbackErrorMessage } from '@/shared/api/errors/fallback-error-message';
+import { Button } from '@/shared/ui/button';
+import { Input } from '@/shared/ui/input';
+import { Label } from '@/shared/ui/label';
+import { listRowClass } from '@/shared/ui/list';
+import { Sheet } from '@/shared/ui/sheet';
 
 type Props = {
   username: string;
@@ -70,56 +76,76 @@ export default function UpdateAccountDialog({ username, email }: Props) {
   }
   return (
     <>
-      <button type="button" onClick={open}>
-        Update account information
+      <button type="button" onClick={open} className={listRowClass}>
+        <span className="min-w-0 flex-1 font-semibold">Edit account</span>
+        <ChevronRight className="size-5 shrink-0 text-text-tertiary" aria-hidden="true" />
       </button>
 
-      <dialog ref={dialogRef} onClose={handleClose} onCancel={handleCancel}>
+      <Sheet
+        ref={dialogRef}
+        onClose={handleClose}
+        onCancel={handleCancel}
+        aria-labelledby="update-account-title"
+      >
         <form onSubmit={handleSubmit} noValidate>
-          <h3>Change username or email</h3>
-          <label>
-            Username:
-            <br />
-            <input
+          <h2 id="update-account-title" className="mb-4 text-title">
+            Edit account
+          </h2>
+          <div className="mb-4">
+            <Label className="mb-1.5" htmlFor="update-username">
+              Username
+            </Label>
+            <Input
               type="text"
+              id="update-username"
               value={newUsername}
               onChange={(e) => setNewUsername(e.target.value)}
               autoComplete="username"
             />
-          </label>
-          <br />
-          <label>
-            Email:
-            <br />
-            <input
+          </div>
+          <div className="mb-4">
+            <Label className="mb-1.5" htmlFor="update-email">
+              Email
+            </Label>
+            <Input
               type="email"
+              id="update-email"
               value={newEmail}
               onChange={(e) => setNewEmail(e.target.value)}
               autoComplete="email"
             />
-          </label>
-          <br />
-          <label>
-            Confirm with your password:
-            <br />
-            <input
+          </div>
+          <div className="mb-4">
+            <Label className="mb-1.5" htmlFor="update-password">
+              Confirm with your password
+            </Label>
+            <Input
               type="password"
+              id="update-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               autoComplete="current-password"
             />
-          </label>
-          {error && <p>{error}</p>}
-          <p>
-            <button type="button" disabled={isSaving} onClick={close}>
-              Cancel
-            </button>{' '}
-            <button type="submit" disabled={isSaving}>
+          </div>
+          {error && (
+            <div
+              role="alert"
+              className="mb-2 flex items-start gap-2.5 rounded-field bg-danger-subtle p-3 text-meta"
+            >
+              <CircleAlert className="size-5 shrink-0 text-danger" aria-hidden="true" />
+              <span>{error}</span>
+            </div>
+          )}
+          <div className="mt-2 flex flex-col gap-2">
+            <Button type="submit" variant="primary" size="lg" disabled={isSaving}>
               {isSaving ? 'Saving changes...' : 'Save changes'}
-            </button>
-          </p>
+            </Button>
+            <Button type="button" className="w-full" disabled={isSaving} onClick={close}>
+              Cancel
+            </Button>
+          </div>
         </form>
-      </dialog>
+      </Sheet>
     </>
   );
 }
