@@ -31,7 +31,7 @@ export default function UserHome({ username }: UserHomeProps) {
         <Link
           href="/me"
           aria-label="Account"
-          className="grid size-tap place-items-center rounded-full bg-surface-raised font-semibold"
+          className="grid size-tap place-items-center rounded-full bg-surface-raised font-semibold lg:hidden"
         >
           {username ? (
             username[0].toUpperCase()

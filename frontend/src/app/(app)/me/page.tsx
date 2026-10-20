@@ -96,9 +96,11 @@ export default async function MePage() {
       </div>
 
       <section aria-label="Danger zone" className="mx-4 mt-8">
-        <div className={listClass}>
-          <DeleteAccountDialog />
-        </div>
+        <ul className={listClass}>
+          <li>
+            <DeleteAccountDialog />
+          </li>
+        </ul>
         <p className="mx-1 mt-2 text-meta text-text-tertiary">
           Permanently deletes your account and everything you created: own exercises,
           plans and logged sessions.

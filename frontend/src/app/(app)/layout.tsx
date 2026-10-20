@@ -14,10 +14,10 @@ export default async function AppLayout({
 
   return (
     <>
-      {!wipBannerHidden && <WipBanner dismissible />}
       <div className="flex flex-1 flex-col lg:flex-row">
         <SideBar username={username} />
         <div className="flex min-w-0 flex-1 flex-col">
+          {!wipBannerHidden && <WipBanner dismissible />}
           <div className="flex flex-1 flex-col">{children}</div>
           <div className="hidden lg:block">
             <SiteFooter />
