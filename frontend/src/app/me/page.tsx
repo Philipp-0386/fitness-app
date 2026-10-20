@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+import { LogoutButton } from '@/features/home';
 import {
   ChangePasswordDialog,
   DeleteAccountDialog,
@@ -39,6 +40,9 @@ export default async function MePage() {
         and logged sessions.
       </p>
       <DeleteAccountDialog />
+
+      <h2>Log out</h2>
+      <LogoutButton />
       <p>
         <Link href="/dashboard">Back to dashboard</Link>
       </p>
