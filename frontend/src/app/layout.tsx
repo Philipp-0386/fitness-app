@@ -1,8 +1,8 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Archivo } from 'next/font/google';
 import { Toaster } from 'sonner';
 
-import { SiteFooter, WipBanner } from '@/shared/layout';
+import { WipBanner } from '@/shared/layout';
 import './globals.css';
 import styles from './layout.module.css';
 
@@ -16,6 +16,8 @@ export const metadata: Metadata = {
   description: 'Plan your workouts, log your sessions and track your progress.',
 };
 
+export const viewport: Viewport = { viewportFit: 'cover' };
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -26,7 +28,6 @@ export default function RootLayout({
       <body>
         <WipBanner />
         <div className={styles.content}>{children}</div>
-        <SiteFooter />
         <Toaster richColors position="top-right" />
       </body>
     </html>
