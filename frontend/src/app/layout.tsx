@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from 'next';
 import { Archivo } from 'next/font/google';
 import { Toaster } from 'sonner';
 
-import { WipBanner } from '@/shared/layout';
 import './globals.css';
 import styles from './layout.module.css';
 
@@ -26,7 +25,6 @@ export default function RootLayout({
   return (
     <html lang="en" className={`dark ${archivo.variable}`}>
       <body>
-        <WipBanner />
         <div className={styles.content}>{children}</div>
         <Toaster richColors position="top-right" />
       </body>

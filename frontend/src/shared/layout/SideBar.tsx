@@ -20,7 +20,9 @@ export default function SideBar({ username }: SideBarProps) {
       aria-label="Main"
       className="sticky top-0 hidden h-dvh w-62 shrink-0 flex-col self-start border-r border-border-subtle px-3 pt-5 pb-4 lg:flex"
     >
-      <p className="px-3 pt-1.5 pb-6 text-title">Fitness App</p>
+      <p className="px-3 pt-1.5 pb-6 text-title">
+        <Link href="/">Fitness App</Link>
+      </p>
       <ul className="flex flex-col gap-0.5">
         {TABS.map(({ label, href, icon: Icon, match }) => {
           const isActive = match.some((prefix) => pathname.startsWith(prefix));

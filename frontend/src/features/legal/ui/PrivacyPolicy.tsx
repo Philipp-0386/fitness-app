@@ -477,10 +477,12 @@ export default function PrivacyPolicy() {
         </p>
         <p>
           <strong>Von mir eingesetzte Cookies:</strong> Diese Web-App setzt ausschließlich
-          technisch notwendige Cookies, die für die Anmeldung erforderlich sind. Eine
-          Einwilligung ist hierfür nicht erforderlich (§ 25 Abs. 2 Nr. 2 TDDDG). Es werden
-          keine Cookies zu Analyse-, Tracking- oder Werbezwecken eingesetzt, und es werden
-          keine sonstigen Informationen im Browser gespeichert (z. B. Local Storage).
+          technisch notwendige Cookies: für die Anmeldung und, nur auf ausdrücklichen
+          Klick, um sich das Ausblenden des Hinweises zum Entwicklungsstand zu merken.
+          Eine Einwilligung ist hierfür nicht erforderlich (§ 25 Abs. 2 Nr. 2 TDDDG). Es
+          werden keine Cookies zu Analyse-, Tracking- oder Werbezwecken eingesetzt, und es
+          werden keine sonstigen Informationen im Browser gespeichert (z. B. Local
+          Storage).
         </p>
         <ul>
           <li>
@@ -491,9 +493,14 @@ export default function PrivacyPolicy() {
             <strong>refresh_token:</strong> Dient der Verlängerung der Anmeldung;
             Speicherdauer 7 Tage.
           </li>
+          <li>
+            <strong>wip_hidden:</strong> Merkt sich, dass der Hinweis zum
+            Entwicklungsstand ausgeblendet wurde; enthält keine personenbezogenen Daten;
+            Speicherdauer 48 Stunden.
+          </li>
         </ul>
         <p>
-          Beide Cookies werden beim Abmelden gelöscht. Nutzer können Cookies zudem
+          Die Anmelde-Cookies werden beim Abmelden gelöscht. Nutzer können Cookies zudem
           jederzeit über die Einstellungen ihres Browsers löschen; eine Anmeldung ist dann
           erneut erforderlich.
         </p>

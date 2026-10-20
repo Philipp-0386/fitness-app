@@ -1,7 +1,17 @@
-import Link from 'next/link';
-import { Info } from 'lucide-react';
+'use client';
 
-export default function WipBanner() {
+import Link from 'next/link';
+import { Info, X } from 'lucide-react';
+import { useState } from 'react';
+
+type WipBannerProps = {
+  dismissible?: boolean;
+};
+
+export default function WipBanner({ dismissible = false }: WipBannerProps) {
+  const [hidden, setHidden] = useState(false);
+  if (hidden) return null;
+
   return (
     <aside
       aria-label="Project status"
@@ -16,6 +26,19 @@ export default function WipBanner() {
         >
           About
         </Link>
+        {dismissible && (
+          <button
+            type="button"
+            aria-label="Hide for 48 hours"
+            onClick={() => {
+              document.cookie = 'wip_hidden=1; max-age=172800; path=/; SameSite=Lax';
+              setHidden(true);
+            }}
+            className="relative ml-2 text-text-secondary before:absolute before:-inset-3"
+          >
+            <X className="size-4" aria-hidden="true" />
+          </button>
+        )}
       </div>
     </aside>
   );
