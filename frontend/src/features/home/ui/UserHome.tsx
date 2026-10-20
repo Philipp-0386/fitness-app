@@ -1,84 +1,80 @@
 import Link from 'next/link';
-import { Dumbbell, ClipboardList, LineChart, Plus } from 'lucide-react';
-
-import LogoutButton from './LogoutButton';
-import styles from './userHome.module.css';
+import { ChevronRight, UserRound } from 'lucide-react';
 
 type UserHomeProps = {
   username: string | null;
 };
 
-// Placeholder values until the corresponding backend endpoints exist.
-const stats = [
-  { label: 'Sessions this week', value: '-' },
-  { label: 'Active plans', value: '-' },
-  { label: 'Volume this week', value: '-' },
-];
-
-const shortcuts = [
-  {
-    icon: Plus,
-    title: 'Start a workout',
-    text: 'Log a new training session.',
-    href: '/',
-  },
-  {
-    icon: ClipboardList,
-    title: 'Training plans',
-    text: 'Create and edit your routines.',
-    href: './routines',
-  },
-  {
-    icon: Dumbbell,
-    title: 'Exercises',
-    text: 'Browse the exercise catalog.',
-    href: './exercises',
-  },
-  {
-    icon: LineChart,
-    title: 'Progress',
-    text: 'Review your history and records.',
-    href: '/',
-  },
-];
-
 export default function UserHome({ username }: UserHomeProps) {
+  const links = [
+    {
+      title: 'Routines',
+      text: 'Build and edit your training plans',
+      href: '/routines',
+    },
+    {
+      title: 'Exercises',
+      text: 'Browse the exercise catalog',
+      href: '/exercises',
+    },
+    {
+      title: 'Account',
+      text: username ? `Signed in as ${username}` : 'Profile, password and log out',
+      href: '/me',
+    },
+  ];
+
   return (
-    <main className={styles.page}>
-      <header className={styles.header}>
-        <div>
-          <p className={styles.eyebrow}>Welcome back</p>
-          <h1 className={styles.title}>{username ?? 'Athlete'}</h1>
-        </div>
-        <div>
-          <Link href="/me" className={styles.logoutBtn}>
-            Account
-          </Link>{' '}
-          <LogoutButton />
-        </div>
+    <main className="mx-auto flex w-full max-w-app flex-1 flex-col px-4 pb-8">
+      <header className="flex items-center justify-between pt-4">
+        <h1 className="text-display">Today</h1>
+        <Link
+          href="/me"
+          aria-label="Account"
+          className="grid size-tap place-items-center rounded-full bg-surface-raised font-semibold lg:hidden"
+        >
+          {username ? (
+            username[0].toUpperCase()
+          ) : (
+            <UserRound className="size-5" aria-hidden="true" />
+          )}
+        </Link>
       </header>
 
-      <section className={styles.stats}>
-        {stats.map(({ label, value }) => (
-          <article key={label} className={styles.statCard}>
-            <p className={styles.statValue}>{value}</p>
-            <p className={styles.statLabel}>{label}</p>
-          </article>
-        ))}
+      <section
+        className="mt-3 rounded-card bg-surface px-4 pt-5 pb-4"
+        aria-labelledby="status-title"
+      >
+        <h2 id="status-title" className="text-title">
+          Logging is coming
+        </h2>
+        <p className="mt-1 text-text-secondary">
+          Sessions, history and progress are in development. For now you can build
+          routines from the exercise catalog.
+        </p>
       </section>
 
-      <section>
-        <h2 className={styles.sectionTitle}>Quick actions</h2>
-        <div className={styles.shortcuts}>
-          {shortcuts.map(({ icon: Icon, title, text, href }) => (
-            <Link key={title} href={href} className={styles.shortcutCard}>
-              <Icon className={styles.shortcutIcon} aria-hidden="true" />
-              <span className={styles.shortcutTitle}>{title}</span>
-              <span className={styles.shortcutText}>{text}</span>
-            </Link>
+      <nav aria-label="Sections" className="mt-8">
+        <ul className="divide-y divide-border-subtle overflow-hidden rounded-card bg-surface">
+          {links.map(({ title, text, href }) => (
+            <li key={title}>
+              <Link
+                href={href}
+                className="flex min-h-14 items-center gap-3 px-4 py-2.5 hover:bg-surface-raised focus-visible:-outline-offset-2 active:bg-surface-raised"
+              >
+                <span className="min-w-0 flex-1">
+                  <span className="block font-semibold">{title}</span>
+                  <span className="block text-meta text-text-tertiary">{text}</span>
+                </span>
+                <ChevronRight
+                  className="size-5 shrink-0 text-text-tertiary"
+                  aria-hidden="true"
+                />
+              </Link>
+            </li>
           ))}
-        </div>
-      </section>
+        </ul>
+      </nav>
     </main>
   );
 }

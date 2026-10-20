@@ -1,26 +1,30 @@
 import Link from 'next/link';
 
 import { GITHUB_URL } from '@/shared/site';
-import styles from './siteFooter.module.css';
+
+const linkClass =
+  'flex min-h-tap items-center px-2 text-meta text-text-secondary hover:text-text-primary';
 
 export default function SiteFooter() {
   return (
-    <footer className={styles.footer}>
-      <p className={styles.note}>Fitness App, a side project</p>
-      <nav className={styles.links} aria-label="Site">
-        <Link href="/about" className={styles.link}>
+    <footer className="border-t border-border-subtle">
+      <nav
+        aria-label="Site"
+        className="mx-auto flex max-w-app flex-wrap justify-center px-2 py-1"
+      >
+        <Link href="/about" className={linkClass}>
           About
         </Link>
-        <Link href="/datenschutz" className={styles.link}>
-          Datenschutz/Privacy Policy
+        <Link href="/datenschutz" className={linkClass}>
+          Privacy Policy/Datenschutz
         </Link>
         <a
           href={GITHUB_URL}
-          className={styles.link}
+          className={linkClass}
           target="_blank"
           rel="noopener noreferrer"
         >
-          GitHub
+          GitHub<span className="sr-only"> (opens in a new tab)</span>
         </a>
       </nav>
     </footer>

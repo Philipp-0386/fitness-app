@@ -2,10 +2,16 @@
 
 import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { CircleAlert } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { ApiError } from '@/shared/api/errors/api-error';
 import { fallbackErrorMessage } from '@/shared/api/errors/fallback-error-message';
+import { Button } from '@/shared/ui/button';
+import { Input } from '@/shared/ui/input';
+import { Label } from '@/shared/ui/label';
+import { listRowClass } from '@/shared/ui/list';
+import { Sheet } from '@/shared/ui/sheet';
 import { deleteMe } from '../client/delete-user.client';
 
 export default function DeleteAccountDialog() {
@@ -62,37 +68,59 @@ export default function DeleteAccountDialog() {
 
   return (
     <>
-      <button type="button" onClick={open}>
-        Delete account
+      <button type="button" onClick={open} className={listRowClass}>
+        <span className="min-w-0 flex-1 font-semibold text-danger">Delete account</span>
       </button>
 
-      <dialog ref={dialogRef} onClose={handleClose} onCancel={handleCancel}>
+      <Sheet
+        ref={dialogRef}
+        onClose={handleClose}
+        onCancel={handleCancel}
+        aria-labelledby="delete-account-title"
+      >
         <form onSubmit={handleSubmit} noValidate>
-          <h3>Delete your account?</h3>
-          <p>
+          <h2 id="delete-account-title" className="text-title">
+            Delete your account?
+          </h2>
+          <p className="mt-1 mb-4 text-text-secondary">
             This permanently deletes your account and all your data. It cannot be undone.
           </p>
-          <label>
-            Confirm with your password:
-            <br />
-            <input
+          <div className="mb-4">
+            <Label className="mb-1.5" htmlFor="delete-password">
+              Confirm with your password
+            </Label>
+            <Input
               type="password"
+              id="delete-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               autoComplete="current-password"
             />
-          </label>
-          {error && <p>{error}</p>}
-          <p>
-            <button type="button" onClick={close} disabled={isDeleting}>
-              Cancel
-            </button>{' '}
-            <button type="submit" disabled={isDeleting}>
+          </div>
+          {error && (
+            <div
+              role="alert"
+              className="mb-2 flex items-start gap-2.5 rounded-field bg-danger-subtle p-3 text-meta"
+            >
+              <CircleAlert className="size-5 shrink-0 text-danger" aria-hidden="true" />
+              <span>{error}</span>
+            </div>
+          )}
+          <div className="mt-2 flex flex-col gap-2">
+            <Button type="submit" variant="danger" size="lg" disabled={isDeleting}>
               {isDeleting ? 'Deleting...' : 'Delete account'}
-            </button>
-          </p>
+            </Button>
+            <Button
+              type="button"
+              className="w-full"
+              onClick={close}
+              disabled={isDeleting}
+            >
+              Cancel
+            </Button>
+          </div>
         </form>
-      </dialog>
+      </Sheet>
     </>
   );
 }

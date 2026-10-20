@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import { LogOut } from 'lucide-react';
 import { toast } from 'sonner';
 
-import styles from './userHome.module.css';
+import { cn } from '@/shared/lib/utils';
+import { listRowClass } from '@/shared/ui/list';
 
 export default function LogoutButton() {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -33,12 +34,17 @@ export default function LogoutButton() {
   return (
     <button
       type="button"
-      className={styles.logoutBtn}
       onClick={handleLogout}
       disabled={isLoggingOut}
+      className={cn(
+        listRowClass,
+        'disabled:pointer-events-none disabled:text-text-disabled',
+      )}
     >
-      <LogOut className={styles.logoutIcon} aria-hidden="true" />
-      {isLoggingOut ? 'Logging out...' : 'Log out'}
+      <LogOut className="size-5 shrink-0" aria-hidden="true" />
+      <span className="min-w-0 flex-1 font-semibold">
+        {isLoggingOut ? 'Logging out...' : 'Log out'}
+      </span>
     </button>
   );
 }
