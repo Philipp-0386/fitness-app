@@ -5,7 +5,7 @@ A backend-focused fitness tracking application, with the idea to go beyond a sim
 Status:
 A lot of ground work has been done to begin with domain driven implementations. Token based authentication is implemented, but still WIP. Core domain model exists within the database, but most of it is not accessible through the backend yet. I am currently working on slowly implementing the domain slices one by one. For more insights on the domain,[ here](/docs/domain_notes.md).
 
-The application is deployed under [fit.ringelkamp.dev](https://fit.ringelkamp.dev/), but signups are currently fully closed.
+The application is deployed under [fit.ringelkamp.dev](https://fit.ringelkamp.dev/), but signups are currently fully closed. (Prod-Version: c0f3c73)
 
 Current focus:
 
