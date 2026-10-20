@@ -41,7 +41,7 @@ export default function PrivacyPolicy() {
           keine Einnahmen.
         </p>
         <p>Die verwendeten Begriffe sind nicht geschlechtsspezifisch.</p>
-        <p>Stand: 29. September 2026</p>
+        <p>Stand: 20. Oktober 2026</p>
 
         <h2>Inhaltsübersicht</h2>
         <ul className={styles.index}>
