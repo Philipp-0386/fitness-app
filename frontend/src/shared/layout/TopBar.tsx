@@ -10,10 +10,17 @@ type TopBarProps = {
   backHref: string;
   backLabel: string;
   title: string;
+  /** Heads the detail pane of a split view from 1024px: no back link, the small title always visible. */
+  inSplitView?: boolean;
 };
 
 //top bar of sub pages, renders the display title below the bar and shows it small in the bar once scrolled away
-export default function TopBar({ backHref, backLabel, title }: TopBarProps) {
+export default function TopBar({
+  backHref,
+  backLabel,
+  title,
+  inSplitView = false,
+}: TopBarProps) {
   const titleRef = useRef<HTMLHeadingElement>(null);
   const [titleHidden, setTitleHidden] = useState(false);
 
@@ -35,11 +42,15 @@ export default function TopBar({ backHref, backLabel, title }: TopBarProps) {
         className={cn(
           'sticky top-0 z-10 grid h-14 grid-cols-[1fr_minmax(0,2fr)_1fr] items-center border-b bg-bg px-4 transition-colors duration-180 motion-reduce:transition-none',
           titleHidden ? 'border-border-subtle' : 'border-transparent',
+          inSplitView && 'lg:flex lg:border-border-subtle',
         )}
       >
         <Link
           href={backHref}
-          className="-ml-2 flex min-h-tap items-center gap-0.5 justify-self-start pr-2 font-semibold text-text-secondary hover:text-text-primary"
+          className={cn(
+            '-ml-2 flex min-h-tap items-center gap-0.5 justify-self-start pr-2 font-semibold text-text-secondary hover:text-text-primary',
+            inSplitView && 'lg:hidden',
+          )}
         >
           <ChevronLeft className="size-6" aria-hidden="true" />
           {backLabel}
@@ -49,6 +60,7 @@ export default function TopBar({ backHref, backLabel, title }: TopBarProps) {
           className={cn(
             'truncate text-center text-[1.0625rem] font-semibold transition-opacity duration-180 motion-reduce:transition-none',
             titleHidden ? 'opacity-100' : 'opacity-0',
+            inSplitView && 'lg:text-left lg:opacity-100',
           )}
         >
           {title}
