@@ -19,6 +19,7 @@ public class RoutineMapper {
                 routine.getId(),
                 routine.getName(),
                 routine.getDescription(),
+                routine.getExercises().size(),
                 routine.getCreatedAt(),
                 routine.getUpdatedAt()
         );

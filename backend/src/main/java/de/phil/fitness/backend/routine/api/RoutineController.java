@@ -36,7 +36,7 @@ public class RoutineController {
     }
 
     @GetMapping
-    @Operation(summary = "List own routines", description = "Routines owned by the caller, without their exercises.")
+    @Operation(summary = "List own routines", description = "Routines owned by the caller, without their exercises but with their count.")
     @ApiResponse(responseCode = "200", description = "Routines owned by the caller")
     @ApiResponse(responseCode = "401", description = "UNAUTHENTICATED: missing, invalid or expired access token, or a refresh token",
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
@@ -89,7 +89,7 @@ public class RoutineController {
 
     @GetMapping("/presets")
     @Operation(summary = "List preset routines", description = "Routines defined by the system for all users, "
-            + "without their exercises.")
+            + "without their exercises but with their count.")
     @ApiResponse(responseCode = "200", description = "All preset routines")
     @ApiResponse(responseCode = "401", description = "UNAUTHENTICATED: missing, invalid or expired access token, or a refresh token",
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
