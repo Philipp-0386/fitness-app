@@ -6,18 +6,23 @@ This documentation will be dynamically adjusted. The only purpose it serves is b
 
 ## What now?
 
-For the last week, i have focussed heavily on making changes to allow the application to be live permanently. While this has mostly been achieved, i can now put more focus on making actual domain-driven implementations.
+The ui-rework is basically done. All existing pages are redone with the new design. `Exercise` and `routines` are still missing update, delete and create feature in the frontend. Current plan is, to implement existing backend features to the frontend and add user settings table before implementing new slices in `programms` and `workout`.
 
 The current goal is to finish these tasks:
 
-- Complete `exercise` and `routine` slice to a point, where actual tracking (`workout`) becomes sensible (WIP)
-- Actually develop a frontend-concept (WIP)
-  - most pages are currently basic/generic or even simply json-looking
-  - rework current frontend/ui
-- Research open-source visual sources (pictures, gifs) for `exercise` catalog
-  - S3 storing? -> Research
+- Complete `exercise` and `routine` frontend for full CRUD (backend nearly done)
+  - muscle groups table unused (needed for later analytics)
+  - exercise detail page (description, instructions, muscles)
+  - exercise picker as its own component, used by the routine editor now (and by the workout later?)
+  - preset-usage feature
+- New DB-Table for user settings
+  - units (kg/lb as display conversion) and time zone, before `workout`
+- Implement `programm` slice
 - Add token revocation (not started)
   - see issue #128
+
+- Research open-source visual sources (pictures, gifs) for `exercise` catalog
+  - S3 storing? -> Research
 - [Demo account](./general_planning.md#demo-account-idea)
   - add temporary accounts allowing outsiders to test for limited time
 
