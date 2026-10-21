@@ -1,15 +1,23 @@
 import Link from 'next/link';
+import { ChevronLeft } from 'lucide-react';
 
+import { isAuthenticated } from '@/shared/auth/session';
 import { GITHUB_ISSUES_URL, GITHUB_URL } from '@/shared/site';
 
 const linkClass = 'font-semibold text-text-primary underline underline-offset-2';
 
-export default function AboutContent() {
+export default async function AboutContent() {
+  const loggedIn = await isAuthenticated();
+
   return (
     <main className="mx-auto flex w-full max-w-app flex-1 flex-col px-4 pb-8">
       <header className="flex h-14 items-center">
-        <Link href="/" className="-mx-2 flex min-h-tap items-center px-2 text-title">
-          Fitness App
+        <Link
+          href={loggedIn ? '/dashboard' : '/'}
+          className="-ml-2 flex min-h-tap items-center gap-0.5 pr-2 font-semibold text-text-secondary hover:text-text-primary"
+        >
+          <ChevronLeft className="size-6" aria-hidden="true" />
+          {loggedIn ? 'Today' : 'Home'}
         </Link>
       </header>
 

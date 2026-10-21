@@ -1,5 +1,8 @@
 import type { ReactNode } from 'react';
 import Link from 'next/link';
+import { ChevronLeft } from 'lucide-react';
+
+import { isAuthenticated } from '@/shared/auth/session';
 
 const listClass = 'flex list-disc flex-col gap-2 pl-5';
 const cardListClass =
@@ -13,18 +16,24 @@ function ExternalLink({ href, children }: { href: string; children?: ReactNode }
   );
 }
 
-export default function PrivacyPolicy() {
+export default async function PrivacyPolicy() {
+  const loggedIn = await isAuthenticated();
+
   return (
     <main className="mx-auto flex w-full max-w-app flex-1 flex-col px-4 pb-8 lg:max-w-3xl">
       <header className="flex h-14 items-center">
-        <Link href="/" className="-mx-2 flex min-h-tap items-center px-2 text-title">
-          Fitness App
+        <Link
+          href={loggedIn ? '/dashboard' : '/'}
+          className="-ml-2 flex min-h-tap items-center gap-0.5 pr-2 font-semibold text-text-secondary hover:text-text-primary"
+        >
+          <ChevronLeft className="size-6" aria-hidden="true" />
+          {loggedIn ? 'Today' : 'Home'}
         </Link>
       </header>
 
       <article
         lang="de"
-        className="flex flex-col gap-3 pt-6 text-text-secondary [overflow-wrap:anywhere] [&_a]:text-text-primary [&_a]:underline [&_a]:underline-offset-2 [&_h2]:mt-5 [&_h2]:scroll-mt-6 [&_h2]:text-title [&_h2]:text-text-primary [&_h3]:mt-1 [&_h3]:font-semibold [&_h3]:text-text-primary [&_strong]:font-semibold [&_strong]:text-text-primary"
+        className="flex flex-col gap-3 pt-6 text-text-secondary wrap-anywhere [&_a]:text-text-primary [&_a]:underline [&_a]:underline-offset-2 [&_h2]:mt-5 [&_h2]:scroll-mt-6 [&_h2]:text-title [&_h2]:text-text-primary [&_h3]:mt-1 [&_h3]:font-semibold [&_h3]:text-text-primary [&_strong]:font-semibold [&_strong]:text-text-primary"
       >
         <aside
           lang="en"
