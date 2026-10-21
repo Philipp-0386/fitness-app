@@ -5,6 +5,7 @@ export type Routine = {
   id: number;
   name: string;
   description: string | null;
+  exerciseCount: number;
   createdAt: string;
   updatedAt: string;
 };
@@ -30,7 +31,7 @@ export type RoutineExercise = {
 };
 
 /** Mirrors the backend RoutineDetailResponse record. */
-export type RoutineDetail = Routine & {
+export type RoutineDetail = Omit<Routine, 'exerciseCount'> & {
   exercises: RoutineExercise[];
 };
 

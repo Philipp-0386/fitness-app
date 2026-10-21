@@ -1,36 +1,16 @@
-import { ExerciseJsonView } from '@/features/exercises';
+import { ExerciseCatalog, fetchExercises } from '@/features/exercises';
 import { requireSession } from '@/shared/auth/session';
+import { TopBar } from '@/shared/layout';
 
-export default async function ExercisesPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ id?: string }>;
-}) {
+export default async function ExercisesPage() {
   await requireSession();
 
-  const { id } = await searchParams;
+  const exercises = await fetchExercises();
 
   return (
-    <main>
-      <h1>Exercises</h1>
-
-      <form method="get">
-        <label>
-          id: <input name="id" defaultValue={id ?? ''} />
-        </label>
-        <button type="submit">load</button>
-      </form>
-      <p>
-        <a href="/exercises">clear (load the whole catalog)</a>
-      </p>
-
-      {/* Seeded ids from main.sql */}
-      <p>
-        ids 1-63 global, 64 max12, 65 lena_lifts, 66 marco, 67 sina1 (soft deleted). Anything
-        but your own or a global one answers 404.
-      </p>
-
-      <ExerciseJsonView id={id} />
+    <main className="mx-auto flex w-full max-w-app flex-1 flex-col pb-8 lg:max-w-[720px]">
+      <TopBar backHref="/routines" backLabel="Plans" title="Exercises" />
+      <ExerciseCatalog exercises={exercises} />
     </main>
   );
 }

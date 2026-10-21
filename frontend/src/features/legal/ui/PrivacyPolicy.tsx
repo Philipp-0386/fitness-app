@@ -1,6 +1,12 @@
 import type { ReactNode } from 'react';
+import Link from 'next/link';
+import { ChevronLeft } from 'lucide-react';
 
-import styles from './privacyPolicy.module.css';
+import { isAuthenticated } from '@/shared/auth/session';
+
+const listClass = 'flex list-disc flex-col gap-2 pl-5';
+const cardListClass =
+  'flex list-disc flex-col gap-2 rounded-card bg-surface py-3 pr-4 pl-8';
 
 function ExternalLink({ href, children }: { href: string; children?: ReactNode }) {
   return (
@@ -10,11 +16,30 @@ function ExternalLink({ href, children }: { href: string; children?: ReactNode }
   );
 }
 
-export default function PrivacyPolicy() {
+export default async function PrivacyPolicy() {
+  const loggedIn = await isAuthenticated();
+
   return (
-    <main className={styles.page}>
-      <article lang="de" className={styles.article}>
-        <aside lang="en" className={styles.notice} aria-label="Language notice">
+    <main className="mx-auto flex w-full max-w-app flex-1 flex-col px-4 pb-8 lg:max-w-3xl">
+      <header className="flex h-14 items-center">
+        <Link
+          href={loggedIn ? '/dashboard' : '/'}
+          className="-ml-2 flex min-h-tap items-center gap-0.5 pr-2 font-semibold text-text-secondary hover:text-text-primary"
+        >
+          <ChevronLeft className="size-6" aria-hidden="true" />
+          {loggedIn ? 'Today' : 'Home'}
+        </Link>
+      </header>
+
+      <article
+        lang="de"
+        className="flex flex-col gap-3 pt-6 text-text-secondary wrap-anywhere [&_a]:text-text-primary [&_a]:underline [&_a]:underline-offset-2 [&_h2]:mt-5 [&_h2]:scroll-mt-6 [&_h2]:text-title [&_h2]:text-text-primary [&_h3]:mt-1 [&_h3]:font-semibold [&_h3]:text-text-primary [&_strong]:font-semibold [&_strong]:text-text-primary"
+      >
+        <aside
+          lang="en"
+          className="rounded-card bg-surface px-4 py-3 text-meta"
+          aria-label="Language notice"
+        >
           <p>
             <strong>Note:</strong> This privacy policy is only available in German. If you
             have questions about how your data is processed, or want to access, correct or
@@ -25,7 +50,7 @@ export default function PrivacyPolicy() {
           </p>
         </aside>
 
-        <h1>Datenschutzerklärung</h1>
+        <h1 className="pt-6 pb-2 text-display text-text-primary">Datenschutzerklärung</h1>
 
         <h2 id="m4158">Präambel</h2>
         <p>
@@ -44,7 +69,7 @@ export default function PrivacyPolicy() {
         <p>Stand: 20. Oktober 2026</p>
 
         <h2>Inhaltsübersicht</h2>
-        <ul className={styles.index}>
+        <ul className={cardListClass}>
           <li>
             <a href="#m4158">Präambel</a>
           </li>
@@ -108,7 +133,7 @@ export default function PrivacyPolicy() {
           Zwecke ihrer Verarbeitung zusammen und verweist auf die betroffenen Personen.
         </p>
         <h3>Arten der verarbeiteten Daten</h3>
-        <ul>
+        <ul className={listClass}>
           <li>Bestandsdaten.</li>
           <li>Kontaktdaten.</li>
           <li>Inhaltsdaten.</li>
@@ -116,12 +141,12 @@ export default function PrivacyPolicy() {
           <li>Protokolldaten.</li>
         </ul>
         <h3>Kategorien betroffener Personen</h3>
-        <ul>
+        <ul className={listClass}>
           <li>Nutzer.</li>
           <li>Kommunikationspartner.</li>
         </ul>
         <h3>Zwecke der Verarbeitung</h3>
-        <ul>
+        <ul className={listClass}>
           <li>
             Erbringung vertraglicher Leistungen und Erfüllung vertraglicher Pflichten.
           </li>
@@ -143,7 +168,7 @@ export default function PrivacyPolicy() {
           Rechtsgrundlagen maßgeblich sein, teile ich Ihnen diese in der
           Datenschutzerklärung mit.
         </p>
-        <ul>
+        <ul className={listClass}>
           <li>
             <strong>
               Vertragserfüllung und vorvertragliche Anfragen (Art. 6 Abs. 1 S. 1 lit. b)
@@ -277,7 +302,7 @@ export default function PrivacyPolicy() {
           der DSGVO verschiedene Rechte zu, die sich insbesondere aus Art. 15 bis 21 DSGVO
           ergeben:
         </p>
-        <ul>
+        <ul className={listClass}>
           <li>
             <strong>
               Widerspruchsrecht: Sie haben das Recht, aus Gründen, die sich aus Ihrer
@@ -353,7 +378,7 @@ export default function PrivacyPolicy() {
           zu dieser Anfrage IP-Adresse, aufgerufene Adresse und Browserinformationen.
           Diese Fehlerprotokolle werden nach spätestens 14 Tagen automatisch gelöscht.
         </p>
-        <ul className={styles.details}>
+        <ul className={cardListClass}>
           <li>
             <strong>Verarbeitete Datenarten:</strong> Meta-, Kommunikations- und
             Verfahrensdaten (IP-Adressen, im Regelfall nur kurzzeitig zur Auslieferung,
@@ -386,7 +411,7 @@ export default function PrivacyPolicy() {
             Weitere Hinweise zu Verarbeitungsprozessen, Verfahren und Diensten:
           </strong>
         </p>
-        <ul className={styles.details}>
+        <ul className={cardListClass}>
           <li>
             <strong>Bereitstellung Onlineangebot auf gemietetem Speicherplatz: </strong>
             Für die Bereitstellung meines Onlineangebotes nutze ich Speicherplatz,
@@ -423,7 +448,7 @@ export default function PrivacyPolicy() {
           Cloudflare die E-Mail einschließlich Absenderadresse, Inhalt und technischer
           Metadaten, ausschließlich zum Zweck der Zustellung.
         </p>
-        <ul className={styles.details}>
+        <ul className={cardListClass}>
           <li>
             <strong>Verarbeitete Datenarten:</strong> Kontaktdaten (E-Mail-Adressen);
             Inhaltsdaten (Inhalte von E-Mails); Meta-, Kommunikations- und Verfahrensdaten
@@ -446,7 +471,7 @@ export default function PrivacyPolicy() {
             Weitere Hinweise zu Verarbeitungsprozessen, Verfahren und Diensten:
           </strong>
         </p>
-        <ul className={styles.details}>
+        <ul className={cardListClass}>
           <li>
             <strong>Cloudflare: </strong>DNS-Verwaltung und E-Mail-Weiterleitung;{' '}
             <strong>Dienstanbieter:</strong> Cloudflare, Inc., 101 Townsend St, San
@@ -484,7 +509,7 @@ export default function PrivacyPolicy() {
           werden keine sonstigen Informationen im Browser gespeichert (z. B. Local
           Storage).
         </p>
-        <ul>
+        <ul className={listClass}>
           <li>
             <strong>access_token:</strong> Hält die Anmeldung aufrecht; Speicherdauer 15
             Minuten.
@@ -504,7 +529,7 @@ export default function PrivacyPolicy() {
           jederzeit über die Einstellungen ihres Browsers löschen; eine Anmeldung ist dann
           erneut erforderlich.
         </p>
-        <ul className={styles.details}>
+        <ul className={cardListClass}>
           <li>
             <strong>Verarbeitete Datenarten:</strong> Meta-, Kommunikations- und
             Verfahrensdaten (Anmelde-Token mit pseudonymer Nutzer-ID und Ablaufzeitpunkt).
@@ -547,7 +572,7 @@ export default function PrivacyPolicy() {
           per E-Mail an <a href="mailto:kontakt@ringelkamp.dev">kontakt@ringelkamp.dev</a>{' '}
           möglich.
         </p>
-        <ul className={styles.details}>
+        <ul className={cardListClass}>
           <li>
             <strong>Verarbeitete Datenarten:</strong> Bestandsdaten (Nutzername,
             E-Mail-Adresse, Passwort-Hash); Inhaltsdaten (von Nutzern angelegte
@@ -581,7 +606,7 @@ export default function PrivacyPolicy() {
             Weitere Hinweise zu Verarbeitungsprozessen, Verfahren und Diensten:
           </strong>
         </p>
-        <ul className={styles.details}>
+        <ul className={cardListClass}>
           <li>
             <strong>Registrierung mit Pseudonymen: </strong>Nutzer dürfen statt Klarnamen
             Pseudonyme als Nutzernamen verwenden; <strong>Rechtsgrundlagen:</strong>{' '}
@@ -619,7 +644,7 @@ export default function PrivacyPolicy() {
           über Cloudflare weitergeleitet (siehe Abschnitt „Domainverwaltung und
           E-Mail-Weiterleitung“).
         </p>
-        <ul className={styles.details}>
+        <ul className={cardListClass}>
           <li>
             <strong>Verarbeitete Datenarten:</strong> Kontaktdaten (z. B.
             E-Mail-Adressen); Inhaltsdaten (z. B. textliche Nachrichten sowie die sie
@@ -651,7 +676,7 @@ export default function PrivacyPolicy() {
             Weitere Hinweise zu Verarbeitungsprozessen, Verfahren und Diensten:
           </strong>
         </p>
-        <ul className={styles.details}>
+        <ul className={cardListClass}>
           <li>
             <strong>Kontaktformular: </strong>Bei Kontaktaufnahme über ein
             Kontaktformular, per E-Mail oder anderen Kommunikationswegen verarbeite ich
@@ -700,7 +725,7 @@ export default function PrivacyPolicy() {
           gesetzlich definiert sind, gelten deren gesetzliche Definitionen. Die
           nachfolgenden Erläuterungen sollen dagegen vor allem dem Verständnis dienen.
         </p>
-        <ul className={styles.glossary}>
+        <ul className="flex list-disc flex-col gap-3.5 pl-5">
           <li>
             <strong>Bestandsdaten:</strong> Bestandsdaten umfassen wesentliche
             Informationen, die für die Identifikation und Verwaltung von Vertragspartnern,
@@ -777,7 +802,7 @@ export default function PrivacyPolicy() {
           </li>
         </ul>
 
-        <p className={styles.seal}>
+        <p className="mt-5 text-meta">
           <a
             href="https://datenschutz-generator.de/"
             title="Rechtstext von Dr. Schwenke - für weitere Informationen bitte anklicken."

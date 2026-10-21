@@ -1,5 +1,7 @@
 'use client';
 
+import { Button } from '@/shared/ui/button';
+
 type Props = {
   error: Error & { digest?: string };
   reset: () => void;
@@ -17,14 +19,29 @@ type Props = {
  */
 export default function ExercisesError({ error, reset }: Props) {
   return (
-    <main>
-      <h1>Exercises</h1>
-      <p>The exercise catalog could not be loaded.</p>
-      <p>{error.message}</p>
-      {error.digest && <p>Reference: {error.digest}</p>}
-      <button type="button" onClick={reset}>
-        Try again
-      </button>
+    <main className="mx-auto flex w-full max-w-app flex-1 flex-col pb-8 lg:max-w-[720px]">
+      <header className="flex min-h-tap items-center px-4 pt-4">
+        <h1 className="text-display">Exercises</h1>
+      </header>
+
+      <div className="px-4 pt-3">
+        <section role="alert" className="rounded-card bg-surface px-4 pt-5 pb-4">
+          <h2 className="text-title">The exercise catalog could not be loaded</h2>
+          <p className="mt-1 text-text-secondary">{error.message}</p>
+          {error.digest && (
+            <p className="mt-1 text-meta text-text-tertiary">Reference: {error.digest}</p>
+          )}
+        </section>
+        <Button
+          className="mt-4"
+          type="button"
+          variant="primary"
+          size="lg"
+          onClick={reset}
+        >
+          Try again
+        </Button>
+      </div>
     </main>
   );
 }

@@ -16,6 +16,7 @@ public interface RoutineRepository extends JpaRepository<Routine, Long> {
      */
     @Query("""
             SELECT ur FROM Routine ur
+                LEFT JOIN FETCH ur.exercises
             WHERE ur.userId = :userId
             ORDER BY ur.name ASC
     """)
@@ -52,6 +53,7 @@ public interface RoutineRepository extends JpaRepository<Routine, Long> {
      */
     @Query("""
             SELECT pr FROM Routine pr
+                LEFT JOIN FETCH pr.exercises
             WHERE pr.userId IS NULL
             ORDER BY pr.name ASC
             """)

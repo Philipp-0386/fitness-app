@@ -8,8 +8,8 @@ type UserHomeProps = {
 export default function UserHome({ username }: UserHomeProps) {
   const links = [
     {
-      title: 'Routines',
-      text: 'Build and edit your training plans',
+      title: 'Plans',
+      text: 'Your routines, presets and the exercise catalog',
       href: '/routines',
     },
     {
