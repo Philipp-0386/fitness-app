@@ -1,6 +1,7 @@
 export { default as RoutineList } from './ui/RoutineList';
 export { default as PlansListPane } from './ui/PlansListPane';
 export { default as RoutineDetailView } from './ui/RoutineDetailView';
+export { default as RoutineEditor } from './ui/RoutineEditor';
 export {
   fetchPresetRoutineByRoutineId,
   fetchPresetRoutines,
