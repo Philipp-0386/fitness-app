@@ -17,5 +17,5 @@ export default async function PresetRoutinePage({
     throw error;
   });
 
-  return <RoutineDetailView routine={routine} />;
+  return <RoutineDetailView routine={routine} kind="preset" />;
 }
