@@ -16,14 +16,11 @@ const trackingHints: Partial<
 
 type RoutineDetailViewProps = {
   routine: RoutineDetail;
-  /** Shows the Edit button, only for own routines. */
-  editable?: boolean;
+  /** Own routines get an Edit button, presets a Copy button. */
+  kind: 'own' | 'preset';
 };
 
-export default function RoutineDetailView({
-  routine,
-  editable = false,
-}: RoutineDetailViewProps) {
+export default function RoutineDetailView({ routine, kind }: RoutineDetailViewProps) {
   return (
     <div className="mx-auto flex w-full max-w-app flex-1 flex-col pb-8 lg:max-w-[560px]">
       <TopBar
@@ -32,13 +29,17 @@ export default function RoutineDetailView({
         title={routine.name}
         inSplitView
         action={
-          editable && (
-            <Button asChild size="sm">
+          <Button asChild size="sm">
+            {kind === 'own' ? (
               <Link href={`/routines/${routine.id}/edit`} replace>
                 Edit
               </Link>
-            </Button>
-          )
+            ) : (
+              <Link href={`/routines/presets/${routine.id}/copy`} replace>
+                Copy
+              </Link>
+            )}
+          </Button>
         }
       />
 
