@@ -43,6 +43,9 @@ import TargetSheet from './TargetSheet';
 
 const MAX_SLOTS = 50;
 
+const cancelClass =
+  '-ml-2 flex min-h-tap items-center justify-self-start px-2 font-semibold text-text-secondary hover:text-text-primary';
+
 const emptySlot: Omit<Slot, 'key'> = {
   exercise: null,
   targetSets: null,
@@ -90,7 +93,6 @@ export default function RoutineEditor({ routine, exercises }: RoutineEditorProps
 
   const sheetIndex = sheet ? slots.findIndex((s) => s.key === sheet.slotKey) : -1;
   const sheetSlot = sheetIndex >= 0 ? slots[sheetIndex] : null;
-  const cancelHref = routine ? `/routines/${routine.id}` : '/routines';
 
   function handleSelect(exercise: Exercise) {
     if (!sheet) return;
@@ -169,7 +171,7 @@ export default function RoutineEditor({ routine, exercises }: RoutineEditorProps
         ? await updateRoutine(String(routine.id), payload)
         : await createRoutine(payload);
       toast.success('Routine saved.');
-      router.push(`/routines/${saved.id}`);
+      router.replace(`/routines/${saved.id}`);
       router.refresh();
     } catch (err) {
       setIsSaving(false);
@@ -183,6 +185,12 @@ export default function RoutineEditor({ routine, exercises }: RoutineEditorProps
         );
         return;
       }
+      if (err instanceof ApiError && err.code === 'USER_ROUTINE_NOT_FOUND') {
+        setError(
+          'This routine no longer exists. It may have been deleted in another tab.',
+        );
+        return;
+      }
       setError(fallbackErrorMessage(err));
     }
   }
@@ -191,12 +199,16 @@ export default function RoutineEditor({ routine, exercises }: RoutineEditorProps
     <div className="mx-auto flex w-full max-w-app flex-1 flex-col pb-8 lg:max-w-[560px]">
       <form onSubmit={handleSubmit} noValidate>
         <header className="sticky top-0 z-10 grid h-14 grid-cols-[1fr_minmax(0,2fr)_1fr] items-center border-b border-border-subtle bg-bg px-4">
-          <Link
-            href={cancelHref}
-            className="-ml-2 flex min-h-tap items-center justify-self-start px-2 font-semibold text-text-secondary hover:text-text-primary"
-          >
-            Cancel
-          </Link>
+          {routine ? (
+            <Link href={`/routines/${routine.id}`} replace className={cancelClass}>
+              Cancel
+            </Link>
+          ) : (
+            // A new routine is only reached from the list, so going back avoids a second list entry.
+            <button type="button" onClick={() => router.back()} className={cancelClass}>
+              Cancel
+            </button>
+          )}
           <h1 className="truncate text-center text-[1.0625rem] font-semibold">
             {routine ? routine.name : 'New routine'}
           </h1>

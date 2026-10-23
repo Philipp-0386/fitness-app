@@ -34,7 +34,9 @@ export default function RoutineDetailView({
         action={
           editable && (
             <Button asChild size="sm">
-              <Link href={`/routines/${routine.id}/edit`}>Edit</Link>
+              <Link href={`/routines/${routine.id}/edit`} replace>
+                Edit
+              </Link>
             </Button>
           )
         }
