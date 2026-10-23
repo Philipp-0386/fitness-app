@@ -10,6 +10,7 @@ import {
 } from '@/features/routines';
 import { fetchMe } from '@/features/user';
 import { requireSession } from '@/shared/auth/session';
+import { Button } from '@/shared/ui/button';
 import { listClass, listRowClass } from '@/shared/ui/list';
 
 export default async function PlansLayout({
@@ -58,9 +59,14 @@ export default async function PlansLayout({
           ) : (
             <>
               <section className="mt-4" aria-labelledby="routines-title">
-                <h2 id="routines-title" className="text-title">
-                  Routines
-                </h2>
+                <div className="flex items-center justify-between gap-3">
+                  <h2 id="routines-title" className="text-title">
+                    Routines
+                  </h2>
+                  <Button asChild size="sm">
+                    <Link href="/routines/new">New routine</Link>
+                  </Button>
+                </div>
                 <p className="mt-0.5 mb-3 text-meta text-text-secondary">
                   Exercises and targets for a single training day.
                 </p>
@@ -70,8 +76,7 @@ export default async function PlansLayout({
                   <div className="rounded-card bg-surface px-4 pt-5 pb-4">
                     <h3 className="font-semibold">No routines yet</h3>
                     <p className="mt-1 text-meta text-text-secondary">
-                      Creating routines comes with the routine editor. Until then, the
-                      presets below show how a routine is built.
+                      Create your first routine, or have a look at the presets below.
                     </p>
                   </div>
                 )}

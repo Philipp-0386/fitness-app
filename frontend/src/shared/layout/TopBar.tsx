@@ -12,6 +12,8 @@ type TopBarProps = {
   title: string;
   /** Heads the detail pane of a split view from 1024px: no back link, the small title always visible. */
   inSplitView?: boolean;
+  /** Rendered on the right of the bar, e.g. an Edit button. */
+  action?: React.ReactNode;
 };
 
 //top bar of sub pages, renders the display title below the bar and shows it small in the bar once scrolled away
@@ -20,6 +22,7 @@ export default function TopBar({
   backLabel,
   title,
   inSplitView = false,
+  action,
 }: TopBarProps) {
   const titleRef = useRef<HTMLHeadingElement>(null);
   const [titleHidden, setTitleHidden] = useState(false);
@@ -65,6 +68,7 @@ export default function TopBar({
         >
           {title}
         </p>
+        {action && <div className="justify-self-end lg:ml-auto">{action}</div>}
       </header>
       <h1 ref={titleRef} className="px-4 pt-4 text-display text-balance">
         {title}
