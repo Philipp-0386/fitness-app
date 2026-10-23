@@ -21,7 +21,7 @@ export default function RoutineList({ routines, hrefBase }: RoutineListProps) {
     <ul className={listClass}>
       {routines.map((routine) => {
         const href = `${hrefBase}/${routine.id}`;
-        const isActive = pathname === href;
+        const isActive = pathname === href || pathname.startsWith(`${href}/`);
         return (
           <li key={routine.id}>
             <Link
