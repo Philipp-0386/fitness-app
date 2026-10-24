@@ -2,7 +2,7 @@
 
 import { CircleAlert } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useRef, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 import { ApiError } from '@/shared/api/errors/api-error';
@@ -27,6 +27,8 @@ type ExerciseFormDialogProps = {
 
 export default function ExerciseFormDialog({ exercise }: ExerciseFormDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  // The page can hold a create and an edit dialog at once, so every id has to be unique per instance.
+  const id = useId();
   const router = useRouter();
   const [trackingType, setTrackingType] = useState<TrackingType>(
     exercise?.trackingType ?? 'WEIGHT_REPS',
@@ -69,11 +71,9 @@ export default function ExerciseFormDialog({ exercise }: ExerciseFormDialogProps
         description: description.trim() || null,
         instructions: instructions.trim() || null,
       };
-      if (exercise) {
-        await updateExercise(String(exercise.id), payload);
-      } else {
-        await createExercise(payload);
-      }
+      const saved = exercise
+        ? await updateExercise(String(exercise.id), payload)
+        : await createExercise(payload);
       setIsSaving(false);
       dialogRef.current?.close();
       if (!exercise) {
@@ -84,6 +84,8 @@ export default function ExerciseFormDialog({ exercise }: ExerciseFormDialogProps
         setInstructions('');
       }
       toast.success(exercise ? 'Exercise saved.' : 'Exercise created.');
+      // Opens a new exercise, so it is visible even when the catalog filters would hide it.
+      if (!exercise) router.push(`/exercises/${saved.id}`);
       router.refresh();
     } catch (err) {
       setIsSaving(false);
@@ -118,11 +120,11 @@ export default function ExerciseFormDialog({ exercise }: ExerciseFormDialogProps
           setError(null);
         }}
         onCancel={handleCancel}
-        aria-labelledby="exercise-form-title"
+        aria-labelledby={`${id}-title`}
       >
         <form onSubmit={handleSubmit} noValidate>
           <div className="flex items-start justify-between gap-3">
-            <h2 id="exercise-form-title" className="text-title">
+            <h2 id={`${id}-title`} className="text-title">
               {exercise ? 'Edit Exercise' : 'New Exercise'}
             </h2>
             <Button
@@ -197,21 +199,21 @@ export default function ExerciseFormDialog({ exercise }: ExerciseFormDialogProps
             </fieldset>
           )}
 
-          <Label className="mt-4 mb-1.5" htmlFor="exercise-name">
+          <Label className="mt-4 mb-1.5" htmlFor={`${id}-name`}>
             Name
           </Label>
           <Input
-            id="exercise-name"
+            id={`${id}-name`}
             value={name}
             onChange={(e) => setName(e.target.value)}
             maxLength={128}
             autoComplete="off"
             aria-invalid={nameError ? true : undefined}
-            aria-describedby={nameError ? 'exercise-name-error' : undefined}
+            aria-describedby={nameError ? `${id}-name-error` : undefined}
           />
           {nameError && (
             <p
-              id="exercise-name-error"
+              id={`${id}-name-error`}
               className="mt-1.5 flex gap-1.5 text-meta text-danger"
             >
               <CircleAlert
@@ -222,11 +224,11 @@ export default function ExerciseFormDialog({ exercise }: ExerciseFormDialogProps
             </p>
           )}
 
-          <Label className="mt-4 mb-1.5" htmlFor="exercise-description">
+          <Label className="mt-4 mb-1.5" htmlFor={`${id}-description`}>
             Description (optional)
           </Label>
           <textarea
-            id="exercise-description"
+            id={`${id}-description`}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             maxLength={1000}
@@ -234,11 +236,11 @@ export default function ExerciseFormDialog({ exercise }: ExerciseFormDialogProps
             className={textareaClass}
           />
 
-          <Label className="mt-4 mb-1.5" htmlFor="exercise-instructions">
+          <Label className="mt-4 mb-1.5" htmlFor={`${id}-instructions`}>
             Instructions (optional)
           </Label>
           <textarea
-            id="exercise-instructions"
+            id={`${id}-instructions`}
             value={instructions}
             onChange={(e) => setInstructions(e.target.value)}
             maxLength={4000}

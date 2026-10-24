@@ -84,10 +84,12 @@ export default function MuscleGroupFilter({
               hitAreaClass,
             )}
           >
-            <Check className="size-4" aria-hidden="true" />
-            {value.label}
-            {value.role === 'SECONDARY' && ', secondary'}
-            {value.role === 'EITHER' && ', either'}
+            <Check className="size-4 shrink-0" aria-hidden="true" />
+            <span className="max-w-40 truncate">
+              {value.label}
+              {value.role === 'SECONDARY' && ', secondary'}
+              {value.role === 'EITHER' && ', either'}
+            </span>
           </button>
           <button
             type="button"
