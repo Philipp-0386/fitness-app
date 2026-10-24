@@ -9,10 +9,11 @@ import { cn } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { listClass, listRowClass } from '@/shared/ui/list';
+import { MuscleFilter, matchesMuscleFilter } from '../lib/muscle-filter';
 import { typeLabels } from '../lib/type-labels';
 import { Exercise, ExerciseType, MuscleGroup } from '../types/api.types';
 import ExerciseTypeFilter from './ExerciseTypeFilter';
-import MuscleGroupFilter, { MuscleFilter } from './MuscleGroupFilter';
+import MuscleGroupFilter from './MuscleGroupFilter';
 
 const ownerOptions = [
   { value: 'all', label: 'All' },
@@ -40,14 +41,7 @@ export default function ExerciseCatalog({
     (exercise) =>
       (owner === 'all' || exercise.custom) &&
       (type === 'all' || exercise.exerciseType === type) &&
-      (!muscle ||
-        exercise.muscles.some(
-          (m) =>
-            (muscle.role === 'EITHER' || m.role === muscle.role) &&
-            (muscle.areaId !== null
-              ? m.id === muscle.areaId
-              : m.groupId === muscle.groupId),
-        )) &&
+      matchesMuscleFilter(exercise, muscle) &&
       (!search || exercise.name.toLowerCase().includes(search)),
   );
 

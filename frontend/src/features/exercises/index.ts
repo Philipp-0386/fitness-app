@@ -6,4 +6,9 @@ export {
   fetchExercises,
   fetchMuscleGroups,
 } from './api/exercises.api';
-export type { Exercise, ExerciseType, TrackingType } from './types/api.types';
+export type {
+  Exercise,
+  ExerciseType,
+  MuscleGroup,
+  TrackingType,
+} from './types/api.types';

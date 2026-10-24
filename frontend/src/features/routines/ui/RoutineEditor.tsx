@@ -25,7 +25,7 @@ import { toast } from 'sonner';
 
 import ExercisePicker from '@/features/exercises/ui/ExercisePicker';
 import { trackingFields } from '@/features/exercises/lib/tracking-fields';
-import type { Exercise } from '@/features/exercises';
+import type { Exercise, MuscleGroup } from '@/features/exercises';
 import { ApiError } from '@/shared/api/errors/api-error';
 import { fallbackErrorMessage } from '@/shared/api/errors/fallback-error-message';
 import { cn } from '@/shared/lib/utils';
@@ -63,12 +63,14 @@ type RoutineEditorProps = {
   /** Preset a new routine is prefilled from. */
   copyOf?: RoutineDetail;
   exercises: Exercise[];
+  muscleGroups: MuscleGroup[];
 };
 
 export default function RoutineEditor({
   routine,
   copyOf,
   exercises,
+  muscleGroups,
 }: RoutineEditorProps) {
   const router = useRouter();
   const addedSlots = useRef(0);
@@ -341,6 +343,7 @@ export default function RoutineEditor({
 
       <ExercisePicker
         exercises={exercises}
+        muscleGroups={muscleGroups}
         open={sheet?.kind === 'picker'}
         onSelect={handleSelect}
         onClose={() => closeSheet('picker')}

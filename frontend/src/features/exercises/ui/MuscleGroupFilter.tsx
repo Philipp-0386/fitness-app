@@ -6,16 +6,8 @@ import { useRef, useState } from 'react';
 import { cn } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui/button';
 import { Sheet } from '@/shared/ui/sheet';
-import { BodyRegion, MuscleGroup, MuscleRole } from '../types/api.types';
-
-export type MuscleFilter = {
-  groupId: number;
-  /** null filters by the whole group. */
-  areaId: number | null;
-  /** Name of the picked group or area. */
-  label: string;
-  role: MuscleRole | 'EITHER';
-};
+import { MuscleFilter } from '../lib/muscle-filter';
+import { BodyRegion, MuscleGroup } from '../types/api.types';
 
 const regions: { value: BodyRegion; label: string }[] = [
   { value: 'UPPER', label: 'Upper body' },
@@ -125,7 +117,13 @@ export default function MuscleGroupFilter({
         </button>
       )}
 
-      <Sheet ref={dialogRef} aria-labelledby="muscle-group-title">
+      {/* React passes close and cancel on to parent handlers, which would also close a sheet this one sits in. */}
+      <Sheet
+        ref={dialogRef}
+        onClose={(e) => e.stopPropagation()}
+        onCancel={(e) => e.stopPropagation()}
+        aria-labelledby="muscle-group-title"
+      >
         {openGroup ? (
           <>
             <button
