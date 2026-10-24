@@ -7,13 +7,9 @@ import { cn } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { listClass } from '@/shared/ui/list';
-import { Exercise, ExerciseType, TrackingType } from '../types/api.types';
-
-const typeLabels: Record<ExerciseType, string> = {
-  STRENGTH: 'Strength',
-  CARDIO: 'Cardio',
-  MOBILITY: 'Mobility',
-};
+import { typeLabels } from '../lib/type-labels';
+import { Exercise, TrackingType } from '../types/api.types';
+import NewExerciseDialog from './NewExerciseDialog';
 
 const trackingLabels: Partial<Record<TrackingType, string>> = {
   BODYWEIGHT_REPS: 'Bodyweight',
@@ -65,28 +61,31 @@ export default function ExerciseCatalog({ exercises }: ExerciseCatalogProps) {
         />
       </div>
 
-      <div
-        role="radiogroup"
-        aria-label="Show"
-        className="mt-3 inline-grid grid-flow-col gap-1 rounded-card bg-surface p-1"
-      >
-        {ownerOptions.map(({ value, label }) => (
-          <button
-            key={value}
-            type="button"
-            role="radio"
-            aria-checked={owner === value}
-            onClick={() => setOwner(value)}
-            className={cn(
-              'min-h-9 rounded-field px-3.5 text-meta font-semibold',
-              owner === value
-                ? 'bg-surface-raised text-text-primary'
-                : 'text-text-tertiary hover:text-text-secondary',
-            )}
-          >
-            {label}
-          </button>
-        ))}
+      <div className="mt-3 flex items-center justify-between gap-3">
+        <div
+          role="radiogroup"
+          aria-label="Show"
+          className="inline-grid grid-flow-col gap-1 rounded-card bg-surface p-1"
+        >
+          {ownerOptions.map(({ value, label }) => (
+            <button
+              key={value}
+              type="button"
+              role="radio"
+              aria-checked={owner === value}
+              onClick={() => setOwner(value)}
+              className={cn(
+                'min-h-9 rounded-field px-3.5 text-meta font-semibold',
+                owner === value
+                  ? 'bg-surface-raised text-text-primary'
+                  : 'text-text-tertiary hover:text-text-secondary',
+              )}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        <NewExerciseDialog />
       </div>
 
       <p

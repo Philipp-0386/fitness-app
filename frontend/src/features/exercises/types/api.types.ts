@@ -16,5 +16,15 @@ export type Exercise = {
   exerciseType: ExerciseType;
   trackingType: TrackingType;
   description: string | null;
+  instructions: string | null;
   custom: boolean;
+};
+
+/** Mirrors the backend ExerciseRequest record. */
+export type ExercisePayload = {
+  name: string;
+  exerciseType: ExerciseType;
+  trackingType: TrackingType;
+  description: string | null;
+  instructions: string | null;
 };
