@@ -1,12 +1,14 @@
 'use client';
 
-import { Search } from 'lucide-react';
+import Link from 'next/link';
+import { ChevronRight, Search } from 'lucide-react';
+import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 
 import { cn } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
-import { listClass } from '@/shared/ui/list';
+import { listClass, listRowClass } from '@/shared/ui/list';
 import { typeLabels } from '../lib/type-labels';
 import { Exercise, TrackingType, ExerciseType } from '../types/api.types';
 import ExerciseTypeFilter from './ExerciseTypeFilter';
@@ -30,6 +32,7 @@ type ExerciseCatalogProps = {
 
 //filters the whole catalog in the browser, it is loaded once with the page
 export default function ExerciseCatalog({ exercises }: ExerciseCatalogProps) {
+  const pathname = usePathname();
   const [query, setQuery] = useState('');
   const [owner, setOwner] = useState<'all' | 'yours'>('all');
   const [type, setType] = useState<'all' | ExerciseType>('all');
@@ -101,23 +104,32 @@ export default function ExerciseCatalog({ exercises }: ExerciseCatalogProps) {
         <ul className={listClass}>
           {visible.map((exercise) => {
             const trackingLabel = trackingLabels[exercise.trackingType];
+            const href = `/exercises/${exercise.id}`;
+            const isActive = pathname === href;
             return (
-              <li
-                key={exercise.id}
-                className="flex min-h-14 items-center gap-3 px-4 py-2.5"
-              >
-                <span className="min-w-0 flex-1">
-                  <span className="block font-semibold">{exercise.name}</span>
-                  <span className="block text-meta text-text-tertiary">
-                    {typeLabels[exercise.exerciseType]}
-                    {trackingLabel && `, ${trackingLabel}`}
+              <li key={exercise.id}>
+                <Link
+                  href={href}
+                  aria-current={isActive ? 'page' : undefined}
+                  className={cn(listRowClass, isActive && 'lg:bg-surface-raised')}
+                >
+                  <span className="min-w-0 flex-1">
+                    <span className="block font-semibold">{exercise.name}</span>
+                    <span className="block text-meta text-text-tertiary">
+                      {typeLabels[exercise.exerciseType]}
+                      {trackingLabel && `, ${trackingLabel}`}
+                    </span>
                   </span>
-                </span>
-                {exercise.custom && (
-                  <span className="shrink-0 rounded-full border border-border-strong px-2 text-caption font-semibold text-text-secondary">
-                    Yours
-                  </span>
-                )}
+                  {exercise.custom && (
+                    <span className="shrink-0 rounded-full border border-border-strong px-2 text-caption font-semibold text-text-secondary">
+                      Yours
+                    </span>
+                  )}
+                  <ChevronRight
+                    className="size-5 shrink-0 text-text-tertiary"
+                    aria-hidden="true"
+                  />
+                </Link>
               </li>
             );
           })}

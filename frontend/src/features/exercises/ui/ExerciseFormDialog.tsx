@@ -12,65 +12,31 @@ import { Input } from '@/shared/ui/input';
 import { Label } from '@/shared/ui/label';
 import { Sheet } from '@/shared/ui/sheet';
 import { createExercise } from '../client/create-exercise.client';
+import { updateExercise } from '../client/update-exercise.client';
+import { trackingOptions } from '../lib/tracking-options';
 import { typeLabels } from '../lib/type-labels';
-import { ExerciseType, TrackingType } from '../types/api.types';
-
-// The backend accepts any combination, the allowed exercise types only guide the form.
-const trackingOptions: {
-  value: TrackingType;
-  label: string;
-  hint: string;
-  exerciseTypes: ExerciseType[];
-}[] = [
-  {
-    value: 'WEIGHT_REPS',
-    label: 'Weight and reps',
-    hint: 'e.g. bench press',
-    exerciseTypes: ['STRENGTH'],
-  },
-  {
-    value: 'BODYWEIGHT_REPS',
-    label: 'Bodyweight reps',
-    hint: 'Optional added weight, e.g. pull-up',
-    exerciseTypes: ['STRENGTH', 'MOBILITY'],
-  },
-  {
-    value: 'ASSISTED_REPS',
-    label: 'Assisted reps',
-    hint: 'Weight is the assistance, e.g. assisted dip',
-    exerciseTypes: ['STRENGTH'],
-  },
-  {
-    value: 'DURATION',
-    label: 'Time',
-    hint: 'e.g. plank, stretch',
-    exerciseTypes: ['STRENGTH', 'CARDIO', 'MOBILITY'],
-  },
-  {
-    value: 'WEIGHT_DISTANCE',
-    label: 'Weight and distance',
-    hint: "e.g. farmer's carry",
-    exerciseTypes: ['STRENGTH'],
-  },
-  {
-    value: 'DISTANCE_DURATION',
-    label: 'Distance and time',
-    hint: 'e.g. running, rowing',
-    exerciseTypes: ['CARDIO'],
-  },
-];
+import { Exercise, ExerciseType, TrackingType } from '../types/api.types';
 
 const textareaClass =
   'w-full min-w-0 rounded-field border border-border-on-overlay bg-field-on-overlay px-3 py-2.5 text-field text-text-primary placeholder:text-text-secondary';
 
-export default function NewExerciseDialog() {
+type ExerciseFormDialogProps = {
+  /** Edits this exercise, without one the dialog creates a new exercise. */
+  exercise?: Exercise;
+};
+
+export default function ExerciseFormDialog({ exercise }: ExerciseFormDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const router = useRouter();
-  const [trackingType, setTrackingType] = useState<TrackingType>('WEIGHT_REPS');
-  const [exerciseType, setExerciseType] = useState<ExerciseType>('STRENGTH');
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [instructions, setInstructions] = useState('');
+  const [trackingType, setTrackingType] = useState<TrackingType>(
+    exercise?.trackingType ?? 'WEIGHT_REPS',
+  );
+  const [exerciseType, setExerciseType] = useState<ExerciseType>(
+    exercise?.exerciseType ?? 'STRENGTH',
+  );
+  const [name, setName] = useState(exercise?.name ?? '');
+  const [description, setDescription] = useState(exercise?.description ?? '');
+  const [instructions, setInstructions] = useState(exercise?.instructions ?? '');
   const [nameError, setNameError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -96,21 +62,28 @@ export default function NewExerciseDialog() {
 
     setIsSaving(true);
     try {
-      await createExercise({
+      const payload = {
         name: name.trim(),
         exerciseType,
         trackingType,
         description: description.trim() || null,
         instructions: instructions.trim() || null,
-      });
+      };
+      if (exercise) {
+        await updateExercise(String(exercise.id), payload);
+      } else {
+        await createExercise(payload);
+      }
       setIsSaving(false);
       dialogRef.current?.close();
-      setTrackingType('WEIGHT_REPS');
-      setExerciseType('STRENGTH');
-      setName('');
-      setDescription('');
-      setInstructions('');
-      toast.success('Exercise created.');
+      if (!exercise) {
+        setTrackingType('WEIGHT_REPS');
+        setExerciseType('STRENGTH');
+        setName('');
+        setDescription('');
+        setInstructions('');
+      }
+      toast.success(exercise ? 'Exercise saved.' : 'Exercise created.');
       router.refresh();
     } catch (err) {
       setIsSaving(false);
@@ -122,6 +95,12 @@ export default function NewExerciseDialog() {
         setNameError(err.fieldErrors.name);
         return;
       }
+      if (err instanceof ApiError && err.code === 'TRACKING_TYPE_LOCKED') {
+        setError(
+          'What you log per set can not change anymore, because this exercise is already in use.',
+        );
+        return;
+      }
       setError(fallbackErrorMessage(err));
     }
   }
@@ -129,7 +108,7 @@ export default function NewExerciseDialog() {
   return (
     <>
       <Button type="button" size="sm" onClick={() => dialogRef.current?.showModal()}>
-        New Exercise
+        {exercise ? 'Edit' : 'New Exercise'}
       </Button>
 
       <Sheet
@@ -139,12 +118,12 @@ export default function NewExerciseDialog() {
           setError(null);
         }}
         onCancel={handleCancel}
-        aria-labelledby="new-exercise-title"
+        aria-labelledby="exercise-form-title"
       >
         <form onSubmit={handleSubmit} noValidate>
           <div className="flex items-start justify-between gap-3">
-            <h2 id="new-exercise-title" className="text-title">
-              New Exercise
+            <h2 id="exercise-form-title" className="text-title">
+              {exercise ? 'Edit Exercise' : 'New Exercise'}
             </h2>
             <Button
               type="button"
@@ -280,7 +259,13 @@ export default function NewExerciseDialog() {
 
           <div className="mt-5 flex flex-col gap-2">
             <Button type="submit" variant="primary" size="lg" disabled={isSaving}>
-              {isSaving ? 'Creating...' : 'Create'}
+              {exercise
+                ? isSaving
+                  ? 'Saving...'
+                  : 'Save'
+                : isSaving
+                  ? 'Creating...'
+                  : 'Create'}
             </Button>
           </div>
         </form>

@@ -2,14 +2,10 @@ import Link from 'next/link';
 import { ChevronRight, UserRound } from 'lucide-react';
 
 import { fetchExercises } from '@/features/exercises';
-import {
-  PlansListPane,
-  RoutineList,
-  fetchPresetRoutines,
-  fetchUserRoutines,
-} from '@/features/routines';
+import { RoutineList, fetchPresetRoutines, fetchUserRoutines } from '@/features/routines';
 import { fetchMe } from '@/features/user';
 import { requireSession } from '@/shared/auth/session';
+import { ListPane } from '@/shared/layout';
 import { Button } from '@/shared/ui/button';
 import { listClass, listRowClass } from '@/shared/ui/list';
 
@@ -31,7 +27,7 @@ export default async function PlansLayout({
 
   return (
     <main className="flex flex-1 flex-col lg:grid lg:grid-cols-[minmax(320px,400px)_minmax(0,1fr)]">
-      <PlansListPane>
+      <ListPane>
         <div className="mx-auto w-full max-w-app px-4 pb-8">
           <header className="flex items-center justify-between pt-4 lg:pt-8">
             <h1 className="text-display">Plans</h1>
@@ -117,7 +113,7 @@ export default async function PlansLayout({
             </>
           )}
         </div>
-      </PlansListPane>
+      </ListPane>
 
       {children}
     </main>
