@@ -1,4 +1,4 @@
-import { ExerciseCatalog, fetchExercises } from '@/features/exercises';
+import { ExerciseCatalog, fetchExercises, NewExerciseDialog } from '@/features/exercises';
 import { requireSession } from '@/shared/auth/session';
 import { TopBar } from '@/shared/layout';
 
@@ -9,7 +9,12 @@ export default async function ExercisesPage() {
 
   return (
     <main className="mx-auto flex w-full max-w-app flex-1 flex-col pb-8 lg:max-w-[720px]">
-      <TopBar backHref="/routines" backLabel="Plans" title="Exercises" />
+      <TopBar
+        backHref="/routines"
+        backLabel="Plans"
+        title="Exercises"
+        titleAction={<NewExerciseDialog />}
+      />
       <ExerciseCatalog exercises={exercises} />
     </main>
   );

@@ -8,8 +8,8 @@ import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { listClass } from '@/shared/ui/list';
 import { typeLabels } from '../lib/type-labels';
-import { Exercise, TrackingType } from '../types/api.types';
-import NewExerciseDialog from './NewExerciseDialog';
+import { Exercise, TrackingType, ExerciseType } from '../types/api.types';
+import ExerciseTypeFilter from './ExerciseTypeFilter';
 
 const trackingLabels: Partial<Record<TrackingType, string>> = {
   BODYWEIGHT_REPS: 'Bodyweight',
@@ -32,11 +32,13 @@ type ExerciseCatalogProps = {
 export default function ExerciseCatalog({ exercises }: ExerciseCatalogProps) {
   const [query, setQuery] = useState('');
   const [owner, setOwner] = useState<'all' | 'yours'>('all');
+  const [type, setType] = useState<'all' | ExerciseType>('all');
 
   const search = query.trim().toLowerCase();
   const visible = exercises.filter(
     (exercise) =>
       (owner === 'all' || exercise.custom) &&
+      (type === 'all' || exercise.exerciseType === type) &&
       (!search || exercise.name.toLowerCase().includes(search)),
   );
 
@@ -61,7 +63,7 @@ export default function ExerciseCatalog({ exercises }: ExerciseCatalogProps) {
         />
       </div>
 
-      <div className="mt-3 flex items-center justify-between gap-3">
+      <div className="mt-3 flex items-center gap-2.5">
         <div
           role="radiogroup"
           aria-label="Show"
@@ -85,7 +87,7 @@ export default function ExerciseCatalog({ exercises }: ExerciseCatalogProps) {
             </button>
           ))}
         </div>
-        <NewExerciseDialog />
+        <ExerciseTypeFilter value={type} onChange={setType} />
       </div>
 
       <p
@@ -126,7 +128,8 @@ export default function ExerciseCatalog({ exercises }: ExerciseCatalogProps) {
           <p className="mt-1.5 text-text-secondary">
             Nothing matches
             {search && ` "${query.trim()}"`}
-            {owner === 'yours' && ' among your exercises'}.
+            {owner === 'yours' && ' among your exercises'}
+            {type !== 'all' && ` in ${typeLabels[type]}`}.
           </p>
           <Button
             type="button"
@@ -134,6 +137,7 @@ export default function ExerciseCatalog({ exercises }: ExerciseCatalogProps) {
             onClick={() => {
               setQuery('');
               setOwner('all');
+              setType('all');
             }}
           >
             Clear search and filters

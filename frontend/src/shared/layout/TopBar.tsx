@@ -14,6 +14,8 @@ type TopBarProps = {
   inSplitView?: boolean;
   /** Rendered on the right of the bar, e.g. an Edit button. */
   action?: React.ReactNode;
+  /** Rendered on the right of the display title, e.g. a create button. */
+  titleAction?: React.ReactNode;
 };
 
 //top bar of sub pages, renders the display title below the bar and shows it small in the bar once scrolled away
@@ -23,6 +25,7 @@ export default function TopBar({
   title,
   inSplitView = false,
   action,
+  titleAction,
 }: TopBarProps) {
   const titleRef = useRef<HTMLHeadingElement>(null);
   const [titleHidden, setTitleHidden] = useState(false);
@@ -70,9 +73,12 @@ export default function TopBar({
         </p>
         {action && <div className="justify-self-end lg:ml-auto">{action}</div>}
       </header>
-      <h1 ref={titleRef} className="px-4 pt-4 text-display text-balance">
-        {title}
-      </h1>
+      <div className="flex items-center justify-between gap-3 px-4 pt-4">
+        <h1 ref={titleRef} className="text-display text-balance">
+          {title}
+        </h1>
+        {titleAction}
+      </div>
     </>
   );
 }
