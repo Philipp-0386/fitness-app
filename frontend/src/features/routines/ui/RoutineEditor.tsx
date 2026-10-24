@@ -223,7 +223,7 @@ export default function RoutineEditor({
             </button>
           )}
           <h1 className="truncate text-center text-[1.0625rem] font-semibold">
-            {routine ? routine.name : copyOf ? `Copy of "${copyOf.name}"` : 'New routine'}
+            {routine ? routine.name : copyOf ? `Copy of "${copyOf.name}"` : 'New Routine'}
           </h1>
           <Button
             type="submit"
