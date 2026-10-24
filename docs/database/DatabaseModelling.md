@@ -112,7 +112,7 @@ The schema cannot express these, so the code has to.
 
 - **Bodyweight tracking:** needs a `bodyweight_log` (user, value, measured_at). It also turns `BODYWEIGHT_REPS` sets into real loads, so it must answer "bodyweight on the date of this workout". Possibly health data under Art. 9 GDPR, check consent and the privacy policy before it arrives.
 - **Programs:** schema and presets done, backend and frontend follow. Still open: how strict rest days are in the UI, presets beyond Push, Pull and Legs.
-- **Time zone:** weekly analytics must not group in implicit UTC (Monday 00:30 Berlin time lands in the previous week). Queries take the zone as a parameter from the start, a column can follow.
+- **Time zone:** weekly analytics must not group in implicit UTC (Monday 00:30 Berlin time lands in the previous week). Queries take the zone as a parameter, it comes from `user_settings.time_zone` (region name like `Europe/Berlin`, no fixed offsets).
 - **Additive when needed:** `equipment` on `exercise` (plate diagram), supersets (group column), per set targets, merging exercises, case insensitive names (`lower(name)`; [R\_\_prod_seed_users.sql](../../backend/src/main/resources/db/prod/R__prod_seed_users.sql) uses `uq_exercise_name` as its `ON CONFLICT` target).
 
 History of the changes: the data model rework on 01.10.2026 (Issue #122) is summarized in [general_planning.md](../general_planning.md).

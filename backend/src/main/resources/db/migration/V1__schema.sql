@@ -18,6 +18,15 @@ CREATE TABLE userdata (
     CONSTRAINT fk_userdata_role FOREIGN KEY (role_id) REFERENCES roles(id)
 );
 
+-- Preferences of a user, one row per user, created together with the account
+CREATE TABLE user_settings (
+    user_id BIGINT PRIMARY KEY,
+    weight_unit VARCHAR(8) DEFAULT 'KG' NOT NULL CHECK (weight_unit IN ('KG', 'LB')),
+    distance_unit VARCHAR(8) DEFAULT 'KM' NOT NULL CHECK (distance_unit IN ('KM', 'MI')),
+    time_zone VARCHAR(64) DEFAULT 'Europe/Berlin' NOT NULL,
+    CONSTRAINT fk_user_settings_user FOREIGN KEY (user_id) REFERENCES userdata(id) ON DELETE CASCADE
+);
+
 -- Lookup of muscle groups in two levels: groups (Chest, Back, ..., with body_region) and their areas (Upper Chest, Lats, ...).
 CREATE TABLE muscle_group (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,

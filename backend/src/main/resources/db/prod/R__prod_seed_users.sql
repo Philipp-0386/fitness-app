@@ -10,6 +10,11 @@ INSERT INTO userdata (username, email, password_hashed, role_id)
 VALUES ('luca1', 'luca@fitness.local', '${seed_user_password_hash}', 1)
 ON CONFLICT (username) DO NOTHING;
 
+-- user_settings (defaults)
+INSERT INTO user_settings (user_id)
+SELECT id FROM userdata WHERE username IN ('admin', 'luca1')
+ON CONFLICT (user_id) DO NOTHING;
+
 -- custom exercises
 INSERT INTO exercise (owner_user_id, name, exercise_type, tracking_type, description, instructions)
 VALUES ((SELECT id FROM userdata WHERE username = 'luca1'), 'Slow Tempo Push-Up', 'STRENGTH', 'BODYWEIGHT_REPS', 'Custom push-up variation with a 4 second eccentric.', 'Lower for four seconds, pause briefly at the bottom, press up explosively.')
