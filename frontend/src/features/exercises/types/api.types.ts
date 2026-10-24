@@ -9,6 +9,17 @@ export type TrackingType =
   | 'WEIGHT_DISTANCE'
   | 'DISTANCE_DURATION';
 
+export type MuscleRole = 'PRIMARY' | 'SECONDARY';
+
+/** Mirrors the backend ExerciseMuscleResponse record. */
+export type ExerciseMuscle = {
+  id: number;
+  name: string;
+  /** The muscle group itself, or the group an area like Upper Chest belongs to. */
+  groupId: number;
+  role: MuscleRole;
+};
+
 /** Mirrors the backend ExerciseResponse record. */
 export type Exercise = {
   id: number;
@@ -17,6 +28,8 @@ export type Exercise = {
   trackingType: TrackingType;
   description: string | null;
   instructions: string | null;
+  /** Primary muscles first. */
+  muscles: ExerciseMuscle[];
   custom: boolean;
 };
 

@@ -10,16 +10,8 @@ import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { listClass, listRowClass } from '@/shared/ui/list';
 import { typeLabels } from '../lib/type-labels';
-import { Exercise, TrackingType, ExerciseType } from '../types/api.types';
+import { Exercise, ExerciseType } from '../types/api.types';
 import ExerciseTypeFilter from './ExerciseTypeFilter';
-
-const trackingLabels: Partial<Record<TrackingType, string>> = {
-  BODYWEIGHT_REPS: 'Bodyweight',
-  ASSISTED_REPS: 'Assisted',
-  DURATION: 'Time',
-  WEIGHT_DISTANCE: 'Distance',
-  DISTANCE_DURATION: 'Distance and time',
-};
 
 const ownerOptions = [
   { value: 'all', label: 'All' },
@@ -103,7 +95,9 @@ export default function ExerciseCatalog({ exercises }: ExerciseCatalogProps) {
       {visible.length > 0 ? (
         <ul className={listClass}>
           {visible.map((exercise) => {
-            const trackingLabel = trackingLabels[exercise.trackingType];
+            const primaryMuscles = exercise.muscles
+              .filter((muscle) => muscle.role === 'PRIMARY')
+              .map((muscle) => muscle.name);
             const href = `/exercises/${exercise.id}`;
             const isActive = pathname === href;
             return (
@@ -115,10 +109,14 @@ export default function ExerciseCatalog({ exercises }: ExerciseCatalogProps) {
                 >
                   <span className="min-w-0 flex-1">
                     <span className="block font-semibold">{exercise.name}</span>
-                    <span className="block text-meta text-text-tertiary">
-                      {typeLabels[exercise.exerciseType]}
-                      {trackingLabel && `, ${trackingLabel}`}
-                    </span>
+                    {primaryMuscles.length > 0 && (
+                      <span className="block text-meta text-text-tertiary">
+                        {primaryMuscles.length === 1 ? 'Muscle' : 'Muscles'}:{' '}
+                        <span className="text-text-secondary">
+                          {primaryMuscles.join(', ')}
+                        </span>
+                      </span>
+                    )}
                   </span>
                   {exercise.custom && (
                     <span className="shrink-0 rounded-full border border-border-strong px-2 text-caption font-semibold text-text-secondary">
