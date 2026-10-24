@@ -12,6 +12,13 @@ VALUES ('marco', 'marco@fitness.local', '$2a$10$syQkcl4BG846.L5Yma/JC.flOG176qY9
 INSERT INTO userdata (username, email, password_hashed, role_id)
 VALUES ('sina1', 'sina@fitness.local', '$2a$10$syQkcl4BG846.L5Yma/JC.flOG176qY9dWyZK74up67TYI6l4MYie', 1);
 
+-- user_settings (max12 metric, marco imperial, everyone else on the defaults)
+INSERT INTO user_settings (user_id, weight_unit, distance_unit)
+VALUES ((SELECT id FROM userdata WHERE username = 'max12'), 'KG', 'KM');
+INSERT INTO user_settings (user_id, weight_unit, distance_unit)
+VALUES ((SELECT id FROM userdata WHERE username = 'marco'), 'LB', 'MI');
+INSERT INTO user_settings (user_id) SELECT id FROM userdata WHERE username NOT IN ('max12', 'marco');
+
 -- custom exercises
 INSERT INTO exercise (owner_user_id, name, exercise_type, tracking_type, description, instructions) VALUES ((SELECT id FROM userdata WHERE username = 'max12'), 'Slow Tempo Push-Up', 'STRENGTH', 'BODYWEIGHT_REPS', 'Custom push-up variation with a 4 second eccentric.', 'Lower for four seconds, pause briefly at the bottom, press up explosively.');
 INSERT INTO exercise (owner_user_id, name, exercise_type, tracking_type, description, instructions) VALUES ((SELECT id FROM userdata WHERE username = 'lena_lifts'), 'Zone 2 Treadmill Run', 'CARDIO', 'DISTANCE_DURATION', 'Custom steady state run in heart rate zone 2.', 'Run 30 to 45 minutes at a pace that still allows talking.');
