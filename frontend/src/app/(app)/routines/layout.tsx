@@ -64,7 +64,7 @@ export default async function PlansLayout({
                     Routines
                   </h2>
                   <Button asChild size="sm">
-                    <Link href="/routines/new">New routine</Link>
+                    <Link href="/routines/new">New Routine</Link>
                   </Button>
                 </div>
                 <p className="mt-0.5 mb-3 text-meta text-text-secondary">
