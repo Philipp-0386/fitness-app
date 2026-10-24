@@ -1,19 +1,14 @@
 package de.phil.fitness.backend.exercise.model;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.BatchSize;
 
 /**
  * Hibernate entity representing a single exercise of the catalog.
@@ -60,6 +55,12 @@ public class Exercise {
     /** Soft delete marker; rows with a value set are excluded from every query. */
     @Column(name = "DELETED_AT")
     private Instant deletedAt;
+
+    @ElementCollection
+    @CollectionTable(name = "EXERCISE_MUSCLEGROUP", joinColumns = @JoinColumn(name = "EXERCISE_ID"))
+    @Setter(AccessLevel.NONE)
+    @BatchSize(size = 100)
+    private List<ExerciseMuscle> muscles = new ArrayList<>();
 
     public Exercise() {
     }

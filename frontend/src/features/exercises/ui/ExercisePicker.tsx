@@ -8,21 +8,11 @@ import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { listRowClass } from '@/shared/ui/list';
 import { Sheet } from '@/shared/ui/sheet';
-import { Exercise, ExerciseType, TrackingType } from '../types/api.types';
-
-const typeLabels: Record<ExerciseType, string> = {
-  STRENGTH: 'Strength',
-  CARDIO: 'Cardio',
-  MOBILITY: 'Mobility',
-};
-
-const trackingLabels: Partial<Record<TrackingType, string>> = {
-  BODYWEIGHT_REPS: 'Bodyweight',
-  ASSISTED_REPS: 'Assisted',
-  DURATION: 'Time',
-  WEIGHT_DISTANCE: 'Distance',
-  DISTANCE_DURATION: 'Distance and time',
-};
+import { MuscleFilter, matchesMuscleFilter } from '../lib/muscle-filter';
+import { typeLabels } from '../lib/type-labels';
+import { Exercise, ExerciseType, MuscleGroup } from '../types/api.types';
+import ExerciseTypeFilter from './ExerciseTypeFilter';
+import MuscleGroupFilter from './MuscleGroupFilter';
 
 const ownerOptions = [
   { value: 'all', label: 'All' },
@@ -31,6 +21,7 @@ const ownerOptions = [
 
 type ExercisePickerProps = {
   exercises: Exercise[];
+  muscleGroups: MuscleGroup[];
   open: boolean;
   onSelect: (exercise: Exercise) => void;
   onClose: () => void;
@@ -39,6 +30,7 @@ type ExercisePickerProps = {
 //sheet for choosing one exercise, opened and closed by the caller
 export default function ExercisePicker({
   exercises,
+  muscleGroups,
   open,
   onSelect,
   onClose,
@@ -46,6 +38,8 @@ export default function ExercisePicker({
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [query, setQuery] = useState('');
   const [owner, setOwner] = useState<'all' | 'yours'>('all');
+  const [type, setType] = useState<'all' | ExerciseType>('all');
+  const [muscle, setMuscle] = useState<MuscleFilter | null>(null);
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -59,6 +53,8 @@ export default function ExercisePicker({
   function handleClose() {
     setQuery('');
     setOwner('all');
+    setType('all');
+    setMuscle(null);
     onClose();
   }
 
@@ -66,6 +62,8 @@ export default function ExercisePicker({
   const visible = exercises.filter(
     (exercise) =>
       (owner === 'all' || exercise.custom) &&
+      (type === 'all' || exercise.exerciseType === type) &&
+      matchesMuscleFilter(exercise, muscle) &&
       (!search || exercise.name.toLowerCase().includes(search)),
   );
 
@@ -99,34 +97,44 @@ export default function ExercisePicker({
         />
       </div>
 
-      <div
-        role="radiogroup"
-        aria-label="Show"
-        className="mt-3 inline-grid grid-flow-col gap-1 rounded-card bg-field-on-overlay p-1"
-      >
-        {ownerOptions.map(({ value, label }) => (
-          <button
-            key={value}
-            type="button"
-            role="radio"
-            aria-checked={owner === value}
-            onClick={() => setOwner(value)}
-            className={cn(
-              'min-h-9 rounded-field px-3.5 text-meta font-semibold',
-              owner === value
-                ? 'bg-surface-overlay text-text-primary'
-                : 'text-text-secondary hover:text-text-primary',
-            )}
-          >
-            {label}
-          </button>
-        ))}
+      <div className="mt-3 flex items-center gap-2.5">
+        <div
+          role="radiogroup"
+          aria-label="Show"
+          className="inline-grid grid-flow-col gap-1 rounded-card bg-field-on-overlay p-1"
+        >
+          {ownerOptions.map(({ value, label }) => (
+            <button
+              key={value}
+              type="button"
+              role="radio"
+              aria-checked={owner === value}
+              onClick={() => setOwner(value)}
+              className={cn(
+                'min-h-9 rounded-field px-3.5 text-meta font-semibold',
+                owner === value
+                  ? 'bg-surface-overlay text-text-primary'
+                  : 'text-text-secondary hover:text-text-primary',
+              )}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        <ExerciseTypeFilter value={type} onChange={setType} />
+        <MuscleGroupFilter
+          muscleGroups={muscleGroups}
+          value={muscle}
+          onChange={setMuscle}
+        />
       </div>
 
       {visible.length > 0 ? (
         <ul className="mt-3 divide-y divide-field-on-overlay">
           {visible.map((exercise) => {
-            const trackingLabel = trackingLabels[exercise.trackingType];
+            const primaryMuscles = exercise.muscles
+              .filter((m) => m.role === 'PRIMARY')
+              .map((m) => m.name);
             return (
               <li key={exercise.id}>
                 <button
@@ -139,10 +147,12 @@ export default function ExercisePicker({
                 >
                   <span className="min-w-0 flex-1">
                     <span className="block font-semibold">{exercise.name}</span>
-                    <span className="block text-meta text-text-secondary">
-                      {typeLabels[exercise.exerciseType]}
-                      {trackingLabel && `, ${trackingLabel}`}
-                    </span>
+                    {primaryMuscles.length > 0 && (
+                      <span className="block text-meta text-text-secondary">
+                        {primaryMuscles.length === 1 ? 'Muscle' : 'Muscles'}:{' '}
+                        {primaryMuscles.join(', ')}
+                      </span>
+                    )}
                   </span>
                   {exercise.custom && (
                     <span className="shrink-0 rounded-full border border-border-on-overlay px-2 text-caption font-semibold text-text-secondary">
@@ -158,7 +168,9 @@ export default function ExercisePicker({
         <p className="mt-6 mb-4 text-center text-text-secondary">
           No matching exercises
           {search && ` for "${query.trim()}"`}
-          {owner === 'yours' && ' among your exercises'}.
+          {owner === 'yours' && ' among your exercises'}
+          {type !== 'all' && ` in ${typeLabels[type]}`}
+          {muscle && ` targeting ${muscle.label}`}.
         </p>
       )}
     </Sheet>

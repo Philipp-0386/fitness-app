@@ -3,7 +3,7 @@ import 'server-only';
 import backendFetch from '@/shared/api/backend';
 import { ErrorCode } from '@/shared/api/errors/error-code';
 import { toApiError } from '@/shared/api/errors/to-api-error';
-import { Exercise } from '../types/api.types';
+import { Exercise, MuscleGroup } from '../types/api.types';
 
 async function request<T>(path: string, fallbackCode: ErrorCode): Promise<T> {
   const response = await backendFetch(path);
@@ -35,4 +35,11 @@ export async function fetchExercises(): Promise<Exercise[]> {
  */
 export async function fetchExerciseById(id: string): Promise<Exercise> {
   return request(`/backend/exercises/${encodeURIComponent(id)}`, 'EXERCISE_FETCH_FAILED');
+}
+
+/**
+ * Reads the muscle groups with their areas, the options of the muscle group filter.
+ */
+export async function fetchMuscleGroups(): Promise<MuscleGroup[]> {
+  return request('/backend/muscle-groups', 'MUSCLE_GROUPS_FETCH_FAILED');
 }

@@ -4,8 +4,8 @@ import { useSelectedLayoutSegment } from 'next/navigation';
 
 import { cn } from '@/shared/lib/utils';
 
-//left pane of the plans split view, on phones only shown while no routine is open
-export default function PlansListPane({ children }: { children: React.ReactNode }) {
+//left pane of a list and detail split view, on phones only shown while no detail is open
+export default function ListPane({ children }: { children: React.ReactNode }) {
   const segment = useSelectedLayoutSegment();
 
   return (

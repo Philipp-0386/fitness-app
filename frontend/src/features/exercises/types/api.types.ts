@@ -9,6 +9,27 @@ export type TrackingType =
   | 'WEIGHT_DISTANCE'
   | 'DISTANCE_DURATION';
 
+export type MuscleRole = 'PRIMARY' | 'SECONDARY';
+
+export type BodyRegion = 'UPPER' | 'LOWER' | 'CORE';
+
+/** Mirrors the backend MuscleGroupResponse record. */
+export type MuscleGroup = {
+  id: number;
+  name: string;
+  bodyRegion: BodyRegion;
+  areas: { id: number; name: string }[];
+};
+
+/** Mirrors the backend ExerciseMuscleResponse record. */
+export type ExerciseMuscle = {
+  id: number;
+  name: string;
+  /** The muscle group itself, or the group an area like Upper Chest belongs to. */
+  groupId: number;
+  role: MuscleRole;
+};
+
 /** Mirrors the backend ExerciseResponse record. */
 export type Exercise = {
   id: number;
@@ -16,5 +37,17 @@ export type Exercise = {
   exerciseType: ExerciseType;
   trackingType: TrackingType;
   description: string | null;
+  instructions: string | null;
+  /** Primary muscles first. */
+  muscles: ExerciseMuscle[];
   custom: boolean;
+};
+
+/** Mirrors the backend ExerciseRequest record. */
+export type ExercisePayload = {
+  name: string;
+  exerciseType: ExerciseType;
+  trackingType: TrackingType;
+  description: string | null;
+  instructions: string | null;
 };
