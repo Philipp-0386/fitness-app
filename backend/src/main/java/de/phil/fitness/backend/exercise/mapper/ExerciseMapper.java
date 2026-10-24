@@ -1,12 +1,13 @@
 package de.phil.fitness.backend.exercise.mapper;
 
-import de.phil.fitness.backend.exercise.dto.ExerciseRequest;
-import de.phil.fitness.backend.exercise.dto.ExerciseSummary;
-import de.phil.fitness.backend.exercise.dto.UpdateExerciseRequest;
+import de.phil.fitness.backend.exercise.dto.*;
+import de.phil.fitness.backend.exercise.model.ExerciseMuscle;
+import de.phil.fitness.backend.exercise.model.MuscleGroup;
 import org.springframework.stereotype.Component;
 
-import de.phil.fitness.backend.exercise.dto.ExerciseResponse;
 import de.phil.fitness.backend.exercise.model.Exercise;
+
+import java.util.Comparator;
 
 /**
  * Maps {@link Exercise} entities to their response representation, and vice versa.
@@ -26,6 +27,17 @@ public class ExerciseMapper {
                 exercise.getTrackingType(),
                 exercise.getDescription(),
                 exercise.getInstructions(),
+                exercise.getMuscles().stream()
+                        .sorted(Comparator.comparing(ExerciseMuscle::getRole))
+                        .map(muscle -> {
+                            MuscleGroup group = muscle.getMuscleGroup();
+                            return new ExerciseMuscleResponse(
+                                    group.getId(),
+                                    group.getName(),
+                                    group.getParent() != null ? group.getParent().getId() : group.getId(),
+                                    muscle.getRole());
+                        })
+                        .toList(),
                 exercise.getOwnerUserId() != null
         );
     }
