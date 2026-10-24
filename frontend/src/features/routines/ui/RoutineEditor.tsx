@@ -60,17 +60,26 @@ type OpenSheet = { kind: 'picker' | 'targets'; slotKey: string } | null;
 type RoutineEditorProps = {
   /** null for a new routine. */
   routine: RoutineDetail | null;
+  /** Preset a new routine is prefilled from. */
+  copyOf?: RoutineDetail;
   exercises: Exercise[];
 };
 
-export default function RoutineEditor({ routine, exercises }: RoutineEditorProps) {
+export default function RoutineEditor({
+  routine,
+  copyOf,
+  exercises,
+}: RoutineEditorProps) {
   const router = useRouter();
   const addedSlots = useRef(0);
-  const [name, setName] = useState(routine?.name ?? '');
-  const [description, setDescription] = useState(routine?.description ?? '');
+  const initial = routine ?? copyOf;
+  const [name, setName] = useState(
+    routine?.name ?? (copyOf ? `Copy of "${copyOf.name}"` : ''),
+  );
+  const [description, setDescription] = useState(initial?.description ?? '');
   const [slots, setSlots] = useState<Slot[]>(() =>
-    routine
-      ? routine.exercises.map((re) => ({
+    initial
+      ? initial.exercises.map((re) => ({
           key: `saved-${re.id}`,
           exercise: re.exercise,
           targetSets: re.targetSets,
@@ -203,6 +212,10 @@ export default function RoutineEditor({ routine, exercises }: RoutineEditorProps
             <Link href={`/routines/${routine.id}`} replace className={cancelClass}>
               Cancel
             </Link>
+          ) : copyOf ? (
+            <Link href={`/routines/presets/${copyOf.id}`} replace className={cancelClass}>
+              Cancel
+            </Link>
           ) : (
             // A new routine is only reached from the list, so going back avoids a second list entry.
             <button type="button" onClick={() => router.back()} className={cancelClass}>
@@ -210,7 +223,7 @@ export default function RoutineEditor({ routine, exercises }: RoutineEditorProps
             </button>
           )}
           <h1 className="truncate text-center text-[1.0625rem] font-semibold">
-            {routine ? routine.name : 'New routine'}
+            {routine ? routine.name : copyOf ? `Copy of "${copyOf.name}"` : 'New routine'}
           </h1>
           <Button
             type="submit"
