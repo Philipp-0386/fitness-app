@@ -11,6 +11,16 @@ export type TrackingType =
 
 export type MuscleRole = 'PRIMARY' | 'SECONDARY';
 
+export type BodyRegion = 'UPPER' | 'LOWER' | 'CORE';
+
+/** Mirrors the backend MuscleGroupResponse record. */
+export type MuscleGroup = {
+  id: number;
+  name: string;
+  bodyRegion: BodyRegion;
+  areas: { id: number; name: string }[];
+};
+
 /** Mirrors the backend ExerciseMuscleResponse record. */
 export type ExerciseMuscle = {
   id: number;

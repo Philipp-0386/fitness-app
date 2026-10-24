@@ -10,8 +10,9 @@ import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { listClass, listRowClass } from '@/shared/ui/list';
 import { typeLabels } from '../lib/type-labels';
-import { Exercise, ExerciseType } from '../types/api.types';
+import { Exercise, ExerciseType, MuscleGroup } from '../types/api.types';
 import ExerciseTypeFilter from './ExerciseTypeFilter';
+import MuscleGroupFilter, { MuscleFilter } from './MuscleGroupFilter';
 
 const ownerOptions = [
   { value: 'all', label: 'All' },
@@ -20,20 +21,33 @@ const ownerOptions = [
 
 type ExerciseCatalogProps = {
   exercises: Exercise[];
+  muscleGroups: MuscleGroup[];
 };
 
 //filters the whole catalog in the browser, it is loaded once with the page
-export default function ExerciseCatalog({ exercises }: ExerciseCatalogProps) {
+export default function ExerciseCatalog({
+  exercises,
+  muscleGroups,
+}: ExerciseCatalogProps) {
   const pathname = usePathname();
   const [query, setQuery] = useState('');
   const [owner, setOwner] = useState<'all' | 'yours'>('all');
   const [type, setType] = useState<'all' | ExerciseType>('all');
+  const [muscle, setMuscle] = useState<MuscleFilter | null>(null);
 
   const search = query.trim().toLowerCase();
   const visible = exercises.filter(
     (exercise) =>
       (owner === 'all' || exercise.custom) &&
       (type === 'all' || exercise.exerciseType === type) &&
+      (!muscle ||
+        exercise.muscles.some(
+          (m) =>
+            (muscle.role === 'EITHER' || m.role === muscle.role) &&
+            (muscle.areaId !== null
+              ? m.id === muscle.areaId
+              : m.groupId === muscle.groupId),
+        )) &&
       (!search || exercise.name.toLowerCase().includes(search)),
   );
 
@@ -83,6 +97,11 @@ export default function ExerciseCatalog({ exercises }: ExerciseCatalogProps) {
           ))}
         </div>
         <ExerciseTypeFilter value={type} onChange={setType} />
+        <MuscleGroupFilter
+          muscleGroups={muscleGroups}
+          value={muscle}
+          onChange={setMuscle}
+        />
       </div>
 
       <p
@@ -139,7 +158,8 @@ export default function ExerciseCatalog({ exercises }: ExerciseCatalogProps) {
             Nothing matches
             {search && ` "${query.trim()}"`}
             {owner === 'yours' && ' among your exercises'}
-            {type !== 'all' && ` in ${typeLabels[type]}`}.
+            {type !== 'all' && ` in ${typeLabels[type]}`}
+            {muscle && ` targeting ${muscle.label}`}.
           </p>
           <Button
             type="button"
@@ -148,6 +168,7 @@ export default function ExerciseCatalog({ exercises }: ExerciseCatalogProps) {
               setQuery('');
               setOwner('all');
               setType('all');
+              setMuscle(null);
             }}
           >
             Clear search and filters
