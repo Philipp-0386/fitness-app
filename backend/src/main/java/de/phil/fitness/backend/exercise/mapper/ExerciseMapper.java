@@ -25,6 +25,7 @@ public class ExerciseMapper {
                 exercise.getExerciseType(),
                 exercise.getTrackingType(),
                 exercise.getDescription(),
+                exercise.getInstructions(),
                 exercise.getOwnerUserId() != null
         );
     }
