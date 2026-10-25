@@ -1,6 +1,6 @@
 'use client';
 
-import { Check, ChevronDown } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 
 import { cn } from '@/shared/lib/utils';
 import { typeLabels } from '../lib/type-labels';
@@ -18,13 +18,12 @@ export default function ExerciseTypeFilter({ value, onChange }: ExerciseTypeFilt
   return (
     <span
       className={cn(
-        'relative inline-flex h-8.5 shrink-0 items-center gap-1.5 rounded-full border px-3 text-meta font-semibold whitespace-nowrap has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-focus',
+        'relative inline-flex h-8.5 w-28 shrink-0 items-center justify-between gap-1.5 rounded-full border px-3 text-meta font-semibold whitespace-nowrap has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-focus',
         selected
           ? 'border-text-primary bg-surface-overlay text-text-primary'
           : 'border-border-strong text-text-secondary',
       )}
     >
-      {selected && <Check className="size-4" aria-hidden="true" />}
       {selected ? typeLabels[value] : 'Type'}
       <ChevronDown className="size-4" aria-hidden="true" />
       <select
