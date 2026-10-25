@@ -97,7 +97,7 @@ export default function ExercisePicker({
         />
       </div>
 
-      <div className="mt-3 flex items-center gap-2.5">
+      <div className="mt-3 flex flex-col items-start gap-2.5">
         <div
           role="radiogroup"
           aria-label="Show"
@@ -121,12 +121,14 @@ export default function ExercisePicker({
             </button>
           ))}
         </div>
-        <ExerciseTypeFilter value={type} onChange={setType} />
-        <MuscleGroupFilter
-          muscleGroups={muscleGroups}
-          value={muscle}
-          onChange={setMuscle}
-        />
+        <div className="flex w-full gap-2.5">
+          <ExerciseTypeFilter value={type} onChange={setType} />
+          <MuscleGroupFilter
+            muscleGroups={muscleGroups}
+            value={muscle}
+            onChange={setMuscle}
+          />
+        </div>
       </div>
 
       {visible.length > 0 ? (

@@ -22,7 +22,7 @@ const roleOptions = [
 ] as const;
 
 const chipClass =
-  'relative inline-flex h-8.5 shrink-0 items-center gap-1.5 rounded-full border text-meta font-semibold whitespace-nowrap';
+  'relative inline-flex h-8.5 min-w-0 flex-1 items-center gap-1.5 rounded-full border text-meta font-semibold whitespace-nowrap';
 
 // before: extends the 34px chip to a 44px hit area
 const hitAreaClass =
@@ -80,12 +80,11 @@ export default function MuscleGroupFilter({
             aria-label={`Muscle group: ${value.label}. Change`}
             onClick={open}
             className={cn(
-              'relative inline-flex h-full items-center gap-1.5 rounded-l-full pr-1 pl-3',
+              'relative inline-flex h-full min-w-0 flex-1 items-center gap-1.5 rounded-l-full pr-1 pl-3',
               hitAreaClass,
             )}
           >
-            <Check className="size-4 shrink-0" aria-hidden="true" />
-            <span className="max-w-40 truncate">
+            <span className="truncate">
               {value.label}
               {value.role === 'SECONDARY' && ', secondary'}
               {value.role === 'EITHER' && ', either'}
@@ -110,7 +109,7 @@ export default function MuscleGroupFilter({
           onClick={open}
           className={cn(
             chipClass,
-            'border-border-strong px-3 text-text-secondary',
+            'justify-between border-border-strong px-3 text-text-secondary',
             hitAreaClass,
           )}
         >
