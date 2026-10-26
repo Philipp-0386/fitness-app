@@ -10,7 +10,7 @@ export default function UserHome({ username }: UserHomeProps) {
     {
       title: 'Plans',
       text: 'Your routines, presets and the exercise catalog',
-      href: '/routines',
+      href: '/plans',
     },
     {
       title: 'Exercises',
