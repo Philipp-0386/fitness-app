@@ -41,7 +41,7 @@ Global exercises carry a unique `slug`. Their ids differ between environments on
 
 A `routine` is one training day. `routine_exercise` holds its exercises with aggregate targets per exercise ("3 x 8-12"), only the targets matching the `tracking_type` are filled.
 
-Preset routines (Push, Pull, Legs... more in the future) have `user_id IS NULL` and a unique `slug`, seeded in `V2`. Taking a preset always creates an own copy, programs and workouts never reference a preset. The composite keys enforce this, they require the same user on both sides.
+Preset routines (Push, Pull, Legs, Upper, Lower... more in the future) have `user_id IS NULL` and a unique `slug`, seeded in `V2`. Taking a preset always creates an own copy, programs and workouts never reference a preset. The composite keys enforce this, they require the same user on both sides.
 
 TODO: auto-generate targets from the user's own history (rep range preferences, last achieved reps and weights).
 
@@ -54,7 +54,7 @@ A `program` is an ordered sequence of `program_day` slots, each holding a routin
 - **Three programs per user, one active.** Activating one deactivates the previous one in the same transaction.
 - **Deleting a routine turns its slots into rest days,** so a PPLUL program losing Upper never schedules two leg days in a row. The UI warns which programs are affected and that logged workouts stay complete.
 - **Editor:** "make rest day" keeps the slot, "remove slot" deletes it and renumbers the rest (only on explicit request).
-- **Presets are copied,** never referenced. Besides the preset routines there is a preset program (Push Pull Legs plus a rest day, `user_id IS NULL`, `slug`). Taking it copies the program, its slots and each routine it uses. Preset programs are never active.
+- **Presets are copied,** never referenced. Besides the preset routines there are preset programs (`user_id IS NULL`, `slug`): Push Pull Legs plus a rest day, and Upper Lower plus a rest day. Taking one copies the program, its slots and each routine it uses. Preset programs are never active.
 
 ### Workout
 
@@ -111,7 +111,7 @@ The schema cannot express these, so the code has to.
 ## Open Points
 
 - **Bodyweight tracking:** needs a `bodyweight_log` (user, value, measured_at). It also turns `BODYWEIGHT_REPS` sets into real loads, so it must answer "bodyweight on the date of this workout". Possibly health data under Art. 9 GDPR, check consent and the privacy policy before it arrives.
-- **Programs:** schema and presets done, backend and frontend follow. Still open: how strict rest days are in the UI, presets beyond Push, Pull and Legs.
+- **Programs:** schema, presets and read endpoints done, write endpoints and frontend follow. Still open: how strict rest days are in the UI.
 - **Time zone:** weekly analytics must not group in implicit UTC (Monday 00:30 Berlin time lands in the previous week). Queries take the zone as a parameter, it comes from `user_settings.time_zone` (region name like `Europe/Berlin`, no fixed offsets).
 - **Additive when needed:** `equipment` on `exercise` (plate diagram), supersets (group column), per set targets, merging exercises, case insensitive names (`lower(name)`; [R\_\_prod_seed_users.sql](../../backend/src/main/resources/db/prod/R__prod_seed_users.sql) uses `uq_exercise_name` as its `ON CONFLICT` target).
 
