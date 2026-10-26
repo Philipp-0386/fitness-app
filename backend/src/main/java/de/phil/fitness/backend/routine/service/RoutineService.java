@@ -166,9 +166,15 @@ public class RoutineService {
      */
     @Transactional(readOnly = true)
     public Map<Long, RoutineSummary> findSummariesByRoutineId(Collection<Long> routineIds) {
-        return routineRepository.findAllById(routineIds)
-                .stream()
-                .collect(Collectors.toMap(Routine::getId, routineMapper::toSummary));
+        List<Routine> routines = routineRepository.findAllById(routineIds);
+        Set<Long> exerciseIds = routines.stream()
+                .flatMap(routine -> routine.getExercises().stream())
+                .map(RoutineExercise::getExerciseId)
+                .collect(Collectors.toSet());
+        Map<Long, ExerciseSummary> exercises = exerciseService.findSummariesByExerciseId(exerciseIds);
+
+        return routines.stream()
+                .collect(Collectors.toMap(Routine::getId, routine -> routineMapper.toSummary(routine, exercises)));
     }
 
     /**
