@@ -5,9 +5,9 @@ export const TABS = [
   { label: 'History', href: '/history', icon: History, match: ['/history'] },
   {
     label: 'Plans',
-    href: '/routines',
+    href: '/plans',
     icon: ClipboardList,
-    match: ['/routines', '/exercises'],
+    match: ['/plans', '/exercises'],
   },
   { label: 'Progress', href: '/progress', icon: ChartColumn, match: ['/progress'] },
 ];

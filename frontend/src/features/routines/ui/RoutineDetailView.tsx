@@ -24,18 +24,18 @@ export default function RoutineDetailView({ routine, kind }: RoutineDetailViewPr
   return (
     <div className="mx-auto flex w-full max-w-app flex-1 flex-col pb-8 lg:max-w-[560px]">
       <TopBar
-        backHref="/routines"
+        backHref="/plans"
         backLabel="Plans"
         title={routine.name}
         inSplitView
         action={
           <Button asChild size="sm">
             {kind === 'own' ? (
-              <Link href={`/routines/${routine.id}/edit`} replace>
+              <Link href={`/plans/routines/${routine.id}/edit`} replace>
                 Edit
               </Link>
             ) : (
-              <Link href={`/routines/presets/${routine.id}/copy`} replace>
+              <Link href={`/plans/routines/presets/${routine.id}/copy`} replace>
                 Copy
               </Link>
             )}

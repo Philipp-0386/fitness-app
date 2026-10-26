@@ -182,7 +182,7 @@ export default function RoutineEditor({
         ? await updateRoutine(String(routine.id), payload)
         : await createRoutine(payload);
       toast.success('Routine saved.');
-      router.replace(`/routines/${saved.id}`);
+      router.replace(`/plans/routines/${saved.id}`);
       router.refresh();
     } catch (err) {
       setIsSaving(false);
@@ -211,11 +211,11 @@ export default function RoutineEditor({
       <form onSubmit={handleSubmit} noValidate>
         <header className="sticky top-0 z-10 grid h-14 grid-cols-[1fr_minmax(0,2fr)_1fr] items-center border-b border-border-subtle bg-bg px-4">
           {routine ? (
-            <Link href={`/routines/${routine.id}`} replace className={cancelClass}>
+            <Link href={`/plans/routines/${routine.id}`} replace className={cancelClass}>
               Cancel
             </Link>
           ) : copyOf ? (
-            <Link href={`/routines/presets/${copyOf.id}`} replace className={cancelClass}>
+            <Link href={`/plans/routines/presets/${copyOf.id}`} replace className={cancelClass}>
               Cancel
             </Link>
           ) : (

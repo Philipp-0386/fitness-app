@@ -36,7 +36,7 @@ export default function DeleteRoutineDialog({ routineId }: DeleteRoutineDialogPr
       await deleteRoutine(String(routineId));
       close();
       toast.success('Routine deleted.');
-      router.replace('/routines');
+      router.replace('/plans');
       router.refresh();
     } catch (err) {
       setIsDeleting(false);
