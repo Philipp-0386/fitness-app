@@ -25,6 +25,10 @@ public class RoutineMapper {
         );
     }
 
+    public RoutineSummary toSummary(Routine routine) {
+        return new RoutineSummary(routine.getId(), routine.getName());
+    }
+
     public RoutineDetailResponse toRoutineDetailResponse(Routine routine, Map<Long, ExerciseSummary> exercises) {
         return new RoutineDetailResponse(
                 routine.getId(),

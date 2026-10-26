@@ -1,5 +1,6 @@
 package de.phil.fitness.backend.routine.service;
 
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +15,7 @@ import de.phil.fitness.backend.routine.dto.CreateRoutineRequest;
 import de.phil.fitness.backend.routine.dto.RoutineDetailResponse;
 import de.phil.fitness.backend.routine.dto.RoutineExerciseRequest;
 import de.phil.fitness.backend.routine.dto.RoutineResponse;
+import de.phil.fitness.backend.routine.dto.RoutineSummary;
 import de.phil.fitness.backend.routine.exception.PresetRoutineNotFoundException;
 import de.phil.fitness.backend.routine.exception.RoutineTargetMismatchException;
 import de.phil.fitness.backend.routine.exception.UserRoutineNotFoundException;
@@ -155,6 +157,18 @@ public class RoutineService {
                 .stream()
                 .map(routineMapper::toRoutineResponse)
                 .toList();
+    }
+
+    /**
+     * Resolves routines being referenced by other slices, like "program". No ownership validation here. That happens in other slices.
+     * @param routineIds Ids to resolve.
+     * @return Summaries keyed by their Ids.
+     */
+    @Transactional(readOnly = true)
+    public Map<Long, RoutineSummary> findSummariesByRoutineId(Collection<Long> routineIds) {
+        return routineRepository.findAllById(routineIds)
+                .stream()
+                .collect(Collectors.toMap(Routine::getId, routineMapper::toSummary));
     }
 
     /**
