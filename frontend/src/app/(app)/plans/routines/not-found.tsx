@@ -5,7 +5,7 @@ export default function RoutineNotFound() {
   return (
     <div className="mx-auto flex w-full max-w-app flex-1 flex-col pb-8 lg:max-w-[560px]">
       <TopBar
-        backHref="/routines"
+        backHref="/plans"
         backLabel="Plans"
         title="Routine not found"
         inSplitView

@@ -60,14 +60,14 @@ export default async function PlansLayout({
                     Routines
                   </h2>
                   <Button asChild size="sm">
-                    <Link href="/routines/new">New Routine</Link>
+                    <Link href="/plans/routines/new">New Routine</Link>
                   </Button>
                 </div>
                 <p className="mt-0.5 mb-3 text-meta text-text-secondary">
                   Exercises and targets for a single training day.
                 </p>
                 {plans.routines.length > 0 ? (
-                  <RoutineList routines={plans.routines} hrefBase="/routines" />
+                  <RoutineList routines={plans.routines} hrefBase="/plans/routines" />
                 ) : (
                   <div className="rounded-card bg-surface px-4 pt-5 pb-4">
                     <h3 className="font-semibold">No routines yet</h3>
@@ -107,7 +107,7 @@ export default async function PlansLayout({
                   <h2 id="presets-title" className="mb-3 text-title">
                     Presets
                   </h2>
-                  <RoutineList routines={plans.presets} hrefBase="/routines/presets" />
+                  <RoutineList routines={plans.presets} hrefBase="/plans/routines/presets" />
                 </section>
               )}
             </>

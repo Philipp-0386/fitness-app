@@ -23,7 +23,7 @@ export default async function ExercisesLayout({
       <ListPane>
         <div className="mx-auto w-full max-w-app pb-8">
           <TopBar
-            backHref="/routines"
+            backHref="/plans"
             backLabel="Plans"
             title="Exercises"
             titleAction={<ExerciseFormDialog />}
