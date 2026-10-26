@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { ChevronRight, UserRound } from 'lucide-react';
 
 import { fetchExercises } from '@/features/exercises';
+import { ProgramList, fetchUserPrograms } from '@/features/programs';
 import { RoutineList, fetchPresetRoutines, fetchUserRoutines } from '@/features/routines';
 import { fetchMe } from '@/features/user';
 import { requireSession } from '@/shared/auth/session';
@@ -17,8 +18,18 @@ export default async function PlansLayout({
   await requireSession();
 
   const [plans, username] = await Promise.all([
-    Promise.all([fetchUserRoutines(), fetchPresetRoutines(), fetchExercises()])
-      .then(([routines, presets, exercises]) => ({ routines, presets, exercises }))
+    Promise.all([
+      fetchUserPrograms(),
+      fetchUserRoutines(),
+      fetchPresetRoutines(),
+      fetchExercises(),
+    ])
+      .then(([programs, routines, presets, exercises]) => ({
+        programs,
+        routines,
+        presets,
+        exercises,
+      }))
       .catch((error: Error) => error),
     fetchMe()
       .then((user) => user.username)
@@ -54,7 +65,26 @@ export default async function PlansLayout({
             </section>
           ) : (
             <>
-              <section className="mt-4" aria-labelledby="routines-title">
+              <section className="mt-4" aria-labelledby="programs-title">
+                <h2 id="programs-title" className="text-title">
+                  Programs
+                </h2>
+                <p className="mt-0.5 mb-3 text-meta text-text-secondary">
+                  Routines and rest days in a repeating order.
+                </p>
+                {plans.programs.length > 0 ? (
+                  <ProgramList programs={plans.programs} />
+                ) : (
+                  <div className="rounded-card bg-surface px-4 pt-5 pb-4">
+                    <h3 className="font-semibold">No programs yet</h3>
+                    <p className="mt-1 text-meta text-text-secondary">
+                      Once you have a program, the active one shows its days on Today.
+                    </p>
+                  </div>
+                )}
+              </section>
+
+              <section className="mt-8" aria-labelledby="routines-title">
                 <div className="flex items-center justify-between gap-3">
                   <h2 id="routines-title" className="text-title">
                     Routines
