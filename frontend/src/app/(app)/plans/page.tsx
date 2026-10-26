@@ -2,8 +2,10 @@
 export default function PlansPage() {
   return (
     <div className="hidden flex-col items-center justify-center px-4 text-center lg:flex">
-      <h2 className="text-title">No routine selected</h2>
-      <p className="mt-1 text-text-secondary">Pick a routine to see its exercises.</p>
+      <h2 className="text-title">Nothing selected</h2>
+      <p className="mt-1 text-text-secondary">
+        Pick a program to see its days, or a routine to see its exercises.
+      </p>
     </div>
   );
 }
