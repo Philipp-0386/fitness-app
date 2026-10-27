@@ -50,7 +50,7 @@ export default function TopBar({
       <header
         ref={headerRef}
         className={cn(
-          'sticky top-[env(safe-area-inset-top)] z-10 grid h-14 grid-cols-[1fr_minmax(0,2fr)_1fr] items-center border-b bg-bg px-4 transition-colors duration-180 motion-reduce:transition-none',
+          'sticky top-(--app-top-inset) z-10 grid h-14 grid-cols-[1fr_minmax(0,2fr)_1fr] items-center border-b bg-bg px-4 transition-colors duration-180 motion-reduce:transition-none',
           titleHidden ? 'border-border-subtle' : 'border-transparent',
           inSplitView && 'lg:flex lg:border-border-subtle',
         )}
