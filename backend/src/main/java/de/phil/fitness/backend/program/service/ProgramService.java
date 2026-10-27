@@ -1,8 +1,10 @@
 package de.phil.fitness.backend.program.service;
 
+import de.phil.fitness.backend.program.dto.CreateProgramRequest;
 import de.phil.fitness.backend.program.dto.ProgramDetailResponse;
 import de.phil.fitness.backend.program.dto.ProgramResponse;
 import de.phil.fitness.backend.program.exception.PresetProgramNotFoundException;
+import de.phil.fitness.backend.program.exception.ProgramLimitReachedException;
 import de.phil.fitness.backend.program.exception.UserProgramNotFoundException;
 import de.phil.fitness.backend.program.mapper.ProgramMapper;
 import de.phil.fitness.backend.program.model.Program;
@@ -12,10 +14,7 @@ import de.phil.fitness.backend.routine.service.RoutineService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -109,5 +108,33 @@ public class ProgramService {
                 .collect(Collectors.toSet());
 
         return programMapper.toProgramDetailResponse(program, routineService.findSummariesByRoutineId(routineIds));
+    }
+
+    /**
+     * Creates a program owned by the requesting user. The first program of a user becomes active.
+     * @param request The submitted program, the order of its days is taken from the list.
+     * @param userId Id of the user the program is created for.
+     * @return The created program with its days.
+     * @throws ProgramLimitReachedException if the user already owns the maximum number of programs
+     * @throws de.phil.fitness.backend.routine.exception.UserRoutineNotFoundException if a referenced routine is not
+     *         owned by the user
+     */
+    @Transactional
+    public ProgramDetailResponse createNewUserProgram(CreateProgramRequest request, Long userId) {
+        long count = programRepository.countByUserId(userId);
+        if(count>=5) {
+            throw new ProgramLimitReachedException("The user " + userId + " already owns " + count + " programs");
+        }
+
+        Program program = programMapper.toProgramEntity(request, userId);
+        program.setActive(count == 0);
+
+        Set<Long> routineIds = program.getDays().stream()
+                .map(ProgramDay::getRoutineId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+        routineService.idOwnershipCheck(userId, routineIds);
+
+        return programMapper.toProgramDetailResponse(programRepository.save(program), routineService.findSummariesByRoutineId(routineIds));
     }
 }

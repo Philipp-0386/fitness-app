@@ -70,4 +70,11 @@ public interface ProgramRepository extends JpaRepository<Program, Long> {
         WHERE p.id = :id AND p.userId IS NULL
     """)
     Optional<Program> getPresetProgramDetailedById(@Param("id") Long id);
+
+    /**
+     * Counts the programs of a user, used to enforce the program limit.
+     * @param userId Id of the user.
+     * @return Number of programs owned by the user.
+     */
+    long countByUserId(Long userId);
 }

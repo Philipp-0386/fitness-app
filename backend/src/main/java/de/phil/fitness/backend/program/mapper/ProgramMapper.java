@@ -1,5 +1,6 @@
 package de.phil.fitness.backend.program.mapper;
 
+import de.phil.fitness.backend.program.dto.CreateProgramRequest;
 import de.phil.fitness.backend.program.dto.ProgramDayResponse;
 import de.phil.fitness.backend.program.dto.ProgramDetailResponse;
 import de.phil.fitness.backend.program.dto.ProgramResponse;
@@ -47,5 +48,20 @@ public class ProgramMapper {
             }
         }
         return new ProgramDayResponse(day.getId(), day.getOrderIndex(), routine);
+    }
+
+    public Program toProgramEntity(CreateProgramRequest request, Long userId) {
+        Program program = new Program();
+        program.setUserId(userId);
+        program.setName(request.name());
+        program.setDescription((request.description()));
+
+        for(int i = 0; i < request.days().size(); i++) {
+            ProgramDay day = new ProgramDay();
+            day.setRoutineId(request.days().get(i).routineId());
+            day.setOrderIndex(i);
+            program.addDay(day);
+        }
+        return program;
     }
 }

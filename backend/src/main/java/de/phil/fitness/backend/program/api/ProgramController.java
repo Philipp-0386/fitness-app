@@ -2,6 +2,7 @@ package de.phil.fitness.backend.program.api;
 
 import de.phil.fitness.backend.auth.CurrentUser;
 import de.phil.fitness.backend.common.ErrorResponse;
+import de.phil.fitness.backend.program.dto.CreateProgramRequest;
 import de.phil.fitness.backend.program.dto.ProgramDetailResponse;
 import de.phil.fitness.backend.program.dto.ProgramResponse;
 import de.phil.fitness.backend.program.service.ProgramService;
@@ -10,12 +11,12 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
 
 /**
@@ -60,8 +61,13 @@ public class ProgramController {
                 .orElse(ResponseEntity.noContent().build());
     }
 
-    /*
-     * curl -X GET "http://localhost:8080/backend/programs" -H "Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIyIiwiaWF0IjoxNzkyOTc1MDI3LCJleHAiOjE3OTI5NzU5MjcsInR5cGUiOiJhY2Nlc3MifQ.LEIzTnyQ_NzCZ3rCIvnjBjMVfi8Rr25GeOYQyVgyqMdxQ57R5tQu6vJ1ZprpxTxGXA3lLlMCUybPVme-zCqxeA" -H "Accept: application/json"
-     *
-     */
+    @PostMapping()
+    public ResponseEntity<ProgramDetailResponse> createNewProgram(@Valid @RequestBody CreateProgramRequest request) {
+        ProgramDetailResponse created = programService.createNewUserProgram(request, currentUser.currentUserId());
+        URI location = ServletUriComponentsBuilder.fromCurrentContextPath()
+                .path("/backend/programs/{id}")
+                .buildAndExpand(created.id())
+                .toUri();
+        return ResponseEntity.created(location).body(created);
+    }
 }

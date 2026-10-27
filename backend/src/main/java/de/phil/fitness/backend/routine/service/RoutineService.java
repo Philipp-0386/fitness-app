@@ -178,6 +178,26 @@ public class RoutineService {
     }
 
     /**
+     * Ensures every given routine is owned by the user, returns silently if so.
+     * @param userId Id of the user referencing the routines.
+     * @param routineIds Ids of the referenced routines.
+     * @throws UserRoutineNotFoundException for the first id that is not owned by the user, whether because it does
+     *         not exist, is a preset or belongs to someone else
+     */
+    @Transactional(readOnly = true)
+    public void idOwnershipCheck(Long userId, Set<Long> routineIds) {
+        if (routineIds.isEmpty()) return;
+
+        Set<Long> owned = routineRepository.findOwnedIds(userId, routineIds);
+        routineIds.stream()
+                .filter(id -> !owned.contains(id))
+                .findFirst()
+                .ifPresent(id -> {
+                    throw new UserRoutineNotFoundException("The user-routine with id " + id + " does not exist");
+                });
+    }
+
+    /**
      * Retrieves single preset-routine by its Id.
      * @param routineId Id of the searched routine.
      * @return Singular preset-routine.
