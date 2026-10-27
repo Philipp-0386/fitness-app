@@ -27,16 +27,19 @@ export default function TopBar({
   action,
   titleAction,
 }: TopBarProps) {
+  const headerRef = useRef<HTMLElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const [titleHidden, setTitleHidden] = useState(false);
 
   useEffect(() => {
+    const header = headerRef.current;
     const heading = titleRef.current;
-    if (!heading) return;
+    if (!header || !heading) return;
 
+    const headerBottom = parseFloat(getComputedStyle(header).top) + header.offsetHeight;
     const observer = new IntersectionObserver(
       ([entry]) => setTitleHidden(!entry.isIntersecting),
-      { rootMargin: '-56px 0px 0px 0px' },
+      { rootMargin: `-${headerBottom}px 0px 0px 0px` },
     );
     observer.observe(heading);
     return () => observer.disconnect();
@@ -45,8 +48,9 @@ export default function TopBar({
   return (
     <>
       <header
+        ref={headerRef}
         className={cn(
-          'sticky top-0 z-10 grid h-14 grid-cols-[1fr_minmax(0,2fr)_1fr] items-center border-b bg-bg px-4 transition-colors duration-180 motion-reduce:transition-none',
+          'sticky top-(--app-top-inset) z-10 grid h-14 grid-cols-[1fr_minmax(0,2fr)_1fr] items-center border-b bg-bg px-4 transition-colors duration-180 motion-reduce:transition-none',
           titleHidden ? 'border-border-subtle' : 'border-transparent',
           inSplitView && 'lg:flex lg:border-border-subtle',
         )}

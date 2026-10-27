@@ -14,6 +14,10 @@ const archivo = Archivo({
 export const metadata: Metadata = {
   title: 'Fitness App',
   description: 'Plan your workouts, log your sessions and track your progress.',
+  appleWebApp: {
+    title: 'Avren',
+    statusBarStyle: 'black-translucent',
+  },
 };
 
 export const viewport: Viewport = { viewportFit: 'cover' };

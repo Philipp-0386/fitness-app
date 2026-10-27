@@ -169,8 +169,28 @@
   }
 }
 
+:root {
+  --app-top-inset: env(safe-area-inset-top);
+}
+
+@media (display-mode: standalone) {
+  :root {
+    --app-top-inset: calc(env(safe-area-inset-top) + 12px);
+  }
+}
+
 body {
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
+  padding-top: var(--app-top-inset);
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 50;
+  height: var(--app-top-inset);
+  background: var(--color-bg);
 }
