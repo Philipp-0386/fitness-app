@@ -20,6 +20,7 @@ The current goal is to finish these tasks:
 - Implement `programm` slice
 - Add token revocation (not started)
   - see issue #128
+- Implement PWA function (mostly done for now)
 
 - Research open-source visual sources (pictures, gifs) for `exercise` catalog
   - S3 storing? -> Research
@@ -135,6 +136,10 @@ I am currently planning the UI. For now i am gonna settle for a mainly achromati
 Regradless of how the UI will look, i want to make a tutorial on first log, which runs the user through all the possiblity somewhat hidden options. Could keep it simple, by just using localStorage to keep track of this, but might implement `user_ui_state` database table already (or something like that). But i don`t think i really need that, since i could handle unit display without serverside user-sate. But i would need it for user settings. Storing those in localStorage will not work, since the backend needs the timezone in the context of calculating timeframe dependent analytics/data.
 -> disclaimer banner seen handling, last chosen filter option: localStorage
 -> general user settings (unit, timezone, language(will be only english for now anyway, but who knows), ): database table (should make issue for this, /me/settings)
+
+### Added PWA Function
+
+PWA works, but has some bugs (see issue #185 and #187). The goal is to make the application useable offline and then synchronize once connection is established again. But that is a whole topic in itself, and only really relevant once `workout` and basically all other basic features exist fully implemented.
 
 ## Key Decisions
 
