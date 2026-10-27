@@ -209,7 +209,7 @@ export default function RoutineEditor({
   return (
     <div className="mx-auto flex w-full max-w-app flex-1 flex-col pb-8 lg:max-w-[560px]">
       <form onSubmit={handleSubmit} noValidate>
-        <header className="sticky top-0 z-10 grid h-14 grid-cols-[1fr_minmax(0,2fr)_1fr] items-center border-b border-border-subtle bg-bg px-4">
+        <header className="sticky top-[env(safe-area-inset-top)] z-10 grid h-14 grid-cols-[1fr_minmax(0,2fr)_1fr] items-center border-b border-border-subtle bg-bg px-4">
           {routine ? (
             <Link href={`/plans/routines/${routine.id}`} replace className={cancelClass}>
               Cancel

@@ -5,6 +5,7 @@ import { Toaster } from 'sonner';
 
 import './globals.css';
 import styles from './layout.module.css';
+import ViewportDebug from './ViewportDebug';
 
 const archivo = Archivo({
   variable: '--font-archivo',
@@ -14,6 +15,10 @@ const archivo = Archivo({
 export const metadata: Metadata = {
   title: 'Fitness App',
   description: 'Plan your workouts, log your sessions and track your progress.',
+  appleWebApp: {
+    title: 'Avren',
+    statusBarStyle: 'black-translucent',
+  },
 };
 
 export const viewport: Viewport = { viewportFit: 'cover' };
@@ -27,6 +32,7 @@ export default function RootLayout({
     <html lang="en" className={`dark ${archivo.variable}`}>
       <body>
         <div className={styles.content}>{children}</div>
+        <ViewportDebug />
         <Toaster
           position="bottom-center"
           duration={2600}

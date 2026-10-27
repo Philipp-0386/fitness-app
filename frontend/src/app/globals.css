@@ -173,4 +173,14 @@ body {
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
+  padding-top: env(safe-area-inset-top);
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 50;
+  height: env(safe-area-inset-top);
+  background: var(--color-bg);
 }
