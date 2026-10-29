@@ -92,7 +92,8 @@ export default async function PlansLayout({
                     id="programs-limit"
                     className="mt-0.5 mb-3 text-meta text-text-secondary"
                   >
-                    You have reached the maximum of {MAX_PROGRAMS} programs.
+                    You have reached the maximum of {MAX_PROGRAMS} programs. Delete one to
+                    create a new one.
                   </p>
                 )}
                 {plans.programs.length > 0 ? (

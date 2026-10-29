@@ -119,7 +119,9 @@ export default function ProgramEditor({ routines }: ProgramEditorProps) {
         return;
       }
       if (err instanceof ApiError && err.code === 'PROGRAM_LIMIT_REACHED') {
-        setError('You already have the maximum number of programs.');
+        setError(
+          'You already have the maximum number of programs. Delete one to create a new one.',
+        );
         return;
       }
       setError(fallbackErrorMessage(err));

@@ -1,5 +1,6 @@
 import { TopBar } from '@/shared/layout';
 import { ProgramDetail } from '../types/api.types';
+import DeleteProgramDialog from './DeleteProgramDialog';
 import ProgramDayList from './ProgramDayList';
 
 type ProgramDetailViewProps = {
@@ -21,6 +22,10 @@ export default function ProgramDetailView({ program }: ProgramDetailViewProps) {
 
       <div className="mx-4 mt-5">
         <ProgramDayList program={program} exercises="names" />
+      </div>
+
+      <div className="mx-4 mt-8 border-t border-border-subtle pt-2">
+        <DeleteProgramDialog programId={program.id} active={program.active} />
       </div>
     </div>
   );
