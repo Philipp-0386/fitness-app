@@ -51,7 +51,7 @@ A `program` is an ordered sequence of `program_day` slots, each holding a routin
 
 - **Sequence, not calendar.** The next training is the slot after the one of the user's latest workout in this program, wrapping at the end. No workout in it yet, or just switched to it: the first slot. Missed days never break the plan.
 - **Rest days are shown, not enforced.** Training anyway starts the next training slot. How strict the UI is stays open.
-- **Three programs per user, one active.** Activating one deactivates the previous one in the same transaction.
+- **Five programs per user, one active.** Activating one deactivates the previous one in the same transaction.
 - **Deleting a routine turns its slots into rest days,** so a PPLUL program losing Upper never schedules two leg days in a row. The UI warns which programs are affected and that logged workouts stay complete.
 - **Editor:** "make rest day" keeps the slot, "remove slot" deletes it and renumbers the rest (only on explicit request).
 - **Presets are copied,** never referenced. Besides the preset routines there are preset programs (`user_id IS NULL`, `slug`): Push Pull Legs plus a rest day, and Upper Lower plus a rest day. Taking one copies the program, its slots and each routine it uses. Preset programs are never active.
@@ -105,7 +105,7 @@ The schema cannot express these, so the code has to.
 - **Deleting an exercise removes it from the owner's routines.** `ExerciseService` publishes `ExerciseDeletedEvent`, `RoutineService` removes the rows and renumbers the remaining ones. The exercise slice never writes routine tables, the routine slice keeps its own rules (`orderIndex` 0..n, `updated_at`). Plain `@EventListener`, so it runs in the same transaction; `@TransactionalEventListener` would run after the commit.
 - **Sets are validated against `tracking_type`** in the service. The wide `workout_set` table (all values nullable) cannot check that itself.
 - **Presets are listed separately** (`user_id IS NULL`). A user's own routines are queried with `user_id = :userId`, copying a preset copies its `routine_exercise` rows too.
-- **At most three programs per user,** checked in the service before creating one.
+- **At most five programs per user,** checked in the service before creating one.
 - **Sharing a routine** would be a copy, never a reference.
 
 ## Open Points

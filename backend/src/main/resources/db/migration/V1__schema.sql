@@ -194,7 +194,7 @@ CREATE UNIQUE INDEX uq_exercise_name ON exercise (owner_user_id, name) NULLS NOT
 -- At most one running workout per user
 CREATE UNIQUE INDEX uq_workout_active ON workout (user_id) WHERE status = 'IN_PROGRESS';
 
--- At most one active program per user. The limit of three programs per user is checked by the service.
+-- At most one active program per user. The limit of five programs per user is checked by the service.
 CREATE UNIQUE INDEX uq_program_active ON program (user_id) WHERE is_active;
 
 -- Deleting a user cascades to everything they own. The DEFERRABLE references between owned rows
