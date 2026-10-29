@@ -10,17 +10,14 @@ The ui-rework is basically done. All existing pages are redone with the new desi
 
 The current goal is to finish these tasks:
 
-- Complete `exercise` and `routine` frontend for full CRUD (backend nearly done)
-  - muscle groups table unused (needed for later analytics)
-  - exercise detail page (description, instructions, muscles)
-  - exercise picker as its own component, used by the routine editor now (and by the workout later?)
-  - preset-usage feature
-- New DB-Table for user settings
+
+- New DB-Table for user settings (#170)
   - units (kg/lb as display conversion) and time zone, before `workout`
-- Implement `programm` slice
 - Add token revocation (not started)
   - see issue #128
-- Implement PWA function (mostly done for now)
+- Implement PWA function (mostly done for now) (#180)
+- Add feature for user created exercises to be mapped to muscle groups (#184)
+- Start with ´Workout´ slice implementation
 
 - Research open-source visual sources (pictures, gifs) for `exercise` catalog
   - S3 storing? -> Research
@@ -140,6 +137,10 @@ Regradless of how the UI will look, i want to make a tutorial on first log, whic
 ### Added PWA Function
 
 PWA works, but has some bugs (see issue #185 and #187). The goal is to make the application useable offline and then synchronize once connection is established again. But that is a whole topic in itself, and only really relevant once `workout` and basically all other basic features exist fully implemented.
+
+### Next-Day Determination (idea for `workout` slice)
+
+I wanna do this relative to the last tracked workout. Depending on the active program, past workouts will be fetched, and based to those the upcoming day within the program determined and displayed (in dashboard).
 
 ## Key Decisions
 
