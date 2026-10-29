@@ -18,6 +18,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { CircleAlert, GripVertical, Plus, Trash2 } from 'lucide-react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
@@ -31,8 +32,11 @@ import { Input } from '@/shared/ui/input';
 import { Label } from '@/shared/ui/label';
 import { listClass, listRowClass } from '@/shared/ui/list';
 import { createProgram } from '../client/create-program.client';
+import { updateProgram } from '../client/update-program.client';
+import { ProgramDetail } from '../types/api.types';
 import { DayDraft } from '../types/editor.types';
 import DaySheet from './DaySheet';
+import DeleteProgramDialog from './DeleteProgramDialog';
 
 const MAX_DAYS = 14;
 
@@ -43,15 +47,29 @@ const cancelClass =
 type OpenSheet = { dayKey: string | null } | null;
 
 type ProgramEditorProps = {
+  /** null for a new program. */
+  program: ProgramDetail | null;
   routines: Routine[];
 };
 
-export default function ProgramEditor({ routines }: ProgramEditorProps) {
+export default function ProgramEditor({ program, routines }: ProgramEditorProps) {
   const router = useRouter();
   const addedDays = useRef(0);
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [days, setDays] = useState<DayDraft[]>([]);
+  const [name, setName] = useState(program?.name ?? '');
+  const [description, setDescription] = useState(program?.description ?? '');
+  const [days, setDays] = useState<DayDraft[]>(() =>
+    program
+      ? program.days.map((day) => ({
+          key: `saved-${day.id}`,
+          id: day.id,
+          routine: day.routine && {
+            id: day.routine.id,
+            name: day.routine.name,
+            exerciseCount: day.routine.exerciseNames.length,
+          },
+        }))
+      : [],
+  );
   const [sheet, setSheet] = useState<OpenSheet>(null);
   const [nameError, setNameError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -69,7 +87,7 @@ export default function ProgramEditor({ routines }: ProgramEditorProps) {
     if (sheetDay) {
       setDays(days.map((d) => (d.key === sheetDay.key ? { ...d, routine } : d)));
     } else {
-      setDays([...days, { key: `added-${++addedDays.current}`, routine }]);
+      setDays([...days, { key: `added-${++addedDays.current}`, id: null, routine }]);
     }
     setSheet(null);
   }
@@ -98,11 +116,17 @@ export default function ProgramEditor({ routines }: ProgramEditorProps) {
 
     setIsSaving(true);
     try {
-      const saved = await createProgram({
-        name: name.trim(),
-        description: description.trim() || null,
-        days: days.map((d) => ({ routineId: d.routine?.id ?? null })),
-      });
+      const saved = program
+        ? await updateProgram(String(program.id), {
+            name: name.trim(),
+            description: description.trim() || null,
+            days: days.map((d) => ({ id: d.id, routineId: d.routine?.id ?? null })),
+          })
+        : await createProgram({
+            name: name.trim(),
+            description: description.trim() || null,
+            days: days.map((d) => ({ routineId: d.routine?.id ?? null })),
+          });
       toast.success('Program saved.');
       router.replace(`/plans/programs/${saved.id}`);
       router.refresh();
@@ -115,6 +139,18 @@ export default function ProgramEditor({ routines }: ProgramEditorProps) {
       if (err instanceof ApiError && err.code === 'USER_ROUTINE_NOT_FOUND') {
         setError(
           'A routine is no longer available. Reload the page and check your program.',
+        );
+        return;
+      }
+      if (err instanceof ApiError && err.code === 'USER_PROGRAM_NOT_FOUND') {
+        setError(
+          'This program no longer exists. It may have been deleted in another tab.',
+        );
+        return;
+      }
+      if (err instanceof ApiError && err.code === 'PROGRAM_DAY_NOT_FOUND') {
+        setError(
+          'This program was changed in another tab. Reload the page and try again.',
         );
         return;
       }
@@ -132,12 +168,18 @@ export default function ProgramEditor({ routines }: ProgramEditorProps) {
     <div className="mx-auto flex w-full max-w-app flex-1 flex-col pb-8 lg:max-w-[560px]">
       <form onSubmit={handleSubmit} noValidate>
         <header className="sticky top-0 z-10 grid h-14 grid-cols-[1fr_minmax(0,2fr)_1fr] items-center border-b border-border-subtle bg-bg px-4">
-          {/* A new program is only reached from the list, so going back avoids a second list entry. */}
-          <button type="button" onClick={() => router.back()} className={cancelClass}>
-            Cancel
-          </button>
+          {program ? (
+            <Link href={`/plans/programs/${program.id}`} replace className={cancelClass}>
+              Cancel
+            </Link>
+          ) : (
+            // A new program is only reached from the list, so going back avoids a second list entry.
+            <button type="button" onClick={() => router.back()} className={cancelClass}>
+              Cancel
+            </button>
+          )}
           <h1 className="truncate text-center text-[1.0625rem] font-semibold">
-            New Program
+            {program ? program.name : 'New Program'}
           </h1>
           <Button
             type="submit"
@@ -241,6 +283,12 @@ export default function ProgramEditor({ routines }: ProgramEditorProps) {
           )}
         </div>
       </form>
+
+      {program && (
+        <div className="mx-4 mt-8 border-t border-border-subtle pt-2">
+          <DeleteProgramDialog programId={program.id} active={program.active} />
+        </div>
+      )}
 
       {sheet && (
         <DaySheet

@@ -46,3 +46,15 @@ export type CreateProgramPayload = {
   description?: string | null;
   days: ProgramDayPayload[];
 };
+
+/** Mirrors the backend UpdateProgramDayRequest record. id is null for a new day. */
+export type UpdateProgramDayPayload = ProgramDayPayload & {
+  id: number | null;
+};
+
+/** Mirrors the backend UpdateProgramRequest record. Describes the complete new state, days missing here are removed. */
+export type UpdateProgramPayload = {
+  name: string;
+  description?: string | null;
+  days: UpdateProgramDayPayload[];
+};

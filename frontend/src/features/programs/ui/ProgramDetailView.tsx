@@ -1,6 +1,9 @@
+import Link from 'next/link';
+
 import { TopBar } from '@/shared/layout';
+import { Button } from '@/shared/ui/button';
 import { ProgramDetail } from '../types/api.types';
-import DeleteProgramDialog from './DeleteProgramDialog';
+import ActivateProgramButton from './ActivateProgramButton';
 import ProgramDayList from './ProgramDayList';
 
 type ProgramDetailViewProps = {
@@ -10,7 +13,20 @@ type ProgramDetailViewProps = {
 export default function ProgramDetailView({ program }: ProgramDetailViewProps) {
   return (
     <div className="mx-auto flex w-full max-w-app flex-1 flex-col pb-8 lg:max-w-[560px]">
-      <TopBar backHref="/plans" backLabel="Plans" title={program.name} inSplitView />
+      <TopBar
+        backHref="/plans"
+        backLabel="Plans"
+        title={program.name}
+        inSplitView
+        action={
+          <Button asChild size="sm">
+            <Link href={`/plans/programs/${program.id}/edit`} replace>
+              Edit
+            </Link>
+          </Button>
+        }
+        titleAction={!program.active && <ActivateProgramButton programId={program.id} />}
+      />
 
       <p className="mt-1 px-4 text-meta text-text-secondary tabular-nums">
         {program.active ? 'Active program' : 'Not active'}, {program.days.length}{' '}
@@ -22,10 +38,6 @@ export default function ProgramDetailView({ program }: ProgramDetailViewProps) {
 
       <div className="mx-4 mt-5">
         <ProgramDayList program={program} exercises="names" />
-      </div>
-
-      <div className="mx-4 mt-8 border-t border-border-subtle pt-2">
-        <DeleteProgramDialog programId={program.id} active={program.active} />
       </div>
     </div>
   );

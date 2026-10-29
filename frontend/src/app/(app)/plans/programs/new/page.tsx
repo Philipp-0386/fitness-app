@@ -7,5 +7,5 @@ export default async function NewProgramPage() {
 
   const routines = await fetchUserRoutines();
 
-  return <ProgramEditor routines={routines} />;
+  return <ProgramEditor program={null} routines={routines} />;
 }
