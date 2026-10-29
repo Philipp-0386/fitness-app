@@ -1,10 +1,10 @@
 import { notFound } from 'next/navigation';
 
-import { RoutineDetailView, fetchPresetRoutineByRoutineId } from '@/features/routines';
+import { ProgramDetailView, fetchUserProgramByProgramId } from '@/features/programs';
 import { requireSession } from '@/shared/auth/session';
 import { ApiError } from '@/shared/api/errors/api-error';
 
-export default async function PresetRoutinePage({
+export default async function ProgramPage({
   params,
 }: {
   params: Promise<{ id: string }>;
@@ -12,10 +12,10 @@ export default async function PresetRoutinePage({
   await requireSession();
 
   const { id } = await params;
-  const routine = await fetchPresetRoutineByRoutineId(id).catch((error) => {
+  const program = await fetchUserProgramByProgramId(id).catch((error) => {
     if (error instanceof ApiError && error.status === 404) notFound();
     throw error;
   });
 
-  return <RoutineDetailView routine={routine} kind="preset" />;
+  return <ProgramDetailView program={program} />;
 }

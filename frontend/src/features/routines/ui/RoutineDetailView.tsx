@@ -16,11 +16,9 @@ const trackingHints: Partial<
 
 type RoutineDetailViewProps = {
   routine: RoutineDetail;
-  /** Own routines get an Edit button, presets a Copy button. */
-  kind: 'own' | 'preset';
 };
 
-export default function RoutineDetailView({ routine, kind }: RoutineDetailViewProps) {
+export default function RoutineDetailView({ routine }: RoutineDetailViewProps) {
   return (
     <div className="mx-auto flex w-full max-w-app flex-1 flex-col pb-8 lg:max-w-[560px]">
       <TopBar
@@ -30,15 +28,9 @@ export default function RoutineDetailView({ routine, kind }: RoutineDetailViewPr
         inSplitView
         action={
           <Button asChild size="sm">
-            {kind === 'own' ? (
-              <Link href={`/plans/routines/${routine.id}/edit`} replace>
-                Edit
-              </Link>
-            ) : (
-              <Link href={`/plans/routines/presets/${routine.id}/copy`} replace>
-                Copy
-              </Link>
-            )}
+            <Link href={`/plans/routines/${routine.id}/edit`} replace>
+              Edit
+            </Link>
           </Button>
         }
       />

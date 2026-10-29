@@ -17,5 +17,5 @@ export default async function RoutinePage({
     throw error;
   });
 
-  return <RoutineDetailView routine={routine} kind="own" />;
+  return <RoutineDetailView routine={routine} />;
 }

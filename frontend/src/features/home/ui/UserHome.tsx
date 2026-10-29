@@ -1,15 +1,19 @@
 import Link from 'next/link';
 import { ChevronRight, UserRound } from 'lucide-react';
 
+import { ProgramDayList, type ProgramDetail } from '@/features/programs';
+
 type UserHomeProps = {
   username: string | null;
+  /** null without an active program, an Error if it could not be loaded. */
+  program: ProgramDetail | null | Error;
 };
 
-export default function UserHome({ username }: UserHomeProps) {
+export default function UserHome({ username, program }: UserHomeProps) {
   const links = [
     {
       title: 'Plans',
-      text: 'Your routines, presets and the exercise catalog',
+      text: 'Your programs, routines and the exercise catalog',
       href: '/plans',
     },
     {
@@ -53,6 +57,27 @@ export default function UserHome({ username }: UserHomeProps) {
           routines from the exercise catalog.
         </p>
       </section>
+
+      {program instanceof Error ? (
+        <section role="alert" className="mt-8" aria-labelledby="program-title">
+          <h2 id="program-title" className="text-title">
+            Your program could not be loaded
+          </h2>
+          <p className="mt-1 text-text-secondary">{program.message}</p>
+          <p className="mt-1 text-meta text-text-tertiary">
+            Reload the page to try again.
+          </p>
+        </section>
+      ) : (
+        program && (
+          <section className="mt-8" aria-labelledby="program-title">
+            <h2 id="program-title" className="mb-3 text-title">
+              {program.name}
+            </h2>
+            <ProgramDayList program={program} exercises="count" />
+          </section>
+        )
+      )}
 
       <nav aria-label="Sections" className="mt-8">
         <ul className="divide-y divide-border-subtle overflow-hidden rounded-card bg-surface">

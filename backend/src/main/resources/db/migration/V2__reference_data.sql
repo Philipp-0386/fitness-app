@@ -346,6 +346,8 @@ INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((S
 INSERT INTO routine (user_id, slug, name, description) VALUES (NULL, 'push', 'Push', 'Upper chest, chest isolation, triceps and side delts.');
 INSERT INTO routine (user_id, slug, name, description) VALUES (NULL, 'pull', 'Pull', 'Lats, upper back and biceps.');
 INSERT INTO routine (user_id, slug, name, description) VALUES (NULL, 'legs', 'Legs', 'Machine based legs, calves and lower back.');
+INSERT INTO routine (user_id, slug, name, description) VALUES (NULL, 'upper', 'Upper', 'Chest, lats, upper back, triceps and biceps.');
+INSERT INTO routine (user_id, slug, name, description) VALUES (NULL, 'lower', 'Lower', 'Machine based legs, calves, abs and lower back.');
 
 INSERT INTO routine_exercise (routine_id, exercise_id, order_index, target_sets, target_reps_min, target_reps_max) VALUES ((SELECT id FROM routine WHERE slug = 'push'), (SELECT id FROM exercise WHERE slug = 'incline-dumbbell-press'), 0, 3, 8, 12);
 INSERT INTO routine_exercise (routine_id, exercise_id, order_index, target_sets, target_reps_min, target_reps_max) VALUES ((SELECT id FROM routine WHERE slug = 'push'), (SELECT id FROM exercise WHERE slug = 'cable-chest-fly'), 1, 3, 10, 15);
@@ -363,9 +365,28 @@ INSERT INTO routine_exercise (routine_id, exercise_id, order_index, target_sets,
 INSERT INTO routine_exercise (routine_id, exercise_id, order_index, target_sets, target_reps_min, target_reps_max) VALUES ((SELECT id FROM routine WHERE slug = 'legs'), (SELECT id FROM exercise WHERE slug = 'standing-calf-raise'), 3, 3, 10, 15);
 INSERT INTO routine_exercise (routine_id, exercise_id, order_index, target_sets, target_reps_min, target_reps_max) VALUES ((SELECT id FROM routine WHERE slug = 'legs'), (SELECT id FROM exercise WHERE slug = 'back-extension'), 4, 3, 10, 15);
 
--- preset program over the preset routines. Taking it copies the program and each of its routines.
+INSERT INTO routine_exercise (routine_id, exercise_id, order_index, target_sets, target_reps_min, target_reps_max) VALUES ((SELECT id FROM routine WHERE slug = 'upper'), (SELECT id FROM exercise WHERE slug = 'cable-chest-fly'), 0, 3, 10, 15);
+INSERT INTO routine_exercise (routine_id, exercise_id, order_index, target_sets, target_reps_min, target_reps_max) VALUES ((SELECT id FROM routine WHERE slug = 'upper'), (SELECT id FROM exercise WHERE slug = 'machine-chest-press'), 1, 3, 8, 12);
+INSERT INTO routine_exercise (routine_id, exercise_id, order_index, target_sets, target_reps_min, target_reps_max) VALUES ((SELECT id FROM routine WHERE slug = 'upper'), (SELECT id FROM exercise WHERE slug = 'lat-pulldown'), 2, 3, 8, 12);
+INSERT INTO routine_exercise (routine_id, exercise_id, order_index, target_sets, target_reps_min, target_reps_max) VALUES ((SELECT id FROM routine WHERE slug = 'upper'), (SELECT id FROM exercise WHERE slug = 'wide-grip-seated-cable-row'), 3, 3, 8, 12);
+INSERT INTO routine_exercise (routine_id, exercise_id, order_index, target_sets, target_reps_min, target_reps_max) VALUES ((SELECT id FROM routine WHERE slug = 'upper'), (SELECT id FROM exercise WHERE slug = 'triceps-rope-pushdown'), 4, 3, 10, 15);
+INSERT INTO routine_exercise (routine_id, exercise_id, order_index, target_sets, target_reps_min, target_reps_max) VALUES ((SELECT id FROM routine WHERE slug = 'upper'), (SELECT id FROM exercise WHERE slug = 'machine-preacher-curl'), 5, 3, 8, 12);
+
+INSERT INTO routine_exercise (routine_id, exercise_id, order_index, target_sets, target_reps_min, target_reps_max) VALUES ((SELECT id FROM routine WHERE slug = 'lower'), (SELECT id FROM exercise WHERE slug = 'seated-leg-curl'), 0, 3, 10, 15);
+INSERT INTO routine_exercise (routine_id, exercise_id, order_index, target_sets, target_reps_min, target_reps_max) VALUES ((SELECT id FROM routine WHERE slug = 'lower'), (SELECT id FROM exercise WHERE slug = 'leg-extension'), 1, 3, 10, 15);
+INSERT INTO routine_exercise (routine_id, exercise_id, order_index, target_sets, target_reps_min, target_reps_max) VALUES ((SELECT id FROM routine WHERE slug = 'lower'), (SELECT id FROM exercise WHERE slug = 'leg-press'), 2, 3, 8, 12);
+INSERT INTO routine_exercise (routine_id, exercise_id, order_index, target_sets, target_reps_min, target_reps_max) VALUES ((SELECT id FROM routine WHERE slug = 'lower'), (SELECT id FROM exercise WHERE slug = 'standing-calf-raise'), 3, 3, 10, 15);
+INSERT INTO routine_exercise (routine_id, exercise_id, order_index, target_sets, target_reps_min, target_reps_max) VALUES ((SELECT id FROM routine WHERE slug = 'lower'), (SELECT id FROM exercise WHERE slug = 'cable-crunch'), 4, 3, 10, 15);
+INSERT INTO routine_exercise (routine_id, exercise_id, order_index, target_sets, target_reps_min, target_reps_max) VALUES ((SELECT id FROM routine WHERE slug = 'lower'), (SELECT id FROM exercise WHERE slug = 'back-extension'), 5, 3, 10, 15);
+
+-- preset programs over the preset routines. Taking one copies the program and each of its routines.
 INSERT INTO program (user_id, slug, name, description) VALUES (NULL, 'push-pull-legs', 'Push Pull Legs', 'Three training days in a row, then a rest day.');
 INSERT INTO program_day (user_id, program_id, routine_id, order_index) VALUES (NULL, (SELECT id FROM program WHERE slug = 'push-pull-legs'), (SELECT id FROM routine WHERE slug = 'push'), 0);
 INSERT INTO program_day (user_id, program_id, routine_id, order_index) VALUES (NULL, (SELECT id FROM program WHERE slug = 'push-pull-legs'), (SELECT id FROM routine WHERE slug = 'pull'), 1);
 INSERT INTO program_day (user_id, program_id, routine_id, order_index) VALUES (NULL, (SELECT id FROM program WHERE slug = 'push-pull-legs'), (SELECT id FROM routine WHERE slug = 'legs'), 2);
 INSERT INTO program_day (user_id, program_id, routine_id, order_index) VALUES (NULL, (SELECT id FROM program WHERE slug = 'push-pull-legs'), NULL, 3);
+
+INSERT INTO program (user_id, slug, name, description) VALUES (NULL, 'upper-lower', 'Upper Lower', 'Upper body, lower body, then a rest day.');
+INSERT INTO program_day (user_id, program_id, routine_id, order_index) VALUES (NULL, (SELECT id FROM program WHERE slug = 'upper-lower'), (SELECT id FROM routine WHERE slug = 'upper'), 0);
+INSERT INTO program_day (user_id, program_id, routine_id, order_index) VALUES (NULL, (SELECT id FROM program WHERE slug = 'upper-lower'), (SELECT id FROM routine WHERE slug = 'lower'), 1);
+INSERT INTO program_day (user_id, program_id, routine_id, order_index) VALUES (NULL, (SELECT id FROM program WHERE slug = 'upper-lower'), NULL, 2);

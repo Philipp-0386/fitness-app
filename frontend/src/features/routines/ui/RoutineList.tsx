@@ -10,7 +10,7 @@ import { Routine } from '../types/api.types';
 
 type RoutineListProps = {
   routines: Routine[];
-  /** Route the routine id is appended to, e.g. /plans/routines or /plans/routines/presets. */
+  /** Route the routine id is appended to, e.g. /plans/routines. */
   hrefBase: string;
 };
 

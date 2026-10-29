@@ -1,5 +1,6 @@
 package de.phil.fitness.backend.routine.service;
 
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +15,7 @@ import de.phil.fitness.backend.routine.dto.CreateRoutineRequest;
 import de.phil.fitness.backend.routine.dto.RoutineDetailResponse;
 import de.phil.fitness.backend.routine.dto.RoutineExerciseRequest;
 import de.phil.fitness.backend.routine.dto.RoutineResponse;
+import de.phil.fitness.backend.routine.dto.RoutineSummary;
 import de.phil.fitness.backend.routine.exception.PresetRoutineNotFoundException;
 import de.phil.fitness.backend.routine.exception.RoutineTargetMismatchException;
 import de.phil.fitness.backend.routine.exception.UserRoutineNotFoundException;
@@ -155,6 +157,44 @@ public class RoutineService {
                 .stream()
                 .map(routineMapper::toRoutineResponse)
                 .toList();
+    }
+
+    /**
+     * Resolves routines being referenced by other slices, like "program". No ownership validation here. That happens in other slices.
+     * @param routineIds Ids to resolve.
+     * @return Summaries keyed by their Ids.
+     */
+    @Transactional(readOnly = true)
+    public Map<Long, RoutineSummary> findSummariesByRoutineId(Collection<Long> routineIds) {
+        List<Routine> routines = routineRepository.findAllById(routineIds);
+        Set<Long> exerciseIds = routines.stream()
+                .flatMap(routine -> routine.getExercises().stream())
+                .map(RoutineExercise::getExerciseId)
+                .collect(Collectors.toSet());
+        Map<Long, ExerciseSummary> exercises = exerciseService.findSummariesByExerciseId(exerciseIds);
+
+        return routines.stream()
+                .collect(Collectors.toMap(Routine::getId, routine -> routineMapper.toSummary(routine, exercises)));
+    }
+
+    /**
+     * Ensures every given routine is owned by the user, returns silently if so.
+     * @param userId Id of the user referencing the routines.
+     * @param routineIds Ids of the referenced routines.
+     * @throws UserRoutineNotFoundException for the first id that is not owned by the user, whether because it does
+     *         not exist, is a preset or belongs to someone else
+     */
+    @Transactional(readOnly = true)
+    public void idOwnershipCheck(Long userId, Set<Long> routineIds) {
+        if (routineIds.isEmpty()) return;
+
+        Set<Long> owned = routineRepository.findOwnedIds(userId, routineIds);
+        routineIds.stream()
+                .filter(id -> !owned.contains(id))
+                .findFirst()
+                .ifPresent(id -> {
+                    throw new UserRoutineNotFoundException("The user-routine with id " + id + " does not exist");
+                });
     }
 
     /**

@@ -39,6 +39,7 @@ import { formatTarget } from '../lib/format-target';
 import { RoutineDetail } from '../types/api.types';
 import { Slot } from '../types/editor.types';
 import DeleteRoutineDialog from './DeleteRoutineDialog';
+import PresetSheet from './PresetSheet';
 import TargetSheet from './TargetSheet';
 
 const MAX_SLOTS = 50;
@@ -60,28 +61,25 @@ type OpenSheet = { kind: 'picker' | 'targets'; slotKey: string } | null;
 type RoutineEditorProps = {
   /** null for a new routine. */
   routine: RoutineDetail | null;
-  /** Preset a new routine is prefilled from. */
-  copyOf?: RoutineDetail;
+  /** Presets a new routine can start from, omitted when editing. */
+  presets?: RoutineDetail[];
   exercises: Exercise[];
   muscleGroups: MuscleGroup[];
 };
 
 export default function RoutineEditor({
   routine,
-  copyOf,
+  presets,
   exercises,
   muscleGroups,
 }: RoutineEditorProps) {
   const router = useRouter();
   const addedSlots = useRef(0);
-  const initial = routine ?? copyOf;
-  const [name, setName] = useState(
-    routine?.name ?? (copyOf ? `Copy of "${copyOf.name}"` : ''),
-  );
-  const [description, setDescription] = useState(initial?.description ?? '');
+  const [name, setName] = useState(routine?.name ?? '');
+  const [description, setDescription] = useState(routine?.description ?? '');
   const [slots, setSlots] = useState<Slot[]>(() =>
-    initial
-      ? initial.exercises.map((re) => ({
+    routine
+      ? routine.exercises.map((re) => ({
           key: `saved-${re.id}`,
           exercise: re.exercise,
           targetSets: re.targetSets,
@@ -93,6 +91,7 @@ export default function RoutineEditor({
       : Array.from({ length: 5 }, (_, i) => ({ key: `initial-${i}`, ...emptySlot })),
   );
   const [sheet, setSheet] = useState<OpenSheet>(null);
+  const [presetsOpen, setPresetsOpen] = useState(false);
   const [nameError, setNameError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -104,6 +103,25 @@ export default function RoutineEditor({
 
   const sheetIndex = sheet ? slots.findIndex((s) => s.key === sheet.slotKey) : -1;
   const sheetSlot = sheetIndex >= 0 ? slots[sheetIndex] : null;
+
+  function handleUsePreset(preset: RoutineDetail) {
+    setName(`${preset.name} (Preset)`);
+    setDescription(preset.description ?? '');
+    setSlots(
+      preset.exercises.map((re) => ({
+        key: `added-${++addedSlots.current}`,
+        exercise: re.exercise,
+        targetSets: re.targetSets,
+        targetRepsMin: re.targetRepsMin,
+        targetRepsMax: re.targetRepsMax,
+        targetDurationSeconds: re.targetDurationSeconds,
+        targetDistanceMeters: re.targetDistanceMeters,
+      })),
+    );
+    setNameError(null);
+    setError(null);
+    setPresetsOpen(false);
+  }
 
   function handleSelect(exercise: Exercise) {
     if (!sheet) return;
@@ -214,10 +232,6 @@ export default function RoutineEditor({
             <Link href={`/plans/routines/${routine.id}`} replace className={cancelClass}>
               Cancel
             </Link>
-          ) : copyOf ? (
-            <Link href={`/plans/routines/presets/${copyOf.id}`} replace className={cancelClass}>
-              Cancel
-            </Link>
           ) : (
             // A new routine is only reached from the list, so going back avoids a second list entry.
             <button type="button" onClick={() => router.back()} className={cancelClass}>
@@ -225,7 +239,7 @@ export default function RoutineEditor({
             </button>
           )}
           <h1 className="truncate text-center text-[1.0625rem] font-semibold">
-            {routine ? routine.name : copyOf ? `Copy of "${copyOf.name}"` : 'New Routine'}
+            {routine ? routine.name : 'New Routine'}
           </h1>
           <Button
             type="submit"
@@ -276,7 +290,14 @@ export default function RoutineEditor({
             className="w-full min-w-0 rounded-field border border-border-strong bg-surface-raised px-3 py-2.5 text-field text-text-primary placeholder:text-text-tertiary"
           />
 
-          <h2 className="mt-6 mb-3 text-title">Exercises</h2>
+          <div className="mt-6 mb-3 flex items-center justify-between gap-3">
+            <h2 className="text-title">Exercises</h2>
+            {presets && presets.length > 0 && (
+              <Button type="button" size="sm" onClick={() => setPresetsOpen(true)}>
+                Use Preset
+              </Button>
+            )}
+          </div>
           {error && (
             <div
               role="alert"
@@ -334,6 +355,19 @@ export default function RoutineEditor({
           )}
         </div>
       </form>
+
+      {presetsOpen && presets && (
+        <PresetSheet
+          presets={presets}
+          replacesInput={
+            name.trim() !== '' ||
+            description.trim() !== '' ||
+            slots.some((s) => s.exercise !== null)
+          }
+          onUse={handleUsePreset}
+          onClose={() => setPresetsOpen(false)}
+        />
+      )}
 
       {routine && (
         <div className="mx-4 mt-8 border-t border-border-subtle pt-2">

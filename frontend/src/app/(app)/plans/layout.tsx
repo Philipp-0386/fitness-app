@@ -2,12 +2,16 @@ import Link from 'next/link';
 import { ChevronRight, UserRound } from 'lucide-react';
 
 import { fetchExercises } from '@/features/exercises';
-import { RoutineList, fetchPresetRoutines, fetchUserRoutines } from '@/features/routines';
+import { ProgramList, fetchUserPrograms } from '@/features/programs';
+import { RoutineList, fetchUserRoutines } from '@/features/routines';
 import { fetchMe } from '@/features/user';
 import { requireSession } from '@/shared/auth/session';
 import { ListPane } from '@/shared/layout';
 import { Button } from '@/shared/ui/button';
 import { listClass, listRowClass } from '@/shared/ui/list';
+
+// Same limit as ProgramService, the backend still rejects a sixth program.
+const MAX_PROGRAMS = 5;
 
 export default async function PlansLayout({
   children,
@@ -17,8 +21,12 @@ export default async function PlansLayout({
   await requireSession();
 
   const [plans, username] = await Promise.all([
-    Promise.all([fetchUserRoutines(), fetchPresetRoutines(), fetchExercises()])
-      .then(([routines, presets, exercises]) => ({ routines, presets, exercises }))
+    Promise.all([fetchUserPrograms(), fetchUserRoutines(), fetchExercises()])
+      .then(([programs, routines, exercises]) => ({
+        programs,
+        routines,
+        exercises,
+      }))
       .catch((error: Error) => error),
     fetchMe()
       .then((user) => user.username)
@@ -54,7 +62,47 @@ export default async function PlansLayout({
             </section>
           ) : (
             <>
-              <section className="mt-4" aria-labelledby="routines-title">
+              <section className="mt-4" aria-labelledby="programs-title">
+                <div className="flex items-center justify-between gap-3">
+                  <h2 id="programs-title" className="text-title">
+                    Programs
+                  </h2>
+                  {plans.programs.length < MAX_PROGRAMS ? (
+                    <Button asChild size="sm">
+                      <Link href="/plans/programs/new">New Program</Link>
+                    </Button>
+                  ) : (
+                    <Button size="sm" disabled aria-describedby="programs-limit">
+                      New Program
+                    </Button>
+                  )}
+                </div>
+                {plans.programs.length < MAX_PROGRAMS ? (
+                  <p className="mt-0.5 mb-3 text-meta text-text-secondary">
+                    Create your own training plan.
+                  </p>
+                ) : (
+                  <p
+                    id="programs-limit"
+                    className="mt-0.5 mb-3 text-meta text-text-secondary"
+                  >
+                    You have reached the maximum of {MAX_PROGRAMS} programs. Delete one to
+                    create a new one.
+                  </p>
+                )}
+                {plans.programs.length > 0 ? (
+                  <ProgramList programs={plans.programs} />
+                ) : (
+                  <div className="rounded-card bg-surface px-4 pt-5 pb-4">
+                    <h3 className="font-semibold">No programs yet</h3>
+                    <p className="mt-1 text-meta text-text-secondary">
+                      Once you have a program, the active one shows its days on Today.
+                    </p>
+                  </div>
+                )}
+              </section>
+
+              <section className="mt-8" aria-labelledby="routines-title">
                 <div className="flex items-center justify-between gap-3">
                   <h2 id="routines-title" className="text-title">
                     Routines
@@ -72,7 +120,7 @@ export default async function PlansLayout({
                   <div className="rounded-card bg-surface px-4 pt-5 pb-4">
                     <h3 className="font-semibold">No routines yet</h3>
                     <p className="mt-1 text-meta text-text-secondary">
-                      Create your first routine, or have a look at the presets below.
+                      Create your first routine, from scratch or from a preset.
                     </p>
                   </div>
                 )}
@@ -101,15 +149,6 @@ export default async function PlansLayout({
                   </li>
                 </ul>
               </section>
-
-              {plans.presets.length > 0 && (
-                <section className="mt-8" aria-labelledby="presets-title">
-                  <h2 id="presets-title" className="mb-3 text-title">
-                    Presets
-                  </h2>
-                  <RoutineList routines={plans.presets} hrefBase="/plans/routines/presets" />
-                </section>
-              )}
             </>
           )}
         </div>

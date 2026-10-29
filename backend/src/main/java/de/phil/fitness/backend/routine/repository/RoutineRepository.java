@@ -5,8 +5,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public interface RoutineRepository extends JpaRepository<Routine, Long> {
     /**
@@ -96,4 +98,17 @@ public interface RoutineRepository extends JpaRepository<Routine, Long> {
                           WHERE re.exerciseId = :exerciseId) 
     """)
     List<Routine> getUserRoutinesContainingExercise(@Param("userId") Long userId, @Param("exerciseId") Long exerciseId);
+
+    /**
+     * Returns those of the given routine Ids that belong to the user, used by other slices like "program" to check ownership.
+     * @param userId Id of the user referencing the routines.
+     * @param ids Ids of the referenced routines.
+     * @return Set of the given Ids owned by the user.
+     */
+    @Query("""
+        SELECT r.id FROM Routine r
+        WHERE r.id IN :ids AND r.userId = :userId
+    """)
+    Set<Long> findOwnedIds(@Param("userId") Long userId, @Param("ids") Collection<Long> ids);
+
 }

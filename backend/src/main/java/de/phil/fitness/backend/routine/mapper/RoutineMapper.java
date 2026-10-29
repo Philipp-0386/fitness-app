@@ -25,6 +25,22 @@ public class RoutineMapper {
         );
     }
 
+    public RoutineSummary toSummary(Routine routine, Map<Long, ExerciseSummary> exercises) {
+        return new RoutineSummary(
+                routine.getId(),
+                routine.getName(),
+                routine.getExercises().stream()
+                        .map(re -> {
+                            ExerciseSummary exercise = exercises.get(re.getExerciseId());
+                            if (exercise == null) {
+                                throw new IllegalStateException("Routine exercise " + re.getId() + " references missing exercise " + re.getExerciseId());
+                            }
+                            return exercise.name();
+                        })
+                        .toList()
+        );
+    }
+
     public RoutineDetailResponse toRoutineDetailResponse(Routine routine, Map<Long, ExerciseSummary> exercises) {
         return new RoutineDetailResponse(
                 routine.getId(),
