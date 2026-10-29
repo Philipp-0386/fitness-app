@@ -202,10 +202,10 @@ export default function TargetSheet({
           </Button>
           <div className="grid grid-cols-2 gap-2">
             <Button type="button" onClick={onMoveUp} disabled={!canMoveUp}>
-              Move up
+              Move Up
             </Button>
             <Button type="button" onClick={onMoveDown} disabled={!canMoveDown}>
-              Move down
+              Move Down
             </Button>
           </div>
           <Button type="submit" variant="primary" size="lg">
