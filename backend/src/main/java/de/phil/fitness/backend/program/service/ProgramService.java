@@ -137,4 +137,18 @@ public class ProgramService {
 
         return programMapper.toProgramDetailResponse(programRepository.save(program), routineService.findSummariesByRoutineId(routineIds));
     }
+
+    /**
+     * Deletes a user-owned program including its days. Workouts keep existing without the reference to their day.
+     * Deleting the active program leaves the user without an active program.
+     * @param userId Id of the requesting user.
+     * @param programId Id of the program to delete.
+     * @throws UserProgramNotFoundException if no program with this id is owned by the user
+     */
+    @Transactional
+    public void deleteUserProgram(Long userId, Long programId) {
+        Program program = programRepository.getUserProgramDetailedById(userId, programId)
+                .orElseThrow(() -> new UserProgramNotFoundException("The user-program with id " + programId + " does not exist"));
+        programRepository.delete(program);
+    }
 }

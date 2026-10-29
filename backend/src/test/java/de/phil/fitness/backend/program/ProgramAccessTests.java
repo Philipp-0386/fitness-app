@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -159,6 +160,20 @@ class ProgramAccessTests {
                 .andExpect(content().string(""));
     }
 
+    @Test
+    @Transactional
+    @DisplayName("someone else's program cannot be deleted")
+    void foreignProgramCannotBeDeleted() throws Exception {
+        long lenasProgram = idOfOwnedProgram("lena_lifts");
+
+        mockMvc.perform(delete("/backend/programs/" + lenasProgram)
+                        .header("Authorization", tokenFor("max12")))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("USER_PROGRAM_NOT_FOUND"));
+
+        assertThat(programRepository.findById(lenasProgram)).isPresent();
+    }
+
     // -----------------------------------------------------------------------
     // Presets and own programs stay on their own paths
     // -----------------------------------------------------------------------
@@ -184,6 +199,20 @@ class ProgramAccessTests {
                         .header("Authorization", tokenFor("max12")))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value("USER_PROGRAM_NOT_FOUND"));
+    }
+
+    @Test
+    @Transactional
+    @DisplayName("a preset cannot be deleted")
+    void presetCannotBeDeleted() throws Exception {
+        long preset = idOfPresetProgram();
+
+        mockMvc.perform(delete("/backend/programs/" + preset)
+                        .header("Authorization", tokenFor("max12")))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("USER_PROGRAM_NOT_FOUND"));
+
+        assertThat(programRepository.findById(preset)).isPresent();
     }
 
     @Test

@@ -70,4 +70,10 @@ public class ProgramController {
                 .toUri();
         return ResponseEntity.created(location).body(created);
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteUserProgram(@PathVariable Long id) {
+        programService.deleteUserProgram(currentUser.currentUserId(), id);
+        return ResponseEntity.noContent().build();
+    }
 }

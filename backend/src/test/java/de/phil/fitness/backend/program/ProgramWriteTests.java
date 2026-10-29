@@ -13,23 +13,26 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.nullValue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- * Create of own programs: the order of days, rest days, which program becomes active, the
- * validation of the body and the program limit.
+ * Create and delete of own programs: the order of days, rest days, which program becomes active,
+ * the validation of the body, the program limit, and what a delete removes and keeps.
  *
  * <p>Every test creates the routines it references, so no test depends on the seeded routines, and
  * runs in a transaction that is rolled back afterwards. Exercise ids are global exercises from the
@@ -63,6 +66,9 @@ class ProgramWriteTests {
 
     @Autowired
     private EntityManager entityManager;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     private Long userId(String username) {
         return userRepository.findByUsername(username).orElseThrow().getId();
@@ -304,5 +310,76 @@ class ProgramWriteTests {
                 .andExpect(jsonPath("$.code").value("PROGRAM_LIMIT_REACHED"));
 
         assertThat(programRepository.countByUserId(userId("max12"))).isEqualTo(PROGRAM_LIMIT);
+    }
+
+    // -----------------------------------------------------------------------
+    // Delete
+    // -----------------------------------------------------------------------
+
+    @Test
+    @Transactional
+    @DisplayName("a deleted program is gone together with its days")
+    void deleteRemovesProgramAndDays() throws Exception {
+        int bench = createRoutine("max12", "Bench Day", 1);
+        String created = createProgram("max12", """
+                {"name": "Delete Me", "days": [{"routineId": %d}, {"routineId": null}]}
+                """.formatted(bench));
+        Integer programId = JsonPath.read(created, "$.id");
+        flushAndClear();
+
+        mockMvc.perform(delete("/backend/programs/" + programId)
+                        .header("Authorization", tokenFor("max12")))
+                .andExpect(status().isNoContent());
+        flushAndClear();
+
+        mockMvc.perform(get("/backend/programs/" + programId)
+                        .header("Authorization", tokenFor("max12")))
+                .andExpect(status().isNotFound());
+        assertThat(jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM program_day WHERE program_id = ?", Long.class, programId))
+                .isZero();
+        assertThat(jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM routine WHERE id = ?", Long.class, bench))
+                .isOne();
+    }
+
+    @Test
+    @Transactional
+    @DisplayName("a workout keeps existing when its program is deleted, only the reference to the day is cleared")
+    void deleteKeepsWorkouts() throws Exception {
+        Map<String, Object> workout = jdbcTemplate.queryForMap("""
+                SELECT w.id, pd.program_id, u.username FROM workout w
+                JOIN program_day pd ON pd.id = w.program_day_id
+                JOIN userdata u ON u.id = w.user_id
+                ORDER BY w.id
+                LIMIT 1
+                """);
+
+        mockMvc.perform(delete("/backend/programs/" + workout.get("program_id"))
+                        .header("Authorization", tokenFor((String) workout.get("username"))))
+                .andExpect(status().isNoContent());
+        flushAndClear();
+
+        Map<String, Object> after = jdbcTemplate.queryForMap(
+                "SELECT program_day_id FROM workout WHERE id = ?", workout.get("id"));
+        assertThat(after.get("program_day_id")).isNull();
+    }
+
+    @Test
+    @Transactional
+    @DisplayName("deleting the active program leaves the user without an active one")
+    void deleteActiveProgramLeavesNoneActive() throws Exception {
+        Long activeId = programRepository.getActiveUserProgram(userId("max12")).orElseThrow().getId();
+        long before = programRepository.countByUserId(userId("max12"));
+
+        mockMvc.perform(delete("/backend/programs/" + activeId)
+                        .header("Authorization", tokenFor("max12")))
+                .andExpect(status().isNoContent());
+        flushAndClear();
+
+        mockMvc.perform(get("/backend/programs/active")
+                        .header("Authorization", tokenFor("max12")))
+                .andExpect(status().isNoContent());
+        assertThat(programRepository.countByUserId(userId("max12"))).isEqualTo(before - 1);
     }
 }
