@@ -3,7 +3,10 @@ package de.phil.fitness.backend.program.service;
 import de.phil.fitness.backend.program.dto.CreateProgramRequest;
 import de.phil.fitness.backend.program.dto.ProgramDetailResponse;
 import de.phil.fitness.backend.program.dto.ProgramResponse;
+import de.phil.fitness.backend.program.dto.UpdateProgramDayRequest;
+import de.phil.fitness.backend.program.dto.UpdateProgramRequest;
 import de.phil.fitness.backend.program.exception.PresetProgramNotFoundException;
+import de.phil.fitness.backend.program.exception.ProgramDayNotFoundException;
 import de.phil.fitness.backend.program.exception.ProgramLimitReachedException;
 import de.phil.fitness.backend.program.exception.UserProgramNotFoundException;
 import de.phil.fitness.backend.program.mapper.ProgramMapper;
@@ -136,6 +139,61 @@ public class ProgramService {
         routineService.idOwnershipCheck(userId, routineIds);
 
         return programMapper.toProgramDetailResponse(programRepository.save(program), routineService.findSummariesByRoutineId(routineIds));
+    }
+
+    /**
+     * Updates a user-owned program including its days. Days sent with their id keep it, days without an id are added,
+     * and days missing from the request are removed.
+     * @param userId Id of the requesting user.
+     * @param programId Id of the program to update.
+     * @param request The complete new state of the program, the order of its days is taken from the list.
+     * @return The updated program with its days.
+     * @throws UserProgramNotFoundException if no program with this id is owned by the user
+     * @throws ProgramDayNotFoundException if a day id does not belong to this program
+     * @throws de.phil.fitness.backend.routine.exception.UserRoutineNotFoundException if a referenced routine is not
+     *         owned by the user
+     */
+    @Transactional
+    public ProgramDetailResponse updateUserProgram(Long userId, Long programId, UpdateProgramRequest request) {
+        Program program = programRepository.getUserProgramDetailedById(userId, programId)
+                .orElseThrow(() -> new UserProgramNotFoundException("The user-program with id " + programId + " does not exist"));
+
+        Set<Long> dayIds = program.getDays().stream()
+                .map(ProgramDay::getId)
+                .collect(Collectors.toSet());
+        request.days().stream()
+                .map(UpdateProgramDayRequest::id)
+                .filter(id -> id != null && !dayIds.contains(id))
+                .findFirst()
+                .ifPresent(id -> {
+                    throw new ProgramDayNotFoundException("The day with id " + id + " does not belong to program " + programId);
+                });
+
+        Set<Long> routineIds = request.days().stream()
+                .map(UpdateProgramDayRequest::routineId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+        routineService.idOwnershipCheck(userId, routineIds);
+
+        programMapper.applyUpdateOfUserProgram(program, request);
+        return programMapper.toProgramDetailResponse(programRepository.saveAndFlush(program), routineService.findSummariesByRoutineId(routineIds));
+    }
+
+    /**
+     * Makes a user-owned program the active one and deactivates the previously active program.
+     * @param userId Id of the requesting user.
+     * @param programId Id of the program to activate.
+     * @return The now active program with its days.
+     * @throws UserProgramNotFoundException if no program with this id is owned by the user
+     */
+    @Transactional
+    public ProgramDetailResponse activateUserProgram(Long userId, Long programId) {
+        if (!programRepository.existsByIdAndUserId(programId, userId)) {
+            throw new UserProgramNotFoundException("The user-program with id " + programId + " does not exist");
+        }
+        programRepository.deactivateUserPrograms(userId);
+        programRepository.activateUserProgram(userId, programId);
+        return findDetailedUserProgram(userId, programId);
     }
 
     /**

@@ -2,9 +2,11 @@ package de.phil.fitness.backend.program.api;
 
 import de.phil.fitness.backend.auth.CurrentUser;
 import de.phil.fitness.backend.common.ErrorResponse;
+import de.phil.fitness.backend.program.dto.ActivateProgramRequest;
 import de.phil.fitness.backend.program.dto.CreateProgramRequest;
 import de.phil.fitness.backend.program.dto.ProgramDetailResponse;
 import de.phil.fitness.backend.program.dto.ProgramResponse;
+import de.phil.fitness.backend.program.dto.UpdateProgramRequest;
 import de.phil.fitness.backend.program.service.ProgramService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -61,6 +63,11 @@ public class ProgramController {
                 .orElse(ResponseEntity.noContent().build());
     }
 
+    @PutMapping("/active")
+    public ProgramDetailResponse activateUserProgram(@Valid @RequestBody ActivateProgramRequest request) {
+        return programService.activateUserProgram(currentUser.currentUserId(), request.programId());
+    }
+
     @PostMapping()
     public ResponseEntity<ProgramDetailResponse> createNewProgram(@Valid @RequestBody CreateProgramRequest request) {
         ProgramDetailResponse created = programService.createNewUserProgram(request, currentUser.currentUserId());
@@ -69,6 +76,11 @@ public class ProgramController {
                 .buildAndExpand(created.id())
                 .toUri();
         return ResponseEntity.created(location).body(created);
+    }
+
+    @PutMapping("/{id}")
+    public ProgramDetailResponse updateUserProgram(@PathVariable Long id, @Valid @RequestBody UpdateProgramRequest request) {
+        return programService.updateUserProgram(currentUser.currentUserId(), id, request);
     }
 
     @DeleteMapping("/{id}")

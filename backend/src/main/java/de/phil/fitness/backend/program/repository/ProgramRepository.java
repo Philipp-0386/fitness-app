@@ -2,6 +2,7 @@ package de.phil.fitness.backend.program.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import de.phil.fitness.backend.program.model.Program;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -77,4 +78,39 @@ public interface ProgramRepository extends JpaRepository<Program, Long> {
      * @return Number of programs owned by the user.
      */
     long countByUserId(Long userId);
+
+    /**
+     * Checks whether a user owns a program with this id. Presets have no user and never match.
+     * @param id Id of the program.
+     * @param userId Id of the user.
+     * @return true if the user owns the program.
+     */
+    boolean existsByIdAndUserId(Long id, Long userId);
+
+    /**
+     * Deactivates the active program of a user. Runs before {@link #activateUserProgram}, because the partial unique
+     * index on the active program is checked row by row and cannot be deferred.
+     * @param userId Id of the user.
+     * @return Number of deactivated programs, 0 or 1.
+     */
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Query("""
+        UPDATE Program p SET p.active = FALSE
+        WHERE p.userId = :userId AND p.active = TRUE
+    """)
+    int deactivateUserPrograms(@Param("userId") Long userId);
+
+    /**
+     * Activates a user-owned program. A bulk update leaves updatedAt alone, activating does not edit the plan.
+     * The caller checks the ownership with {@link #existsByIdAndUserId} first, so a refused activation changes nothing.
+     * @param userId Id of the requesting user.
+     * @param id Id of the program to activate.
+     * @return Number of activated programs.
+     */
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Query("""
+        UPDATE Program p SET p.active = TRUE
+        WHERE p.id = :id AND p.userId = :userId
+    """)
+    int activateUserProgram(@Param("userId") Long userId, @Param("id") Long id);
 }

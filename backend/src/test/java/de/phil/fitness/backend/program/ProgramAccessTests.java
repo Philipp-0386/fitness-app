@@ -15,6 +15,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -174,6 +175,69 @@ class ProgramAccessTests {
         assertThat(programRepository.findById(lenasProgram)).isPresent();
     }
 
+    @Test
+    @Transactional
+    @DisplayName("someone else's program cannot be updated")
+    void foreignProgramCannotBeUpdated() throws Exception {
+        long lenasProgram = idOfOwnedProgram("lena_lifts");
+        String nameBefore = programRepository.findById(lenasProgram).orElseThrow().getName();
+
+        mockMvc.perform(put("/backend/programs/" + lenasProgram)
+                        .header("Authorization", tokenFor("max12"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(programWithRoutine(idOfOwnedRoutine("max12"))))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("USER_PROGRAM_NOT_FOUND"));
+
+        assertThat(programRepository.findById(lenasProgram).orElseThrow().getName()).isEqualTo(nameBefore);
+    }
+
+    @Test
+    @Transactional
+    @DisplayName("someone else's program cannot be activated, the own active program stays active")
+    void foreignProgramCannotBeActivated() throws Exception {
+        mockMvc.perform(put("/backend/programs/active")
+                        .header("Authorization", tokenFor("max12"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"programId": %d}
+                                """.formatted(idOfOwnedProgram("lena_lifts"))))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("USER_PROGRAM_NOT_FOUND"));
+
+        mockMvc.perform(get("/backend/programs/active")
+                        .header("Authorization", tokenFor("max12")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("Push Pull"));
+    }
+
+    // -----------------------------------------------------------------------
+    // Days must belong to the updated program
+    // -----------------------------------------------------------------------
+
+    @Test
+    @Transactional
+    @DisplayName("a day of another program, own or foreign, cannot be moved into a program")
+    void dayOfAnotherProgramIsRefused() throws Exception {
+        List<Program> maxPrograms = programRepository.getAllUserProgramsByUserId(userId("max12"));
+        long target = maxPrograms.get(0).getId();
+        long ownOtherDay = maxPrograms.get(1).getDays().get(0).getId();
+        long foreignDay = programRepository.getAllUserProgramsByUserId(userId("lena_lifts"))
+                .get(0).getDays().get(0).getId();
+        long routine = idOfOwnedRoutine("max12");
+
+        for (long day : List.of(ownOtherDay, foreignDay)) {
+            mockMvc.perform(put("/backend/programs/" + target)
+                            .header("Authorization", tokenFor("max12"))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("""
+                                    {"name": "Probe", "days": [{"id": %d, "routineId": %d}]}
+                                    """.formatted(day, routine)))
+                    .andExpect(status().isNotFound())
+                    .andExpect(jsonPath("$.code").value("PROGRAM_DAY_NOT_FOUND"));
+        }
+    }
+
     // -----------------------------------------------------------------------
     // Presets and own programs stay on their own paths
     // -----------------------------------------------------------------------
@@ -203,16 +267,38 @@ class ProgramAccessTests {
 
     @Test
     @Transactional
-    @DisplayName("a preset cannot be deleted")
-    void presetCannotBeDeleted() throws Exception {
+    @DisplayName("a preset can be neither updated, activated nor deleted")
+    void presetCannotBeChanged() throws Exception {
         long preset = idOfPresetProgram();
+        String before = mockMvc.perform(get("/backend/programs/presets/" + preset)
+                        .header("Authorization", tokenFor("max12")))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
 
+        mockMvc.perform(put("/backend/programs/" + preset)
+                        .header("Authorization", tokenFor("max12"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(programWithRoutine(idOfOwnedRoutine("max12"))))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("USER_PROGRAM_NOT_FOUND"));
+        mockMvc.perform(put("/backend/programs/active")
+                        .header("Authorization", tokenFor("max12"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"programId": %d}
+                                """.formatted(preset)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("USER_PROGRAM_NOT_FOUND"));
         mockMvc.perform(delete("/backend/programs/" + preset)
                         .header("Authorization", tokenFor("max12")))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value("USER_PROGRAM_NOT_FOUND"));
 
-        assertThat(programRepository.findById(preset)).isPresent();
+        String after = mockMvc.perform(get("/backend/programs/presets/" + preset)
+                        .header("Authorization", tokenFor("max12")))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        assertThat(after).isEqualTo(before);
     }
 
     @Test
@@ -242,6 +328,23 @@ class ProgramAccessTests {
                 .andExpect(jsonPath("$.code").value("USER_ROUTINE_NOT_FOUND"));
 
         assertThat(programRepository.getAllUserProgramsByUserId(userId("max12"))).hasSize(before);
+    }
+
+    @Test
+    @Transactional
+    @DisplayName("an own program cannot be updated with someone else's routine")
+    void updateWithForeignRoutineIsRefused() throws Exception {
+        long program = idOfOwnedProgram("max12");
+        String nameBefore = programRepository.findById(program).orElseThrow().getName();
+
+        mockMvc.perform(put("/backend/programs/" + program)
+                        .header("Authorization", tokenFor("max12"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(programWithRoutine(idOfOwnedRoutine("lena_lifts"))))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("USER_ROUTINE_NOT_FOUND"));
+
+        assertThat(programRepository.findById(program).orElseThrow().getName()).isEqualTo(nameBefore);
     }
 
     @Test
