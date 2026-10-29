@@ -49,7 +49,7 @@ TODO: auto-generate targets from the user's own history (rep range preferences, 
 
 A `program` is an ordered sequence of `program_day` slots, each holding a routine or a rest day (`routine_id IS NULL`). `workout.program_day_id` records which slot a workout came from.
 
-- **Sequence, not calendar.** The next training is the slot after the one of the user's latest workout in this program, wrapping at the end. No workout in it yet, or just switched to it: the first slot. Missed days never break the plan.
+- **Sequence, not calendar.** The next training is the slot after the one of the user's latest workout in this program, wrapping at the end. No workout in it yet: the first slot. Goal-State: Switching programs keeps the position, a program switched back to continues where it was. Missed days never break the plan.
 - **Rest days are shown, not enforced.** Training anyway starts the next training slot. How strict the UI is stays open.
 - **Five programs per user, one active.** Activating one deactivates the previous one in the same transaction.
 - **Deleting a routine turns its slots into rest days,** so a PPLUL program losing Upper never schedules two leg days in a row. The UI warns which programs are affected and that logged workouts stay complete.
