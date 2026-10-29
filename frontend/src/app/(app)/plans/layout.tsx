@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { ChevronRight, UserRound } from 'lucide-react';
 
-import { fetchExercises } from '@/features/exercises';
+import { ExerciseFormDialog, fetchExercises } from '@/features/exercises';
 import { ProgramList, fetchUserPrograms } from '@/features/programs';
 import { RoutineList, fetchUserRoutines } from '@/features/routines';
 import { fetchMe } from '@/features/user';
@@ -127,9 +127,12 @@ export default async function PlansLayout({
               </section>
 
               <section className="mt-8" aria-labelledby="exercises-title">
-                <h2 id="exercises-title" className="mb-3 text-title">
-                  Exercises
-                </h2>
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <h2 id="exercises-title" className="text-title">
+                    Exercises
+                  </h2>
+                  <ExerciseFormDialog />
+                </div>
                 <ul className={listClass}>
                   <li>
                     <Link href="/exercises" className={listRowClass}>
