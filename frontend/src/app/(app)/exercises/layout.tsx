@@ -1,4 +1,9 @@
-import { ExerciseCatalog, fetchExercises, fetchMuscleGroups } from '@/features/exercises';
+import {
+  ExerciseCatalog,
+  ExerciseFormDialog,
+  fetchExercises,
+  fetchMuscleGroups,
+} from '@/features/exercises';
 import { requireSession } from '@/shared/auth/session';
 import { ListPane, TopBar } from '@/shared/layout';
 
@@ -17,7 +22,16 @@ export default async function ExercisesLayout({
     <main className="flex flex-1 flex-col lg:grid lg:grid-cols-[minmax(320px,400px)_minmax(0,1fr)]">
       <ListPane>
         <div className="mx-auto w-full max-w-app pb-8">
-          <TopBar backHref="/plans" backLabel="Plans" title="Exercises" />
+          <TopBar
+            backHref="/plans"
+            backLabel="Plans"
+            title="Exercises"
+            titleAction={
+              !(catalog instanceof Error) && (
+                <ExerciseFormDialog muscleGroups={catalog.muscleGroups} />
+              )
+            }
+          />
           {catalog instanceof Error ? (
             <section
               role="alert"

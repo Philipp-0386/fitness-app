@@ -43,11 +43,12 @@ export type Exercise = {
   custom: boolean;
 };
 
-/** Mirrors the backend ExerciseRequest record. */
+/** Mirrors the backend CreateExerciseRequest and UpdateExerciseRequest records. */
 export type ExercisePayload = {
   name: string;
   exerciseType: ExerciseType;
   trackingType: TrackingType;
   description: string | null;
   instructions: string | null;
+  muscles: { muscleGroupId: number; role: MuscleRole }[];
 };

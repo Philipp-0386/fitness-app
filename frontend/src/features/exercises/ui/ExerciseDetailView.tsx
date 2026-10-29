@@ -3,16 +3,20 @@ import { cn } from '@/shared/lib/utils';
 import { listClass } from '@/shared/ui/list';
 import { trackingOptions } from '../lib/tracking-options';
 import { typeLabels } from '../lib/type-labels';
-import { Exercise } from '../types/api.types';
+import { Exercise, MuscleGroup } from '../types/api.types';
 import DeleteExerciseDialog from './DeleteExerciseDialog';
 import ExerciseFormDialog from './ExerciseFormDialog';
 
 type ExerciseDetailViewProps = {
   exercise: Exercise;
+  muscleGroups: MuscleGroup[];
 };
 
 //own exercises get an Edit button and can be deleted, global ones are read only
-export default function ExerciseDetailView({ exercise }: ExerciseDetailViewProps) {
+export default function ExerciseDetailView({
+  exercise,
+  muscleGroups,
+}: ExerciseDetailViewProps) {
   const tracking = trackingOptions.find((o) => o.value === exercise.trackingType);
 
   return (
@@ -22,7 +26,11 @@ export default function ExerciseDetailView({ exercise }: ExerciseDetailViewProps
         backLabel="Exercises"
         title={exercise.name}
         inSplitView
-        action={exercise.custom && <ExerciseFormDialog exercise={exercise} />}
+        action={
+          exercise.custom && (
+            <ExerciseFormDialog exercise={exercise} muscleGroups={muscleGroups} />
+          )
+        }
       />
 
       {exercise.custom && (

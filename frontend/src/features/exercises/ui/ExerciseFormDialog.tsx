@@ -1,6 +1,6 @@
 'use client';
 
-import { CircleAlert } from 'lucide-react';
+import { CircleAlert, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useId, useRef, useState } from 'react';
 import { toast } from 'sonner';
@@ -15,17 +15,37 @@ import { createExercise } from '../client/create-exercise.client';
 import { updateExercise } from '../client/update-exercise.client';
 import { trackingOptions } from '../lib/tracking-options';
 import { typeLabels } from '../lib/type-labels';
-import { Exercise, ExerciseType, TrackingType } from '../types/api.types';
+import {
+  Exercise,
+  ExerciseType,
+  MuscleGroup,
+  MuscleRole,
+  TrackingType,
+} from '../types/api.types';
+import MuscleGroupPicker from './MuscleGroupPicker';
 
 const textareaClass =
   'w-full min-w-0 rounded-field border border-border-on-overlay bg-field-on-overlay px-3 py-2.5 text-field text-text-primary placeholder:text-text-secondary';
 
+const muscleRows: { role: MuscleRole; label: string; pickerTitle: string }[] = [
+  { role: 'PRIMARY', label: 'Primary muscles (optional)', pickerTitle: 'Primary Muscle' },
+  {
+    role: 'SECONDARY',
+    label: 'Secondary muscles (optional)',
+    pickerTitle: 'Secondary Muscle',
+  },
+];
+
 type ExerciseFormDialogProps = {
   /** Edits this exercise, without one the dialog creates a new exercise. */
   exercise?: Exercise;
+  muscleGroups: MuscleGroup[];
 };
 
-export default function ExerciseFormDialog({ exercise }: ExerciseFormDialogProps) {
+export default function ExerciseFormDialog({
+  exercise,
+  muscleGroups,
+}: ExerciseFormDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   // The page can hold a create and an edit dialog at once, so every id has to be unique per instance.
   const id = useId();
@@ -39,6 +59,9 @@ export default function ExerciseFormDialog({ exercise }: ExerciseFormDialogProps
   const [name, setName] = useState(exercise?.name ?? '');
   const [description, setDescription] = useState(exercise?.description ?? '');
   const [instructions, setInstructions] = useState(exercise?.instructions ?? '');
+  const [muscles, setMuscles] = useState<
+    { id: number; name: string; role: MuscleRole }[]
+  >(exercise?.muscles.map(({ id, name, role }) => ({ id, name, role })) ?? []);
   const [nameError, setNameError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -70,6 +93,7 @@ export default function ExerciseFormDialog({ exercise }: ExerciseFormDialogProps
         trackingType,
         description: description.trim() || null,
         instructions: instructions.trim() || null,
+        muscles: muscles.map(({ id, role }) => ({ muscleGroupId: id, role })),
       };
       const saved = exercise
         ? await updateExercise(String(exercise.id), payload)
@@ -82,6 +106,7 @@ export default function ExerciseFormDialog({ exercise }: ExerciseFormDialogProps
         setName('');
         setDescription('');
         setInstructions('');
+        setMuscles([]);
       }
       toast.success(exercise ? 'Exercise saved.' : 'Exercise created.');
       // Opens a new exercise, so it is visible even when the catalog filters would hide it.
@@ -223,6 +248,46 @@ export default function ExerciseFormDialog({ exercise }: ExerciseFormDialogProps
               {nameError}
             </p>
           )}
+
+          {muscleRows.map((row) => (
+            <fieldset key={row.role} className="mt-4">
+              <legend className="mb-1.5 text-meta font-semibold text-text-secondary">
+                {row.label}
+              </legend>
+              <ul className="flex flex-wrap gap-2">
+                {muscles
+                  .filter((muscle) => muscle.role === row.role)
+                  .map((muscle) => (
+                    <li
+                      key={muscle.id}
+                      className="inline-flex h-8.5 items-center rounded-full border border-border-strong pl-3 text-meta font-semibold"
+                    >
+                      {muscle.name}
+                      <button
+                        type="button"
+                        aria-label={`Remove ${muscle.name}`}
+                        onClick={() =>
+                          setMuscles(muscles.filter((m) => m.id !== muscle.id))
+                        }
+                        className="relative inline-flex h-full items-center rounded-r-full pr-2.5 pl-1.5 text-text-secondary before:absolute before:inset-x-0 before:-inset-y-[5px] before:content-['']"
+                      >
+                        <X className="size-4" aria-hidden="true" />
+                      </button>
+                    </li>
+                  ))}
+                <li>
+                  <MuscleGroupPicker
+                    muscleGroups={muscleGroups}
+                    title={row.pickerTitle}
+                    pickedIds={muscles.map((muscle) => muscle.id)}
+                    onPick={(muscle) =>
+                      setMuscles([...muscles, { ...muscle, role: row.role }])
+                    }
+                  />
+                </li>
+              </ul>
+            </fieldset>
+          ))}
 
           <Label className="mt-4 mb-1.5" htmlFor={`${id}-description`}>
             Description (optional)
