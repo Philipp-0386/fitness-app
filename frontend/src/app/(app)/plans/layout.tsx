@@ -10,6 +10,9 @@ import { ListPane } from '@/shared/layout';
 import { Button } from '@/shared/ui/button';
 import { listClass, listRowClass } from '@/shared/ui/list';
 
+// Same limit as ProgramService, the backend still rejects a sixth program.
+const MAX_PROGRAMS = 5;
+
 export default async function PlansLayout({
   children,
 }: Readonly<{
@@ -66,12 +69,32 @@ export default async function PlansLayout({
           ) : (
             <>
               <section className="mt-4" aria-labelledby="programs-title">
-                <h2 id="programs-title" className="text-title">
-                  Programs
-                </h2>
-                <p className="mt-0.5 mb-3 text-meta text-text-secondary">
-                  Routines and rest days in a repeating order.
-                </p>
+                <div className="flex items-center justify-between gap-3">
+                  <h2 id="programs-title" className="text-title">
+                    Programs
+                  </h2>
+                  {plans.programs.length < MAX_PROGRAMS ? (
+                    <Button asChild size="sm">
+                      <Link href="/plans/programs/new">New Program</Link>
+                    </Button>
+                  ) : (
+                    <Button size="sm" disabled aria-describedby="programs-limit">
+                      New Program
+                    </Button>
+                  )}
+                </div>
+                {plans.programs.length < MAX_PROGRAMS ? (
+                  <p className="mt-0.5 mb-3 text-meta text-text-secondary">
+                    Create your own training plan.
+                  </p>
+                ) : (
+                  <p
+                    id="programs-limit"
+                    className="mt-0.5 mb-3 text-meta text-text-secondary"
+                  >
+                    You have reached the maximum of {MAX_PROGRAMS} programs.
+                  </p>
+                )}
                 {plans.programs.length > 0 ? (
                   <ProgramList programs={plans.programs} />
                 ) : (

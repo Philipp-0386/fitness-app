@@ -1,5 +1,6 @@
 export { default as ProgramDayList } from './ui/ProgramDayList';
 export { default as ProgramDetailView } from './ui/ProgramDetailView';
+export { default as ProgramEditor } from './ui/ProgramEditor';
 export { default as ProgramList } from './ui/ProgramList';
 export {
   fetchActiveProgram,

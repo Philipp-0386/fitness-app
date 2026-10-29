@@ -34,3 +34,15 @@ export type ProgramDetail = {
   updatedAt: string;
   days: ProgramDay[];
 };
+
+/** Mirrors the backend ProgramDayRequest record. routineId is null for a rest day. */
+export type ProgramDayPayload = {
+  routineId: number | null;
+};
+
+/** Mirrors the backend CreateProgramRequest record. The order of the list sets orderIndex. */
+export type CreateProgramPayload = {
+  name: string;
+  description?: string | null;
+  days: ProgramDayPayload[];
+};

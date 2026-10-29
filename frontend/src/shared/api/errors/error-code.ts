@@ -31,6 +31,7 @@ export type ErrorCode =
   | 'USER_ROUTINE_NOT_FOUND'
   // Spring backend (program)
   | 'PRESET_PROGRAM_NOT_FOUND'
+  | 'PROGRAM_LIMIT_REACHED'
   | 'USER_PROGRAM_NOT_FOUND'
   // Next route handlers and proxy
   | 'BACKEND_UNREACHABLE'
