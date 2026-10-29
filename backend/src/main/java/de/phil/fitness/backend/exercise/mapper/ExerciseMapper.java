@@ -47,7 +47,7 @@ public class ExerciseMapper {
      * @param userId id of the user the new exercise belongs to
      * @return a transient entity (timestamps are assigned on persist)
      */
-    public Exercise mapRequestToExerciseEntity(ExerciseRequest req, Long userId) {
+    public Exercise mapRequestToExerciseEntity(CreateExerciseRequest req, Long userId) {
         Exercise exercise = new Exercise();
         exercise.setOwnerUserId(userId);
         exercise.setName(req.name());

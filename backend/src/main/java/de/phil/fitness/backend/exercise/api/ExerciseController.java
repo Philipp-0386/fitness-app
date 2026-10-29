@@ -17,7 +17,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import de.phil.fitness.backend.auth.CurrentUser;
 import de.phil.fitness.backend.common.ErrorResponse;
 import de.phil.fitness.backend.exercise.dto.ExerciseResponse;
-import de.phil.fitness.backend.exercise.dto.ExerciseRequest;
+import de.phil.fitness.backend.exercise.dto.CreateExerciseRequest;
 import de.phil.fitness.backend.exercise.service.ExerciseService;
 import de.phil.fitness.backend.exercise.dto.UpdateExerciseRequest;
 
@@ -82,7 +82,7 @@ public class ExerciseController {
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     @ApiResponse(responseCode = "401", description = "UNAUTHENTICATED: missing, invalid or expired access token, or a refresh token",
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
-    public ResponseEntity<ExerciseResponse> createExercise(@Valid @RequestBody ExerciseRequest req) {
+    public ResponseEntity<ExerciseResponse> createExercise(@Valid @RequestBody CreateExerciseRequest req) {
         ExerciseResponse created = exerciseService.createNewExercise(req, currentUser.currentUserId());
         URI location = ServletUriComponentsBuilder.fromCurrentContextPath()
                 .path("/backend/exercises/{id}")
