@@ -7,4 +7,6 @@ export type DayDraft = {
   id: number | null;
   /** null for a rest day. */
   routine: Pick<Routine, 'id' | 'name' | 'exerciseCount'> | null;
+  /** The routine is a preset, it is copied into an own routine on save. */
+  fromPreset: boolean;
 };

@@ -13,7 +13,7 @@ export default function UserHome({ username, program }: UserHomeProps) {
   const links = [
     {
       title: 'Plans',
-      text: 'Your routines, presets and the exercise catalog',
+      text: 'Your programs, routines and the exercise catalog',
       href: '/plans',
     },
     {

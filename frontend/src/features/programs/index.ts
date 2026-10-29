@@ -4,6 +4,8 @@ export { default as ProgramEditor } from './ui/ProgramEditor';
 export { default as ProgramList } from './ui/ProgramList';
 export {
   fetchActiveProgram,
+  fetchPresetProgramByProgramId,
+  fetchPresetPrograms,
   fetchUserProgramByProgramId,
   fetchUserPrograms,
 } from './api/programs.api';

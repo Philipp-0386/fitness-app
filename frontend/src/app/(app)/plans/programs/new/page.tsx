@@ -1,11 +1,34 @@
-import { ProgramEditor } from '@/features/programs';
-import { fetchUserRoutines } from '@/features/routines';
+import {
+  ProgramEditor,
+  fetchPresetProgramByProgramId,
+  fetchPresetPrograms,
+} from '@/features/programs';
+import {
+  fetchPresetRoutineByRoutineId,
+  fetchPresetRoutines,
+  fetchUserRoutines,
+} from '@/features/routines';
 import { requireSession } from '@/shared/auth/session';
 
 export default async function NewProgramPage() {
   await requireSession();
 
-  const routines = await fetchUserRoutines();
+  const [routines, presets, presetRoutines] = await Promise.all([
+    fetchUserRoutines(),
+    fetchPresetPrograms().then((list) =>
+      Promise.all(list.map((preset) => fetchPresetProgramByProgramId(String(preset.id)))),
+    ),
+    fetchPresetRoutines().then((list) =>
+      Promise.all(list.map((preset) => fetchPresetRoutineByRoutineId(String(preset.id)))),
+    ),
+  ]);
 
-  return <ProgramEditor program={null} routines={routines} />;
+  return (
+    <ProgramEditor
+      program={null}
+      routines={routines}
+      presets={presets}
+      presetRoutines={presetRoutines}
+    />
+  );
 }

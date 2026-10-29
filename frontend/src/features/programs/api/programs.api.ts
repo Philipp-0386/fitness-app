@@ -34,6 +34,37 @@ export async function fetchUserProgramByProgramId(id: string): Promise<ProgramDe
 }
 
 /**
+ * Reads the preset programs.
+ * @returns Returns an empty array if there are no preset programs.
+ */
+export async function fetchPresetPrograms(): Promise<Program[]> {
+  const response = await backendFetch('/backend/programs/presets');
+
+  if (!response.ok) {
+    throw await toApiError(response, 'PRESET_PROGRAMS_FETCH_FAILED');
+  }
+
+  return response.json();
+}
+
+/**
+ * Reads a single preset program including its days.
+ * @param id The id of the preset program to read.
+ * @returns Returns an ApiError with status 404 if no preset program with that id exists.
+ */
+export async function fetchPresetProgramByProgramId(id: string): Promise<ProgramDetail> {
+  const response = await backendFetch(
+    `/backend/programs/presets/${encodeURIComponent(id)}`,
+  );
+
+  if (!response.ok) {
+    throw await toApiError(response, 'PRESET_PROGRAM_FETCH_FAILED');
+  }
+
+  return response.json();
+}
+
+/**
  * Reads the active program of the current user including its days.
  * @returns Returns null if the user has no active program.
  */

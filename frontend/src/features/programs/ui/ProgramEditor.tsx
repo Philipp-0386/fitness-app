@@ -23,7 +23,8 @@ import { useRouter } from 'next/navigation';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 
-import type { Routine } from '@/features/routines';
+import type { Routine, RoutineDetail } from '@/features/routines';
+import { createRoutine } from '@/features/routines/client/create-routine.client';
 import { ApiError } from '@/shared/api/errors/api-error';
 import { fallbackErrorMessage } from '@/shared/api/errors/fallback-error-message';
 import { cn } from '@/shared/lib/utils';
@@ -37,6 +38,7 @@ import { ProgramDetail } from '../types/api.types';
 import { DayDraft } from '../types/editor.types';
 import DaySheet from './DaySheet';
 import DeleteProgramDialog from './DeleteProgramDialog';
+import ProgramPresetSheet from './ProgramPresetSheet';
 
 const MAX_DAYS = 14;
 
@@ -50,11 +52,22 @@ type ProgramEditorProps = {
   /** null for a new program. */
   program: ProgramDetail | null;
   routines: Routine[];
+  /** Presets a new program can start from, omitted when editing. */
+  presets?: ProgramDetail[];
+  /** The preset routines with their exercises, copied on save when a preset was used. */
+  presetRoutines?: RoutineDetail[];
 };
 
-export default function ProgramEditor({ program, routines }: ProgramEditorProps) {
+export default function ProgramEditor({
+  program,
+  routines,
+  presets,
+  presetRoutines,
+}: ProgramEditorProps) {
   const router = useRouter();
   const addedDays = useRef(0);
+  // Preset routine id to the id of its copy, so a retry after a failed save does not copy twice.
+  const copiedRoutines = useRef(new Map<number, number>());
   const [name, setName] = useState(program?.name ?? '');
   const [description, setDescription] = useState(program?.description ?? '');
   const [days, setDays] = useState<DayDraft[]>(() =>
@@ -67,10 +80,12 @@ export default function ProgramEditor({ program, routines }: ProgramEditorProps)
             name: day.routine.name,
             exerciseCount: day.routine.exerciseNames.length,
           },
+          fromPreset: false,
         }))
       : [],
   );
   const [sheet, setSheet] = useState<OpenSheet>(null);
+  const [presetsOpen, setPresetsOpen] = useState(false);
   const [nameError, setNameError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -85,11 +100,38 @@ export default function ProgramEditor({ program, routines }: ProgramEditorProps)
 
   function handleSelect(routine: Routine | null) {
     if (sheetDay) {
-      setDays(days.map((d) => (d.key === sheetDay.key ? { ...d, routine } : d)));
+      setDays(
+        days.map((d) =>
+          d.key === sheetDay.key ? { ...d, routine, fromPreset: false } : d,
+        ),
+      );
     } else {
-      setDays([...days, { key: `added-${++addedDays.current}`, id: null, routine }]);
+      setDays([
+        ...days,
+        { key: `added-${++addedDays.current}`, id: null, routine, fromPreset: false },
+      ]);
     }
     setSheet(null);
+  }
+
+  function handleUsePreset(preset: ProgramDetail) {
+    setName(`${preset.name} (Preset)`);
+    setDescription(preset.description ?? '');
+    setDays(
+      preset.days.map((day) => ({
+        key: `added-${++addedDays.current}`,
+        id: null,
+        routine: day.routine && {
+          id: day.routine.id,
+          name: day.routine.name,
+          exerciseCount: day.routine.exerciseNames.length,
+        },
+        fromPreset: day.routine !== null,
+      })),
+    );
+    setNameError(null);
+    setError(null);
+    setPresetsOpen(false);
   }
 
   function handleDragEnd({ active, over }: DragEndEvent) {
@@ -116,6 +158,27 @@ export default function ProgramEditor({ program, routines }: ProgramEditorProps)
 
     setIsSaving(true);
     try {
+      const copies = copiedRoutines.current;
+      for (const d of days) {
+        if (!d.fromPreset || !d.routine || copies.has(d.routine.id)) continue;
+        const presetId = d.routine.id;
+        const source = presetRoutines?.find((r) => r.id === presetId);
+        if (!source) continue;
+        const copy = await createRoutine({
+          name: `${source.name} (Preset)`,
+          description: source.description,
+          exercises: source.exercises.map((re) => ({
+            exerciseId: re.exercise.id,
+            targetSets: re.targetSets,
+            targetRepsMin: re.targetRepsMin,
+            targetRepsMax: re.targetRepsMax,
+            targetDurationSeconds: re.targetDurationSeconds,
+            targetDistanceMeters: re.targetDistanceMeters,
+          })),
+        });
+        copies.set(presetId, copy.id);
+      }
+
       const saved = program
         ? await updateProgram(String(program.id), {
             name: name.trim(),
@@ -125,7 +188,12 @@ export default function ProgramEditor({ program, routines }: ProgramEditorProps)
         : await createProgram({
             name: name.trim(),
             description: description.trim() || null,
-            days: days.map((d) => ({ routineId: d.routine?.id ?? null })),
+            days: days.map((d) => ({
+              routineId:
+                d.fromPreset && d.routine
+                  ? (copies.get(d.routine.id) ?? d.routine.id)
+                  : (d.routine?.id ?? null),
+            })),
           });
       toast.success('Program saved.');
       router.replace(`/plans/programs/${saved.id}`);
@@ -230,7 +298,14 @@ export default function ProgramEditor({ program, routines }: ProgramEditorProps)
             className="w-full min-w-0 rounded-field border border-border-strong bg-surface-raised px-3 py-2.5 text-field text-text-primary placeholder:text-text-tertiary"
           />
 
-          <h2 className="mt-6 text-title">Days</h2>
+          <div className="mt-6 flex items-center justify-between gap-3">
+            <h2 className="text-title">Days</h2>
+            {presets && presets.length > 0 && (
+              <Button type="button" size="sm" onClick={() => setPresetsOpen(true)}>
+                Use Preset
+              </Button>
+            )}
+          </div>
           <p className="mt-0.5 mb-3 text-meta text-text-secondary">
             In the order you train them. After the last day the program starts over.
           </p>
@@ -283,6 +358,17 @@ export default function ProgramEditor({ program, routines }: ProgramEditorProps)
           )}
         </div>
       </form>
+
+      {presetsOpen && presets && (
+        <ProgramPresetSheet
+          presets={presets}
+          replacesInput={
+            name.trim() !== '' || description.trim() !== '' || days.length > 0
+          }
+          onUse={handleUsePreset}
+          onClose={() => setPresetsOpen(false)}
+        />
+      )}
 
       {program && (
         <div className="mx-4 mt-8 border-t border-border-subtle pt-2">
@@ -367,6 +453,7 @@ function DayRow({ day, number, onOpen, onRemove }: DayRowProps) {
             <span className="block text-meta text-text-tertiary tabular-nums">
               {day.routine.exerciseCount}{' '}
               {day.routine.exerciseCount === 1 ? 'exercise' : 'exercises'}
+              {day.fromPreset && ', copied on save'}
             </span>
           )}
         </span>

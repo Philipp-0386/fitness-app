@@ -3,7 +3,7 @@ import { ChevronRight, UserRound } from 'lucide-react';
 
 import { fetchExercises } from '@/features/exercises';
 import { ProgramList, fetchUserPrograms } from '@/features/programs';
-import { RoutineList, fetchPresetRoutines, fetchUserRoutines } from '@/features/routines';
+import { RoutineList, fetchUserRoutines } from '@/features/routines';
 import { fetchMe } from '@/features/user';
 import { requireSession } from '@/shared/auth/session';
 import { ListPane } from '@/shared/layout';
@@ -21,16 +21,10 @@ export default async function PlansLayout({
   await requireSession();
 
   const [plans, username] = await Promise.all([
-    Promise.all([
-      fetchUserPrograms(),
-      fetchUserRoutines(),
-      fetchPresetRoutines(),
-      fetchExercises(),
-    ])
-      .then(([programs, routines, presets, exercises]) => ({
+    Promise.all([fetchUserPrograms(), fetchUserRoutines(), fetchExercises()])
+      .then(([programs, routines, exercises]) => ({
         programs,
         routines,
-        presets,
         exercises,
       }))
       .catch((error: Error) => error),
@@ -126,7 +120,7 @@ export default async function PlansLayout({
                   <div className="rounded-card bg-surface px-4 pt-5 pb-4">
                     <h3 className="font-semibold">No routines yet</h3>
                     <p className="mt-1 text-meta text-text-secondary">
-                      Create your first routine, or have a look at the presets below.
+                      Create your first routine, from scratch or from a preset.
                     </p>
                   </div>
                 )}
@@ -155,15 +149,6 @@ export default async function PlansLayout({
                   </li>
                 </ul>
               </section>
-
-              {plans.presets.length > 0 && (
-                <section className="mt-8" aria-labelledby="presets-title">
-                  <h2 id="presets-title" className="mb-3 text-title">
-                    Presets
-                  </h2>
-                  <RoutineList routines={plans.presets} hrefBase="/plans/routines/presets" />
-                </section>
-              )}
             </>
           )}
         </div>
