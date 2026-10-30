@@ -1,11 +1,9 @@
-import {
-  ExerciseCatalog,
-  ExerciseFormDialog,
-  fetchExercises,
-  fetchMuscleGroups,
-} from '@/features/exercises';
+import Link from 'next/link';
+
+import { ExerciseCatalog, fetchExercises, fetchMuscleGroups } from '@/features/exercises';
 import { requireSession } from '@/shared/auth/session';
 import { ListPane, TopBar } from '@/shared/layout';
+import { Button } from '@/shared/ui/button';
 
 export default async function ExercisesLayout({
   children,
@@ -27,9 +25,9 @@ export default async function ExercisesLayout({
             backLabel="Plans"
             title="Exercises"
             titleAction={
-              !(catalog instanceof Error) && (
-                <ExerciseFormDialog muscleGroups={catalog.muscleGroups} />
-              )
+              <Button asChild size="sm">
+                <Link href="/exercises/new">New Exercise</Link>
+              </Button>
             }
           />
           {catalog instanceof Error ? (

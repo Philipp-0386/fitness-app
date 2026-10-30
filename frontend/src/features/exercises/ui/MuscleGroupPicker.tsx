@@ -59,7 +59,7 @@ export default function MuscleGroupPicker({
         Add
       </button>
 
-      {/* React passes close and cancel on to parent handlers, which would also close the form sheet this one sits in. */}
+      {/* React passes close and cancel on to parent handlers, which would also close a sheet this one sits in. */}
       <Sheet
         ref={dialogRef}
         onClose={(e) => e.stopPropagation()}

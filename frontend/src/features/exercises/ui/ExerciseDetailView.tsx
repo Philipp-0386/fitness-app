@@ -1,22 +1,19 @@
+import Link from 'next/link';
+
 import { TopBar } from '@/shared/layout';
 import { cn } from '@/shared/lib/utils';
+import { Button } from '@/shared/ui/button';
 import { listClass } from '@/shared/ui/list';
 import { trackingOptions } from '../lib/tracking-options';
 import { typeLabels } from '../lib/type-labels';
-import { Exercise, MuscleGroup } from '../types/api.types';
-import DeleteExerciseDialog from './DeleteExerciseDialog';
-import ExerciseFormDialog from './ExerciseFormDialog';
+import { Exercise } from '../types/api.types';
 
 type ExerciseDetailViewProps = {
   exercise: Exercise;
-  muscleGroups: MuscleGroup[];
 };
 
-//own exercises get an Edit button and can be deleted, global ones are read only
-export default function ExerciseDetailView({
-  exercise,
-  muscleGroups,
-}: ExerciseDetailViewProps) {
+//own exercises get an Edit button, global ones are read only
+export default function ExerciseDetailView({ exercise }: ExerciseDetailViewProps) {
   const tracking = trackingOptions.find((o) => o.value === exercise.trackingType);
 
   return (
@@ -28,7 +25,11 @@ export default function ExerciseDetailView({
         inSplitView
         action={
           exercise.custom && (
-            <ExerciseFormDialog exercise={exercise} muscleGroups={muscleGroups} />
+            <Button asChild size="sm">
+              <Link href={`/exercises/${exercise.id}/edit`} replace>
+                Edit
+              </Link>
+            </Button>
           )
         }
       />
@@ -91,12 +92,6 @@ export default function ExerciseDetailView({
           {exercise.instructions || 'No instructions yet.'}
         </p>
       </section>
-
-      {exercise.custom && (
-        <div className="mt-8 px-4">
-          <DeleteExerciseDialog exerciseId={exercise.id} />
-        </div>
-      )}
     </div>
   );
 }

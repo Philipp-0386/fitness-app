@@ -1,11 +1,7 @@
 import Link from 'next/link';
 import { ChevronRight, UserRound } from 'lucide-react';
 
-import {
-  ExerciseFormDialog,
-  fetchExercises,
-  fetchMuscleGroups,
-} from '@/features/exercises';
+import { fetchExercises } from '@/features/exercises';
 import { ProgramList, fetchUserPrograms } from '@/features/programs';
 import { RoutineList, fetchUserRoutines } from '@/features/routines';
 import { fetchMe } from '@/features/user';
@@ -25,17 +21,11 @@ export default async function PlansLayout({
   await requireSession();
 
   const [plans, username] = await Promise.all([
-    Promise.all([
-      fetchUserPrograms(),
-      fetchUserRoutines(),
-      fetchExercises(),
-      fetchMuscleGroups(),
-    ])
-      .then(([programs, routines, exercises, muscleGroups]) => ({
+    Promise.all([fetchUserPrograms(), fetchUserRoutines(), fetchExercises()])
+      .then(([programs, routines, exercises]) => ({
         programs,
         routines,
         exercises,
-        muscleGroups,
       }))
       .catch((error: Error) => error),
     fetchMe()
@@ -141,7 +131,9 @@ export default async function PlansLayout({
                   <h2 id="exercises-title" className="text-title">
                     Exercises
                   </h2>
-                  <ExerciseFormDialog muscleGroups={plans.muscleGroups} />
+                  <Button asChild size="sm">
+                    <Link href="/exercises/new">New Exercise</Link>
+                  </Button>
                 </div>
                 <p className="mt-0.5 mb-3 text-meta text-text-secondary">
                   Add your own when the catalog is missing one.
