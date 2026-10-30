@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import de.phil.fitness.backend.exercise.event.ExerciseDeletedEvent;
@@ -12,13 +13,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import de.phil.fitness.backend.exercise.model.Exercise;
+import de.phil.fitness.backend.exercise.model.ExerciseMuscle;
+import de.phil.fitness.backend.exercise.model.MuscleGroup;
+import de.phil.fitness.backend.exercise.dto.ExerciseMuscleRequest;
 import de.phil.fitness.backend.exercise.dto.ExerciseResponse;
-import de.phil.fitness.backend.exercise.dto.ExerciseRequest;
+import de.phil.fitness.backend.exercise.dto.CreateExerciseRequest;
 import de.phil.fitness.backend.exercise.exception.ExerciseNotFoundException;
 import de.phil.fitness.backend.exercise.exception.GlobalExerciseNotEditableException;
 import de.phil.fitness.backend.exercise.exception.TrackingTypeLockedException;
+import de.phil.fitness.backend.exercise.exception.UnknownMuscleGroupException;
 import de.phil.fitness.backend.exercise.mapper.ExerciseMapper;
 import de.phil.fitness.backend.exercise.repository.ExerciseRepository;
+import de.phil.fitness.backend.exercise.repository.MuscleGroupRepository;
 import de.phil.fitness.backend.exercise.dto.ExerciseSummary;
 import de.phil.fitness.backend.exercise.dto.UpdateExerciseRequest;
 
@@ -31,11 +37,14 @@ import static java.time.Instant.now;
 public class ExerciseService {
 
     private final ExerciseRepository exerciseRepository;
+    private final MuscleGroupRepository muscleGroupRepository;
     private final ExerciseMapper exerciseMapper;
     private final ApplicationEventPublisher eventPublisher;
 
-    public ExerciseService(ExerciseRepository exerciseRepository, ExerciseMapper exerciseMapper, ApplicationEventPublisher eventPublisher) {
+    public ExerciseService(ExerciseRepository exerciseRepository, MuscleGroupRepository muscleGroupRepository,
+                           ExerciseMapper exerciseMapper, ApplicationEventPublisher eventPublisher) {
         this.exerciseRepository = exerciseRepository;
+        this.muscleGroupRepository = muscleGroupRepository;
         this.exerciseMapper = exerciseMapper;
         this.eventPublisher = eventPublisher;
 
@@ -74,10 +83,23 @@ public class ExerciseService {
      * @param req the submitted exercise
      * @param userId id of the user the exercise is created for
      * @return the persisted exercise, including its generated id
+     * @throws UnknownMuscleGroupException if a referenced muscle group does not exist
      */
     @Transactional
-    public ExerciseResponse createNewExercise(ExerciseRequest req, Long userId) {
+    public ExerciseResponse createNewExercise(CreateExerciseRequest req, Long userId) {
         Exercise newExercise = exerciseMapper.mapRequestToExerciseEntity(req, userId);
+
+        List<ExerciseMuscleRequest> muscles = req.muscles() != null ? req.muscles() : List.of();
+        Map<Long, MuscleGroup> groups = muscleGroupRepository
+                .findAllById(muscles.stream().map(ExerciseMuscleRequest::muscleGroupId).toList())
+                .stream()
+                .collect(Collectors.toMap(MuscleGroup::getId, Function.identity()));
+        if (groups.size() != muscles.size()) {
+            throw new UnknownMuscleGroupException("User " + userId + " referenced an unknown muscle group");
+        }
+        muscles.forEach(muscle -> newExercise.getMuscles()
+                .add(new ExerciseMuscle(groups.get(muscle.muscleGroupId()), muscle.role())));
+
         return exerciseMapper.toResponse(exerciseRepository.save(newExercise));
     }
 
@@ -122,6 +144,7 @@ public class ExerciseService {
      * @throws ExerciseNotFoundException if the exercise does not exist, is soft deleted or belongs to someone else
      * @throws GlobalExerciseNotEditableException if the exercise is part of the global catalog, and therefore not editable
      * @throws TrackingTypeLockedException if the tracking type changes while the exercise is referenced
+     * @throws UnknownMuscleGroupException if a referenced muscle group does not exist
      */
     @Transactional
     public ExerciseResponse updateExercise(Long userId, Long exerciseId, UpdateExerciseRequest req) {
@@ -135,7 +158,19 @@ public class ExerciseService {
             throw new TrackingTypeLockedException("Tracking type of exercise " + exerciseId + " is locked, it is referenced");
         }
 
+        List<ExerciseMuscleRequest> muscles = req.muscles() != null ? req.muscles() : List.of();
+        Map<Long, MuscleGroup> groups = muscleGroupRepository
+                .findAllById(muscles.stream().map(ExerciseMuscleRequest::muscleGroupId).toList())
+                .stream()
+                .collect(Collectors.toMap(MuscleGroup::getId, Function.identity()));
+        if (groups.size() != muscles.size()) {
+            throw new UnknownMuscleGroupException("User " + userId + " referenced an unknown muscle group on exercise " + exerciseId);
+        }
+
         exerciseMapper.applyUpdate(exercise, req);
+        exercise.getMuscles().clear();
+        muscles.forEach(muscle -> exercise.getMuscles()
+                .add(new ExerciseMuscle(groups.get(muscle.muscleGroupId()), muscle.role())));
         return exerciseMapper.toResponse(exerciseRepository.saveAndFlush(exercise));
     }
 

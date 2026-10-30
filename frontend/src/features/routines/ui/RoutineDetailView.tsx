@@ -1,9 +1,14 @@
-import Link from 'next/link';
+'use client';
 
+import Link from 'next/link';
+import { useState } from 'react';
+
+import ExerciseSheet from '@/features/exercises/ui/ExerciseSheet';
+import type { Exercise } from '@/features/exercises';
 import { TopBar } from '@/shared/layout';
 import { cn } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui/button';
-import { listClass } from '@/shared/ui/list';
+import { listClass, listRowClass } from '@/shared/ui/list';
 import { formatTarget } from '../lib/format-target';
 import { RoutineDetail, RoutineExercise } from '../types/api.types';
 
@@ -16,9 +21,16 @@ const trackingHints: Partial<
 
 type RoutineDetailViewProps = {
   routine: RoutineDetail;
+  /** The catalog, a tapped row looks its exercise up here to show it in a sheet. */
+  exercises: Exercise[];
 };
 
-export default function RoutineDetailView({ routine }: RoutineDetailViewProps) {
+export default function RoutineDetailView({
+  routine,
+  exercises,
+}: RoutineDetailViewProps) {
+  const [openExercise, setOpenExercise] = useState<Exercise | null>(null);
+
   return (
     <div className="mx-auto flex w-full max-w-app flex-1 flex-col pb-8 lg:max-w-[560px]">
       <TopBar
@@ -47,8 +59,11 @@ export default function RoutineDetailView({ routine }: RoutineDetailViewProps) {
             const sub = re.exercise.deleted
               ? 'No longer in the catalog'
               : trackingHints[re.exercise.trackingType];
-            return (
-              <li key={re.id} className="flex min-h-14 items-center gap-3 px-4 py-2.5">
+            const exercise = re.exercise.deleted
+              ? undefined
+              : exercises.find((e) => e.id === re.exercise.id);
+            const content = (
+              <>
                 <span className="min-w-0 flex-1">
                   <span className="block font-semibold">{re.exercise.name}</span>
                   {sub && (
@@ -58,10 +73,30 @@ export default function RoutineDetailView({ routine }: RoutineDetailViewProps) {
                 <span className="shrink-0 text-meta text-text-secondary tabular-nums">
                   {formatTarget(re)}
                 </span>
+              </>
+            );
+            return exercise ? (
+              <li key={re.id}>
+                <button
+                  type="button"
+                  aria-haspopup="dialog"
+                  onClick={() => setOpenExercise(exercise)}
+                  className={listRowClass}
+                >
+                  {content}
+                </button>
+              </li>
+            ) : (
+              <li key={re.id} className="flex min-h-14 items-center gap-3 px-4 py-2.5">
+                {content}
               </li>
             );
           })}
         </ul>
+      )}
+
+      {openExercise && (
+        <ExerciseSheet exercise={openExercise} onClose={() => setOpenExercise(null)} />
       )}
     </div>
   );

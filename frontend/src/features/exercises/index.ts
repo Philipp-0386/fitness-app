@@ -1,6 +1,6 @@
 export { default as ExerciseCatalog } from './ui/ExerciseCatalog';
 export { default as ExerciseDetailView } from './ui/ExerciseDetailView';
-export { default as ExerciseFormDialog } from './ui/ExerciseFormDialog';
+export { default as ExerciseEditor } from './ui/ExerciseEditor';
 export {
   fetchExerciseById,
   fetchExercises,

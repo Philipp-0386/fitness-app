@@ -16,4 +16,12 @@ public class ExerciseMuscle {
     @Enumerated(EnumType.STRING)
     @Column(name = "ROLE", nullable = false, length = 16)
     private MuscleRole role;
+
+    protected ExerciseMuscle() {
+    }
+
+    public ExerciseMuscle(MuscleGroup muscleGroup, MuscleRole role) {
+        this.muscleGroup = muscleGroup;
+        this.role = role;
+    }
 }

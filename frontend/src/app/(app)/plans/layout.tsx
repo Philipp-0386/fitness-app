@@ -127,9 +127,17 @@ export default async function PlansLayout({
               </section>
 
               <section className="mt-8" aria-labelledby="exercises-title">
-                <h2 id="exercises-title" className="mb-3 text-title">
-                  Exercises
-                </h2>
+                <div className="flex items-center justify-between gap-3">
+                  <h2 id="exercises-title" className="text-title">
+                    Exercises
+                  </h2>
+                  <Button asChild size="sm">
+                    <Link href="/exercises/new">New Exercise</Link>
+                  </Button>
+                </div>
+                <p className="mt-0.5 mb-3 text-meta text-text-secondary">
+                  Add your own when the catalog is missing one.
+                </p>
                 <ul className={listClass}>
                   <li>
                     <Link href="/exercises" className={listRowClass}>

@@ -4,7 +4,9 @@ import com.jayway.jsonpath.JsonPath;
 import de.phil.fitness.backend.TestDatabase;
 import de.phil.fitness.backend.auth.JwtService;
 import de.phil.fitness.backend.exercise.model.Exercise;
+import de.phil.fitness.backend.exercise.model.MuscleGroup;
 import de.phil.fitness.backend.exercise.repository.ExerciseRepository;
+import de.phil.fitness.backend.exercise.repository.MuscleGroupRepository;
 import de.phil.fitness.backend.user.repository.UserRepository;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.DisplayName;
@@ -19,6 +21,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -28,7 +32,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- * Create and update of own exercises: who may change what, and when the tracking type is locked.
+ * Create and update of own exercises: who may change what, when the tracking type is locked, and how the muscles
+ * of an exercise are set.
  *
  * <p>Every test creates the exercise it works on and runs in a transaction that is rolled back
  * afterwards. Exercise id 1 is the global Barbell Bench Press from the V2 reference data.
@@ -59,6 +64,9 @@ class ExerciseWriteTests {
     private ExerciseRepository exerciseRepository;
 
     @Autowired
+    private MuscleGroupRepository muscleGroupRepository;
+
+    @Autowired
     private EntityManager entityManager;
 
     private String tokenFor(String username) {
@@ -73,6 +81,15 @@ class ExerciseWriteTests {
     private void flushAndClear() {
         entityManager.flush();
         entityManager.clear();
+    }
+
+    private int idOfMuscleGroup(String name) {
+        return muscleGroupRepository.findAll().stream()
+                .filter(m -> name.equals(m.getName()))
+                .map(MuscleGroup::getId)
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("seed has no muscle group " + name))
+                .intValue();
     }
 
     /** Creates a WEIGHT_REPS exercise for the given user and returns its id. */
@@ -254,5 +271,137 @@ class ExerciseWriteTests {
                         """))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("Renamed Curl"));
+    }
+
+    // -----------------------------------------------------------------------
+    // Muscles
+    // -----------------------------------------------------------------------
+
+    /** Creates an exercise for max12 that trains Quadriceps primary and Hamstrings secondary, returns its id. */
+    private Integer createLegExercise() throws Exception {
+        String body = mockMvc.perform(post("/backend/exercises")
+                        .header("Authorization", tokenFor("max12"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                        {"name": "Split Squat", "exerciseType": "STRENGTH", "trackingType": "WEIGHT_REPS",
+                         "muscles": [{"muscleGroupId": %d, "role": "PRIMARY"}, {"muscleGroupId": %d, "role": "SECONDARY"}]}
+                        """.formatted(idOfMuscleGroup("Quadriceps"), idOfMuscleGroup("Hamstrings"))))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        return JsonPath.read(body, "$.id");
+    }
+
+    private List<String> muscleNames(Integer exerciseId, String role) throws Exception {
+        String body = mockMvc.perform(get("/backend/exercises/" + exerciseId)
+                        .header("Authorization", tokenFor("max12")))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        return JsonPath.read(body, "$.muscles[?(@.role == '" + role + "')].name");
+    }
+
+    @Test
+    @Transactional
+    @DisplayName("muscles sent on create are stored with their role")
+    void createStoresMuscles() throws Exception {
+        Integer id = createLegExercise();
+        flushAndClear();
+
+        assertThat(muscleNames(id, "PRIMARY")).containsExactly("Quadriceps");
+        assertThat(muscleNames(id, "SECONDARY")).containsExactly("Hamstrings");
+    }
+
+    @Test
+    @Transactional
+    @DisplayName("an update that sends the same muscles again succeeds and keeps them")
+    void updateWithUnchangedMuscles() throws Exception {
+        Integer id = createLegExercise();
+        flushAndClear();
+
+        mockMvc.perform(put("/backend/exercises/" + id)
+                        .header("Authorization", tokenFor("max12"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                        {"name": "Split Squat", "exerciseType": "STRENGTH", "trackingType": "WEIGHT_REPS",
+                         "muscles": [{"muscleGroupId": %d, "role": "PRIMARY"}, {"muscleGroupId": %d, "role": "SECONDARY"}]}
+                        """.formatted(idOfMuscleGroup("Quadriceps"), idOfMuscleGroup("Hamstrings"))))
+                .andExpect(status().isOk());
+        flushAndClear();
+
+        assertThat(muscleNames(id, "PRIMARY")).containsExactly("Quadriceps");
+        assertThat(muscleNames(id, "SECONDARY")).containsExactly("Hamstrings");
+    }
+
+    @Test
+    @Transactional
+    @DisplayName("an update replaces the muscles, including the role of a muscle that stays")
+    void updateReplacesMuscles() throws Exception {
+        Integer id = createLegExercise();
+        flushAndClear();
+
+        mockMvc.perform(put("/backend/exercises/" + id)
+                        .header("Authorization", tokenFor("max12"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                        {"name": "Split Squat", "exerciseType": "STRENGTH", "trackingType": "WEIGHT_REPS",
+                         "muscles": [{"muscleGroupId": %d, "role": "PRIMARY"}, {"muscleGroupId": %d, "role": "SECONDARY"}]}
+                        """.formatted(idOfMuscleGroup("Glutes"), idOfMuscleGroup("Quadriceps"))))
+                .andExpect(status().isOk());
+        flushAndClear();
+
+        assertThat(muscleNames(id, "PRIMARY")).containsExactly("Glutes");
+        assertThat(muscleNames(id, "SECONDARY")).containsExactly("Quadriceps");
+    }
+
+    @Test
+    @Transactional
+    @DisplayName("an update without muscles clears them")
+    void updateWithoutMusclesClearsThem() throws Exception {
+        Integer id = createLegExercise();
+        flushAndClear();
+
+        mockMvc.perform(put("/backend/exercises/" + id)
+                        .header("Authorization", tokenFor("max12"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(UPDATE_BODY))
+                .andExpect(status().isOk());
+        flushAndClear();
+
+        mockMvc.perform(get("/backend/exercises/" + id)
+                        .header("Authorization", tokenFor("max12")))
+                .andExpect(jsonPath("$.muscles").isEmpty());
+    }
+
+    @Test
+    @Transactional
+    @DisplayName("the same muscle twice is rejected, even with different roles")
+    void duplicateMuscleIsRejected() throws Exception {
+        int quadriceps = idOfMuscleGroup("Quadriceps");
+
+        mockMvc.perform(post("/backend/exercises")
+                        .header("Authorization", tokenFor("max12"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                        {"name": "Double Squat", "exerciseType": "STRENGTH", "trackingType": "WEIGHT_REPS",
+                         "muscles": [{"muscleGroupId": %d, "role": "PRIMARY"}, {"muscleGroupId": %d, "role": "SECONDARY"}]}
+                        """.formatted(quadriceps, quadriceps)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
+                .andExpect(jsonPath("$.fieldErrors.muscleIdsUnique").exists());
+    }
+
+    @Test
+    @Transactional
+    @DisplayName("an unknown muscle group is rejected as a field error")
+    void unknownMuscleGroupIsRejected() throws Exception {
+        mockMvc.perform(post("/backend/exercises")
+                        .header("Authorization", tokenFor("max12"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                        {"name": "Ghost Squat", "exerciseType": "STRENGTH", "trackingType": "WEIGHT_REPS",
+                         "muscles": [{"muscleGroupId": 999999, "role": "PRIMARY"}]}
+                        """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
+                .andExpect(jsonPath("$.fieldErrors.muscles").exists());
     }
 }
