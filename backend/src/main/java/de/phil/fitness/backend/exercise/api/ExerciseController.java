@@ -78,7 +78,8 @@ public class ExerciseController {
             + "requesting user. The global catalog cannot be extended through this endpoint.")
     @ApiResponse(responseCode = "201", description = "The created exercise")
     @ApiResponse(responseCode = "400", description = "VALIDATION_FAILED: a field is missing, too long or, for "
-            + "exerciseType or trackingType, not one of their enum values",
+            + "exerciseType, trackingType or a muscle role, not one of their enum values, or muscles holds more than 10 "
+            + "entries, the same muscle group twice or an unknown muscle group",
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     @ApiResponse(responseCode = "401", description = "UNAUTHENTICATED: missing, invalid or expired access token, or a refresh token",
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
@@ -99,11 +100,12 @@ public class ExerciseController {
      */
     @PutMapping("/{id}")
     @Operation(summary = "Update an own exercise", description = "Replaces all fields of the exercise, provided it is "
-            + "owned by the caller. An omitted description or instructions is cleared. The tracking type can only be "
-            + "changed while no routine references the exercise.")
+            + "owned by the caller. An omitted description or instructions is cleared, omitted muscles remove all "
+            + "muscles. The tracking type can only be changed while no routine references the exercise.")
     @ApiResponse(responseCode = "200", description = "The updated exercise")
     @ApiResponse(responseCode = "400", description = "INVALID_JSON or VALIDATION_FAILED: a field is missing, too long or, for "
-            + "exerciseType or trackingType, not one of their enum values",
+            + "exerciseType, trackingType or a muscle role, not one of their enum values, or muscles holds more than 10 "
+            + "entries, the same muscle group twice or an unknown muscle group",
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     @ApiResponse(responseCode = "401", description = "UNAUTHENTICATED: missing, invalid or expired access token, or a refresh token",
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
