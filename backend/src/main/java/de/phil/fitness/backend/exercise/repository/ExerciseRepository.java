@@ -62,11 +62,14 @@ public interface ExerciseRepository extends JpaRepository<Exercise, Long> {
     Set<Long> findAvailableIds(@Param("userId") Long userId, @Param("ids") Collection<Long> ids);
 
     /**
-     * Checks whether any routine references the exercise. Native, so the exercise slice does not depend on the
-     * routine entities. The workout slice has to extend this with {@code workout_exercise}.
+     * Checks whether any routine or workout references the exercise. Native, so the exercise slice does not depend on
+     * the routine and workout entities.
      * @param id Exercise id
-     * @return true if at least one routine exercise points at it
+     * @return true if at least one routine exercise or workout exercise points at it
      */
-    @Query(value = "SELECT EXISTS (SELECT 1 FROM routine_exercise WHERE exercise_id = :id)", nativeQuery = true)
+    @Query(value = """
+        SELECT EXISTS (SELECT 1 FROM routine_exercise WHERE exercise_id = :id)
+            OR EXISTS (SELECT 1 FROM workout_exercise WHERE exercise_id = :id)
+    """, nativeQuery = true)
     boolean isReferenced(@Param("id") Long id);
 }

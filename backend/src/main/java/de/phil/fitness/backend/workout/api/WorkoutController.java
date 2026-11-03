@@ -1,0 +1,97 @@
+package de.phil.fitness.backend.workout.api;
+
+import de.phil.fitness.backend.auth.CurrentUser;
+import de.phil.fitness.backend.common.ErrorResponse;
+import de.phil.fitness.backend.workout.dto.StartWorkoutRequest;
+import de.phil.fitness.backend.workout.dto.WorkoutResponse;
+import de.phil.fitness.backend.workout.service.WorkoutService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+/**
+ * Controller for the workouts of the authenticated user: starting, the running workout, finishing and discarding.
+ */
+@RestController
+@RequestMapping("/backend/workouts")
+@Tag(name = "Workouts", description = "Workouts of the authenticated user")
+public class WorkoutController {
+    private final CurrentUser currentUser;
+    private final WorkoutService workoutService;
+
+    public WorkoutController(CurrentUser currentUser, WorkoutService workoutService) {
+        this.currentUser = currentUser;
+        this.workoutService = workoutService;
+    }
+
+    @PostMapping
+    @Operation(summary = "Start a workout", description = "Starts a workout from an own routine, given directly or "
+            + "through a day of an own program. The routine's exercises become the workout's exercises in the same "
+            + "order, their targets are copied as snapshots, soft deleted exercises are skipped. A running workout "
+            + "without activity for four hours is closed first and does not block the start.")
+    @ApiResponse(responseCode = "201", description = "The started workout with its exercises, without sets")
+    @ApiResponse(responseCode = "400", description = "INVALID_JSON or VALIDATION_FAILED: not exactly one of routineId "
+            + "and programDayId given, or REST_DAY_NOT_STARTABLE: the program day is a rest day",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    @ApiResponse(responseCode = "401", description = "UNAUTHENTICATED: missing, invalid or expired access token, or a refresh token",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    @ApiResponse(responseCode = "404", description = "USER_ROUTINE_NOT_FOUND: no routine with this id is owned by the "
+            + "caller, or PROGRAM_DAY_NOT_FOUND: no program day with this id is owned by the caller",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    @ApiResponse(responseCode = "409", description = "WORKOUT_ALREADY_ACTIVE: the caller has another workout in progress, "
+            + "or DATA_CONFLICT: a concurrent start won the race",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    public ResponseEntity<WorkoutResponse> startWorkout(@Valid @RequestBody StartWorkoutRequest request) {
+        WorkoutResponse started = workoutService.startWorkout(currentUser.currentUserId(), request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(started);
+    }
+
+    @GetMapping("/active")
+    @Operation(summary = "Get the running workout", description = "Returns the workout the caller has in progress, "
+            + "including its exercises and logged sets. A workout without activity for four hours is closed on the way: "
+            + "completed at the time of its newest set, or deleted if it has no sets.")
+    @ApiResponse(responseCode = "200", description = "The running workout")
+    @ApiResponse(responseCode = "204", description = "The caller has no workout in progress", content = @Content)
+    @ApiResponse(responseCode = "401", description = "UNAUTHENTICATED: missing, invalid or expired access token, or a refresh token",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    public ResponseEntity<WorkoutResponse> getActiveWorkout() {
+        return workoutService.findActiveWorkout(currentUser.currentUserId())
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.noContent().build());
+    }
+
+    @PostMapping("/{id}/finish")
+    @Operation(summary = "Finish a workout", description = "Completes a running workout owned by the caller, its end "
+            + "is the current server time.")
+    @ApiResponse(responseCode = "204", description = "Workout finished")
+    @ApiResponse(responseCode = "401", description = "UNAUTHENTICATED: missing, invalid or expired access token, or a refresh token",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    @ApiResponse(responseCode = "404", description = "WORKOUT_NOT_FOUND: no workout with this id is owned by the caller",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    @ApiResponse(responseCode = "409", description = "WORKOUT_NOT_IN_PROGRESS: the workout is already finished, or "
+            + "WORKOUT_HAS_NO_SETS: the workout has no logged set and should be discarded instead",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    public ResponseEntity<Void> finishWorkout(@PathVariable Long id) {
+        workoutService.finishWorkout(currentUser.currentUserId(), id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Delete a workout", description = "Deletes a workout owned by the caller including its "
+            + "exercises and sets, whether it is running or finished.")
+    @ApiResponse(responseCode = "204", description = "Workout deleted")
+    @ApiResponse(responseCode = "401", description = "UNAUTHENTICATED: missing, invalid or expired access token, or a refresh token",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    @ApiResponse(responseCode = "404", description = "WORKOUT_NOT_FOUND: no workout with this id is owned by the caller",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    public ResponseEntity<Void> deleteWorkout(@PathVariable Long id) {
+        workoutService.deleteWorkout(currentUser.currentUserId(), id);
+        return ResponseEntity.noContent().build();
+    }
+}
