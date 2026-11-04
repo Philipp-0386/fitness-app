@@ -23,11 +23,14 @@ type RoutineDetailViewProps = {
   routine: RoutineDetail;
   /** The catalog, a tapped row looks its exercise up here to show it in a sheet. */
   exercises: Exercise[];
+  /** Rendered below the exercises, starts or resumes a workout. (not sure if permanent) */
+  startAction: React.ReactNode;
 };
 
 export default function RoutineDetailView({
   routine,
   exercises,
+  startAction,
 }: RoutineDetailViewProps) {
   const [openExercise, setOpenExercise] = useState<Exercise | null>(null);
 
@@ -95,6 +98,7 @@ export default function RoutineDetailView({
         </ul>
       )}
 
+      <div className="mx-4 mt-6">{startAction}</div>
       {openExercise && (
         <ExerciseSheet exercise={openExercise} onClose={() => setOpenExercise(null)} />
       )}
