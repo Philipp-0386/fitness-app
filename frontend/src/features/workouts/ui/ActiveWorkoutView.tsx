@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { formatTarget } from '@/features/routines/lib/format-target';
 import { Button } from '@/shared/ui/button';
 import type { Workout } from '../types/api.types';
+import OverviewSheet from './OverviewSheet';
 import WorkoutTopBar from './WorkoutTopBar';
 
 type ActiveWorkoutViewProps = {
@@ -14,6 +15,7 @@ type ActiveWorkoutViewProps = {
 
 export default function ActiveWorkoutView({ workout }: ActiveWorkoutViewProps) {
   const [current, setCurrent] = useState(0);
+  const [overviewOpen, setOverviewOpen] = useState(false);
   const entry = workout.exercises[current];
   const last = workout.exercises.length - 1;
 
@@ -24,6 +26,7 @@ export default function ActiveWorkoutView({ workout }: ActiveWorkoutViewProps) {
         startedAt={workout.startedAt}
         current={current}
         total={workout.exercises.length}
+        onOpenOverview={() => setOverviewOpen(true)}
       />
 
       {workout.exercises.length === 0 ? (
@@ -59,6 +62,18 @@ export default function ActiveWorkoutView({ workout }: ActiveWorkoutViewProps) {
             </Button>
           </div>
         </>
+      )}
+
+      {overviewOpen && (
+        <OverviewSheet
+          workout={workout}
+          current={current}
+          onSelect={(index) => {
+            setCurrent(index);
+            setOverviewOpen(false);
+          }}
+          onClose={() => setOverviewOpen(false)}
+        />
       )}
     </div>
   );

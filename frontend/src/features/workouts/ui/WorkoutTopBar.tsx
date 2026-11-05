@@ -10,6 +10,7 @@ type WorkoutTopBarProps = {
   /** Index of the exercise on screen. */
   current: number;
   total: number;
+  onOpenOverview: () => void;
 };
 
 export default function WorkoutTopBar({
@@ -17,6 +18,7 @@ export default function WorkoutTopBar({
   startedAt,
   current,
   total,
+  onOpenOverview,
 }: WorkoutTopBarProps) {
   return (
     <header className="sticky top-(--app-top-inset) z-10 flex h-14 items-center gap-1 border-b border-border-subtle bg-bg px-2">
@@ -31,6 +33,8 @@ export default function WorkoutTopBar({
       {total > 0 ? (
         <button
           type="button"
+          onClick={onOpenOverview}
+          aria-haspopup="dialog"
           aria-label={`Exercise ${current + 1} of ${total}. Show all exercises`}
           className="inline-flex min-h-tap items-center gap-2 rounded-card px-2.5 font-semibold text-text-secondary tabular-nums active:bg-surface-raised"
         >
