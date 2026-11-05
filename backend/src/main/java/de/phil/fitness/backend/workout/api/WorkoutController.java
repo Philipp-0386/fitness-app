@@ -4,6 +4,8 @@ import de.phil.fitness.backend.auth.CurrentUser;
 import de.phil.fitness.backend.common.ErrorResponse;
 import de.phil.fitness.backend.workout.dto.StartWorkoutRequest;
 import de.phil.fitness.backend.workout.dto.WorkoutResponse;
+import de.phil.fitness.backend.workout.dto.WorkoutSetRequest;
+import de.phil.fitness.backend.workout.dto.WorkoutSetResponse;
 import de.phil.fitness.backend.workout.service.WorkoutService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -14,6 +16,8 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 /**
  * Controller for the workouts of the authenticated user: starting, the running workout, finishing and discarding.
@@ -92,6 +96,45 @@ public class WorkoutController {
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     public ResponseEntity<Void> deleteWorkout(@PathVariable Long id) {
         workoutService.deleteWorkout(currentUser.currentUserId(), id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{id}/sets/{clientId}")
+    @Operation(summary = "Log or replace a set", description = "Stores the set under the id the client generated for "
+            + "it: the first request creates it, every further one replaces its values, so a retry never creates a "
+            + "second set. Which values are required depends on the tracking type of the entry's exercise. Works on "
+            + "running and finished workouts.")
+    @ApiResponse(responseCode = "200", description = "The saved set")
+    @ApiResponse(responseCode = "400", description = "INVALID_JSON, INVALID_PARAMETER: the client id is not a UUID, or "
+            + "VALIDATION_FAILED: a value is missing, negative or too long, does not match the tracking type, or the "
+            + "set would move to another exercise entry",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    @ApiResponse(responseCode = "401", description = "UNAUTHENTICATED: missing, invalid or expired access token, or a refresh token",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    @ApiResponse(responseCode = "404", description = "WORKOUT_NOT_FOUND: no workout with this id is owned by the caller, "
+            + "or the client id belongs to a set of another workout, or WORKOUT_EXERCISE_NOT_FOUND: the exercise "
+            + "entry is not part of the workout",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    @ApiResponse(responseCode = "409", description = "SET_NUMBER_TAKEN: another set of the entry already has this number, "
+            + "or DATA_CONFLICT: a concurrent request won the race",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    public ResponseEntity<WorkoutSetResponse> saveSet(@PathVariable Long id, @PathVariable UUID clientId,
+                                                      @Valid @RequestBody WorkoutSetRequest request) {
+        return ResponseEntity.ok(workoutService.saveSet(currentUser.currentUserId(), id, clientId, request));
+    }
+
+    @DeleteMapping("/{id}/sets/{clientId}")
+    @Operation(summary = "Delete a set", description = "Deletes the set with this client id. A set that does not exist "
+            + "or was already deleted is no error, so a retry succeeds.")
+    @ApiResponse(responseCode = "204", description = "Set deleted or not present")
+    @ApiResponse(responseCode = "400", description = "INVALID_PARAMETER: the client id is not a UUID",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    @ApiResponse(responseCode = "401", description = "UNAUTHENTICATED: missing, invalid or expired access token, or a refresh token",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    @ApiResponse(responseCode = "404", description = "WORKOUT_NOT_FOUND: no workout with this id is owned by the caller",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    public ResponseEntity<Void> deleteSet(@PathVariable Long id, @PathVariable UUID clientId) {
+        workoutService.deleteSet(currentUser.currentUserId(), id, clientId);
         return ResponseEntity.noContent().build();
     }
 }

@@ -1,6 +1,7 @@
 package de.phil.fitness.backend.workout.service;
 
 import de.phil.fitness.backend.exercise.dto.ExerciseSummary;
+import de.phil.fitness.backend.exercise.model.TrackingType;
 import de.phil.fitness.backend.exercise.service.ExerciseService;
 import de.phil.fitness.backend.program.service.ProgramService;
 import de.phil.fitness.backend.routine.dto.RoutineDetailResponse;
@@ -8,21 +9,23 @@ import de.phil.fitness.backend.routine.dto.RoutineExerciseResponse;
 import de.phil.fitness.backend.routine.service.RoutineService;
 import de.phil.fitness.backend.workout.dto.StartWorkoutRequest;
 import de.phil.fitness.backend.workout.dto.WorkoutResponse;
+import de.phil.fitness.backend.workout.dto.WorkoutSetRequest;
+import de.phil.fitness.backend.workout.dto.WorkoutSetResponse;
 import de.phil.fitness.backend.workout.exception.*;
 import de.phil.fitness.backend.workout.mapper.WorkoutMapper;
+import de.phil.fitness.backend.workout.model.SetType;
 import de.phil.fitness.backend.workout.model.Workout;
 import de.phil.fitness.backend.workout.model.WorkoutExercise;
+import de.phil.fitness.backend.workout.model.WorkoutSet;
 import de.phil.fitness.backend.workout.model.WorkoutStatus;
 import de.phil.fitness.backend.workout.repository.WorkoutRepository;
+import de.phil.fitness.backend.workout.repository.WorkoutSetRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,14 +38,16 @@ public class WorkoutService {
     private final ProgramService programService;
 
     private static final Duration STALE_AFTER = Duration.ofHours(4); //auto-close var
+    private final WorkoutSetRepository workoutSetRepository;
 
-    public WorkoutService(WorkoutRepository workoutRepository,  WorkoutMapper workoutMapper,
-                          ExerciseService exerciseService, RoutineService routineService, ProgramService programService) {
+    public WorkoutService(WorkoutRepository workoutRepository, WorkoutMapper workoutMapper,
+                          ExerciseService exerciseService, RoutineService routineService, ProgramService programService, WorkoutSetRepository workoutSetRepository) {
         this.workoutRepository = workoutRepository;
         this.workoutMapper = workoutMapper;
         this.exerciseService = exerciseService;
         this.routineService = routineService;
         this.programService = programService;
+        this.workoutSetRepository = workoutSetRepository;
     }
 
     /**
@@ -175,5 +180,102 @@ public class WorkoutService {
         return workoutMapper.toWorkoutResponse(workoutRepository.saveAndFlush(workout), exercises, Map.of());
     }
 
+    /**
+     * Logs or replaces a set of a workout owned by the user, identified by the id the client generated for it, so a
+     * retried request changes the same set instead of creating a second one. The workout's status is not checked,
+     * finished workouts can be corrected through the same method.
+     * @param userId Id of the requesting user.
+     * @param workoutId Id of the workout the set belongs to.
+     * @param clientId Id the client generated for the set.
+     * @param req The complete new state of the set; which values are required depends on the exercise's tracking type.
+     * @return The saved set.
+     * @throws WorkoutNotFoundException if no workout with this id is owned by the user, or the client id belongs to a
+     *         set of another workout
+     * @throws WorkoutExerciseNotFoundException if a new set refers to an exercise entry that is not part of the workout
+     * @throws InvalidSetException if an existing set would move to another exercise entry, or the values do not match
+     *         the tracking type
+     * @throws SetNumberTakenException if another set of the exercise entry already has this set number
+     */
+    @Transactional
+    public WorkoutSetResponse saveSet(Long userId, Long workoutId, UUID clientId, WorkoutSetRequest req) {
+        Workout workout = workoutRepository.getUserWorkoutById(userId, workoutId)
+                .orElseThrow(() -> new WorkoutNotFoundException("Workout with the id "+workoutId+" does not exist"));
 
+        Optional<WorkoutSet> existing = workoutSetRepository.findByClientId(clientId);
+        WorkoutExercise entry;
+        if (existing.isPresent()) {
+            entry = existing.get().getWorkoutExercise();
+            if (!entry.getWorkout().getId().equals(workoutId)) {
+                throw new WorkoutNotFoundException("The set " + clientId + " does not belong to workout " + workoutId);
+            }
+            if (!entry.getId().equals(req.workoutExerciseId())) {
+                throw new InvalidSetException("The set " + clientId + " cannot move to workout exercise " + req.workoutExerciseId(),
+                        Map.of("workoutExerciseId", "cannot change on an existing set"));
+            }
+        } else {
+            entry = workout.getExercises().stream()
+                    .filter(we -> we.getId().equals(req.workoutExerciseId()))
+                    .findFirst()
+                    .orElseThrow(() -> new WorkoutExerciseNotFoundException("Workout exercise " + req.workoutExerciseId() + " does not belong to workout " + workoutId));
+        }
+
+        boolean numberTaken = entry.getSets().stream()
+                .anyMatch(s -> s.getSetNumber().equals(req.setNumber()) && !s.getClientId().equals(clientId));
+        if (numberTaken) {
+            throw new SetNumberTakenException("Workout exercise " + entry.getId() + " already has a set with number " + req.setNumber());
+        }
+
+        TrackingType type = exerciseService.findSummariesByExerciseId(Set.of(entry.getExerciseId()))
+                .get(entry.getExerciseId()).trackingType();
+        boolean weightRequired = type == TrackingType.WEIGHT_REPS || type == TrackingType.WEIGHT_DISTANCE;
+        boolean weightForbidden = type == TrackingType.DISTANCE_DURATION;
+
+        String required = "required for tracking type " + type;
+        String notUsed = "not used by tracking type " + type;
+        Map<String, String> fieldErrors = new LinkedHashMap<>();
+        if (type.holdsReps() && req.reps() == null) fieldErrors.put("reps", required);
+        if (!type.holdsReps() && req.reps() != null) fieldErrors.put("reps", notUsed);
+        if (weightRequired && req.weightKg() == null) fieldErrors.put("weightKg", required);
+        if (weightForbidden && req.weightKg() != null) fieldErrors.put("weightKg", notUsed);
+        if (type.holdsDuration() && req.durationSeconds() == null) fieldErrors.put("durationSeconds", required);
+        if (!type.holdsDuration() && req.durationSeconds() != null) fieldErrors.put("durationSeconds", notUsed);
+        if (type.holdsDistance() && req.distanceMeters() == null) fieldErrors.put("distanceMeters", required);
+        if (!type.holdsDistance() && req.distanceMeters() != null) fieldErrors.put("distanceMeters", notUsed);
+        if (!fieldErrors.isEmpty()) {
+            throw new InvalidSetException("Set " + clientId + " does not match tracking type " + type + ": " + fieldErrors.keySet(), fieldErrors);
+        }
+
+        WorkoutSet set = existing.orElseGet(() -> {
+            WorkoutSet created = new WorkoutSet();
+            created.setClientId(clientId);
+            entry.addSet(created);
+            return created;
+        });
+        set.setSetNumber(req.setNumber());
+        set.setSetType(req.setType() != null ? req.setType() : SetType.WORKING);
+        set.setReps(req.reps());
+        set.setWeightKg(req.weightKg());
+        set.setDurationSeconds(req.durationSeconds());
+        set.setDistanceMeters(req.distanceMeters());
+
+        return workoutMapper.toWorkoutSetResponse(workoutSetRepository.saveAndFlush(set));
+    }
+
+    /**
+     * Deletes a set of a workout owned by the user. Deleting a set that does not exist, or no longer exists, succeeds
+     * silently, so a retried request does not fail.
+     * @param userId Id of the requesting user.
+     * @param workoutId Id of the workout the set belongs to.
+     * @param clientId Id the client generated for the set.
+     * @throws WorkoutNotFoundException if no workout with this id is owned by the user
+     */
+    @Transactional
+    public void deleteSet(Long userId, Long workoutId, UUID clientId) {
+        workoutRepository.getUserWorkoutById(userId, workoutId)
+                .orElseThrow(() -> new WorkoutNotFoundException("Workout with the id " + workoutId + " does not exist"));
+
+        workoutSetRepository.findByClientId(clientId)
+                .filter(set -> set.getWorkoutExercise().getWorkout().getId().equals(workoutId))
+                .ifPresent(set -> set.getWorkoutExercise().getSets().remove(set));
+    }
 }
