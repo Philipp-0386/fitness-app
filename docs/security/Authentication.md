@@ -18,13 +18,22 @@ Stack: Spring Boot 4, Spring Security + OAuth2 Resource Server (verification), j
    renewed, so a session ends 7 days after login.
 
 ```
-login         -> 400 INVALID_JSON / VALIDATION_FAILED, 401 INVALID_CREDENTIALS, 200 { accessToken, refreshToken }
+login         -> 400 INVALID_JSON / VALIDATION_FAILED, 401 INVALID_CREDENTIALS, 429 TOO_MANY_LOGIN_ATTEMPTS, 200 { accessToken, refreshToken }
 refresh       -> 401 UNAUTHENTICATED on any failure, 200 { accessToken }
 protected API -> 401 UNAUTHENTICATED (missing/invalid/expired/refresh token), 403 ACCESS_DENIED
 ```
 
 Unknown user and wrong password raise the same exception, so the response does not reveal whether
 a username exists.
+
+### Login Rate Limit
+
+After 5 failed attempts a username gets `429 TOO_MANY_LOGIN_ATTEMPTS` until 15 minutes after the
+first failure, checked before BCrypt. Success resets the counter.
+
+- Unknown usernames count too, so 429 does not reveal which usernames exist.
+- Per username, not per IP (backend only sees the frontend container), so anyone can lock an account.
+- In memory only: reset on restart, single instance only.
 
 ## Components
 
