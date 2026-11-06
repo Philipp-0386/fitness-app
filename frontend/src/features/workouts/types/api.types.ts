@@ -52,5 +52,10 @@ export type Workout = {
   exercises: WorkoutExercise[];
 };
 
+/** Mirrors the backend WorkoutSetRequest record. Which values are required depends on the tracking type. */
+export type SaveSetPayload = Omit<WorkoutSet, 'clientId'> & {
+  workoutExerciseId: number;
+};
+
 /** Mirrors the backend StartWorkoutRequest record. Exactly one of both is given. */
 export type StartWorkoutPayload = { routineId: number } | { programDayId: number };
