@@ -2,9 +2,12 @@
 
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useRef, useState } from 'react';
+import { toast } from 'sonner';
 
 import { formatTarget } from '@/features/routines/lib/format-target';
+import { fallbackErrorMessage } from '@/shared/api/errors/fallback-error-message';
 import { Button } from '@/shared/ui/button';
+import { deleteSet } from '../client/delete-set.client';
 import { saveSet } from '../client/save-set.client';
 import type { Workout } from '../types/api.types';
 import LogBar from './LogBar';
@@ -79,6 +82,38 @@ export default function ActiveWorkoutView({ workout }: ActiveWorkoutViewProps) {
       });
   }
 
+  //an open row only exists here; a logged one is deleted on the server first, behind a save still running
+  function remove(entryId: number, row: SetRow) {
+    if (row.status === 'open') {
+      setRows((prev) => ({
+        ...prev,
+        [entryId]: prev[entryId].filter((r) => r.clientId !== row.clientId),
+      }));
+      return;
+    }
+
+    const previous = inFlight.current.get(row.clientId) ?? Promise.resolve();
+    const request = previous
+      .catch(() => {})
+      .then(() => deleteSet(workout.id, row.clientId));
+    inFlight.current.set(row.clientId, request);
+
+    request
+      .then(
+        () =>
+          setRows((prev) => ({
+            ...prev,
+            [entryId]: prev[entryId].filter((r) => r.clientId !== row.clientId),
+          })),
+        (error) => toast.error(fallbackErrorMessage(error)),
+      )
+      .finally(() => {
+        if (inFlight.current.get(row.clientId) === request) {
+          inFlight.current.delete(row.clientId);
+        }
+      });
+  }
+
   function handleChange(index: number, field: SetField, value: number | null) {
     const before = rows[entry.id];
     const oldWeight = before[index].weightKg;
@@ -121,6 +156,7 @@ export default function ActiveWorkoutView({ workout }: ActiveWorkoutViewProps) {
                 setRows({ ...rows, [entry.id]: addRow(entry, rows[entry.id]) })
               }
               onRetry={(row) => save(entry.id, row)}
+              onRemove={(row) => remove(entry.id, row)}
             />
           </main>
 

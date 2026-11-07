@@ -9,6 +9,8 @@ import { Button } from '@/shared/ui/button';
 import { formatSetValues, weightHead } from '../lib/format-set';
 import type { SetField, SetRow } from '../lib/set-rows';
 import type { WorkoutExercise } from '../types/api.types';
+import SetSheet from './SetSheet';
+import SwipeableRow from './SwipeableRow';
 
 const columns: Record<TrackingType, [SetField, SetField]> = {
   WEIGHT_REPS: ['weightKg', 'reps'],
@@ -28,6 +30,7 @@ type SetTableProps = {
   onChange: (index: number, field: SetField, value: number | null) => void;
   onAdd: () => void;
   onRetry: (row: SetRow) => void;
+  onRemove: (row: SetRow) => void;
 };
 
 export default function SetTable({
@@ -36,8 +39,10 @@ export default function SetTable({
   onChange,
   onAdd,
   onRetry,
+  onRemove,
 }: SetTableProps) {
   const [editing, setEditing] = useState<{ index: number; field: SetField } | null>(null);
+  const [sheet, setSheet] = useState<{ row: SetRow; title: string } | null>(null);
   const cancelled = useRef(false);
 
   const type = entry.exercise.trackingType;
@@ -94,25 +99,39 @@ export default function SetTable({
             .filter((r) => r.setType === 'WORKING').length;
           const last =
             row.setType === 'WORKING' ? lastWorking[workingNumber - 1] : undefined;
+          const title =
+            row.setType === 'WORKING'
+              ? `Set ${workingNumber}`
+              : row.setType === 'WARMUP'
+                ? 'Warm-Up'
+                : 'Drop Set';
 
           return (
-            <li
+            <SwipeableRow
               key={row.clientId}
+              actionLabel="Remove"
+              onAction={() => onRemove(row)}
               className={cn(
                 grid,
-                'relative isolate min-h-12 rounded-card tabular-nums',
+                'min-h-12 rounded-card tabular-nums',
                 index === active &&
                   'min-h-14 border border-border-strong bg-surface text-[1.25rem] font-semibold',
                 row.status === 'open' && index !== active && 'text-text-tertiary',
               )}
             >
-              <span className="font-semibold">
+              <button
+                type="button"
+                aria-haspopup="dialog"
+                aria-label={`${title} options`}
+                onClick={() => setSheet({ row, title })}
+                className="min-h-tap text-left font-semibold"
+              >
                 {row.setType === 'WORKING'
                   ? workingNumber
                   : row.setType === 'WARMUP'
                     ? 'W'
                     : 'D'}
-              </span>
+              </button>
               <span className="truncate text-meta text-text-secondary">
                 {last ? formatSetValues(type, last, false) : '-'}
               </span>
@@ -190,7 +209,7 @@ export default function SetTable({
                   </button>
                 )}
               </span>
-            </li>
+            </SwipeableRow>
           );
         })}
       </ol>
@@ -199,6 +218,17 @@ export default function SetTable({
         <Plus aria-hidden="true" />
         Add Set
       </Button>
+
+      {sheet && (
+        <SetSheet
+          title={sheet.title}
+          onRemove={() => {
+            onRemove(sheet.row);
+            setSheet(null);
+          }}
+          onClose={() => setSheet(null)}
+        />
+      )}
     </div>
   );
 }
