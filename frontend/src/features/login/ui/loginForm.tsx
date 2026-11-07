@@ -57,6 +57,12 @@ export default function LoginForm() {
         setGeneralError('Wrong username or password. Check both and try again.');
         return;
       }
+      if (error instanceof ApiError && error.code === 'TOO_MANY_LOGIN_ATTEMPTS') {
+        setGeneralError(
+          'Too many failed attempts. Please wait 15 minutes and try again.',
+        );
+        return;
+      }
       setGeneralError(fallbackErrorMessage(error));
     } finally {
       setIsSubmitting(false);

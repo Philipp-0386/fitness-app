@@ -43,6 +43,7 @@ comparison against a misspelled code fails to compile. A new code in the backend
 | Code                     | Status | Raised by                                                                                                                                                   |
 | ------------------------ | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `INVALID_CREDENTIALS`    | 401    | `BadCredentialsException` from `LoginService`                                                                                                               |
+| `TOO_MANY_LOGIN_ATTEMPTS` | 429   | `LoginService` after 5 failed attempts for a username, for up to 15 minutes; checked before the credentials                                                 |
 | `EMAIL_ALREADY_EXISTS`   | 409    | sign-up; `PUT /backend/me` when another user has the email                                                                                                  |
 | `USERNAME_ALREADY_TAKEN` | 409    | sign-up; `PUT /backend/me` when another user has the username                                                                                               |
 | `DEFAULT_ROLE_NOT_FOUND` | 500    | sign-up, missing seed data; the client only gets a generic message                                                                                          |

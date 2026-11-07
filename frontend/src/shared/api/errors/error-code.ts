@@ -14,6 +14,7 @@ export type ErrorCode =
   // Spring backend (auth)
   | 'ACCESS_DENIED'
   | 'INVALID_CREDENTIALS'
+  | 'TOO_MANY_LOGIN_ATTEMPTS'
   | 'UNAUTHENTICATED'
   // Spring backend (signup)
   | 'SIGNUP_DISABLED'

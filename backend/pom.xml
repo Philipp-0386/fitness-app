@@ -119,6 +119,11 @@
             <scope>runtime</scope>
         </dependency>
 
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+        </dependency>
+
         <!--
             Jackson exists twice here: Spring Boot 4 imports both jackson BOMs
             (jackson-2-bom.version and jackson-bom.version), binds request bodies with Jackson 3

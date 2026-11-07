@@ -40,6 +40,9 @@ public class LoginController {
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     @ApiResponse(responseCode = "401", description = "INVALID_CREDENTIALS",
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    @ApiResponse(responseCode = "429", description = "TOO_MANY_LOGIN_ATTEMPTS: 5 failed attempts for this username "
+            + "block it for up to 15 minutes, even with the correct password",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     public ResponseEntity<LoginResponse> handleLoginRequest(@Valid @RequestBody LoginRequest request) {
         LoginResponse response = loginService.login(request);
         return ResponseEntity.ok(response);
