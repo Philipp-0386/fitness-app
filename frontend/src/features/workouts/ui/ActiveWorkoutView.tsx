@@ -1,6 +1,7 @@
 'use client';
 
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -8,8 +9,11 @@ import { formatTarget } from '@/features/routines/lib/format-target';
 import { fallbackErrorMessage } from '@/shared/api/errors/fallback-error-message';
 import { Button } from '@/shared/ui/button';
 import { deleteSet } from '../client/delete-set.client';
+import { discardWorkout } from '../client/discard-workout.client';
+import { finishWorkout } from '../client/finish-workout.client';
 import { saveSet } from '../client/save-set.client';
 import type { Workout } from '../types/api.types';
+import FinishSheet from './FinishSheet';
 import LogBar from './LogBar';
 import OverviewSheet from './OverviewSheet';
 import WorkoutTopBar from './WorkoutTopBar';
@@ -29,6 +33,8 @@ type ActiveWorkoutViewProps = {
 export default function ActiveWorkoutView({ workout }: ActiveWorkoutViewProps) {
   const [current, setCurrent] = useState(0);
   const [overviewOpen, setOverviewOpen] = useState(false);
+  const [finishOpen, setFinishOpen] = useState(false);
+  const router = useRouter();
   const [rows, setRows] = useState<Record<number, SetRow[]>>(() =>
     Object.fromEntries(workout.exercises.map((e) => [e.id, buildRows(e)])),
   );
@@ -39,6 +45,25 @@ export default function ActiveWorkoutView({ workout }: ActiveWorkoutViewProps) {
   const last = workout.exercises.length - 1;
   const hasOpenRow =
     workout.exercises.length > 0 && rows[entry.id].some((row) => row.status === 'open');
+  const allRows = Object.values(rows).flat();
+  const loggedCount = allRows.filter(
+    (row) => row.status === 'saved' || row.status === 'saving',
+  ).length;
+  const failedCount = allRows.filter((row) => row.status === 'failed').length;
+
+  //waits for the saves still running, so the newest values are stored before the workout closes
+  async function finish() {
+    await Promise.allSettled(inFlight.current.values());
+    await finishWorkout(workout.id);
+    router.push('/dashboard');
+    router.refresh();
+  }
+
+  async function discard() {
+    await discardWorkout(workout.id);
+    router.push('/dashboard');
+    router.refresh();
+  }
 
   //one request per row at a time: a new save waits for the previous one, so the server sees them in order
   function save(entryId: number, row: SetRow) {
@@ -137,6 +162,7 @@ export default function ActiveWorkoutView({ workout }: ActiveWorkoutViewProps) {
         current={current}
         total={workout.exercises.length}
         onOpenOverview={() => setOverviewOpen(true)}
+        onFinish={() => setFinishOpen(true)}
       />
 
       {workout.exercises.length === 0 ? (
@@ -187,9 +213,21 @@ export default function ActiveWorkoutView({ workout }: ActiveWorkoutViewProps) {
               isLast={current === last}
               onLog={(row) => save(entry.id, row)}
               onNext={() => setCurrent(current + 1)}
+              onFinish={() => setFinishOpen(true)}
             />
           </div>
         </>
+      )}
+
+      {finishOpen && (
+        <FinishSheet
+          startedAt={workout.startedAt}
+          loggedCount={loggedCount}
+          failedCount={failedCount}
+          onFinish={finish}
+          onDiscard={discard}
+          onClose={() => setFinishOpen(false)}
+        />
       )}
 
       {overviewOpen && (

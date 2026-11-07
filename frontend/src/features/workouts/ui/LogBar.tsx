@@ -9,10 +9,18 @@ type LogBarProps = {
   isLast: boolean;
   onLog: (row: SetRow) => void;
   onNext: () => void;
+  onFinish: () => void;
 };
 
-//logs the first open row; without one it moves on to the next exercise
-export default function LogBar({ entry, rows, isLast, onLog, onNext }: LogBarProps) {
+//logs the first open row; without one it moves on to the next exercise, or finishes on the last
+export default function LogBar({
+  entry,
+  rows,
+  isLast,
+  onLog,
+  onNext,
+  onFinish,
+}: LogBarProps) {
   const type = entry.exercise.trackingType;
   const index = rows.findIndex((r) => r.status === 'open');
 
@@ -22,7 +30,8 @@ export default function LogBar({ entry, rows, isLast, onLog, onNext }: LogBarPro
         type="button"
         variant="primary"
         size="lg"
-        onClick={isLast ? undefined : onNext}
+        aria-haspopup={isLast ? 'dialog' : undefined}
+        onClick={isLast ? onFinish : onNext}
       >
         {isLast ? 'Finish Workout' : 'Next Exercise'}
       </Button>

@@ -11,6 +11,7 @@ type WorkoutTopBarProps = {
   current: number;
   total: number;
   onOpenOverview: () => void;
+  onFinish: () => void;
 };
 
 export default function WorkoutTopBar({
@@ -19,6 +20,7 @@ export default function WorkoutTopBar({
   current,
   total,
   onOpenOverview,
+  onFinish,
 }: WorkoutTopBarProps) {
   return (
     <header className="sticky top-(--app-top-inset) z-10 flex h-14 items-center gap-1 border-b border-border-subtle bg-bg px-2">
@@ -55,7 +57,7 @@ export default function WorkoutTopBar({
         <ElapsedClock startedAt={startedAt} />
       </span>
 
-      <Button type="button" size="sm">
+      <Button type="button" size="sm" aria-haspopup="dialog" onClick={onFinish}>
         Finish
       </Button>
     </header>
