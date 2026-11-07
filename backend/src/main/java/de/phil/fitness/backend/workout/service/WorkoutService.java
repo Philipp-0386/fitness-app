@@ -7,6 +7,7 @@ import de.phil.fitness.backend.program.service.ProgramService;
 import de.phil.fitness.backend.routine.dto.RoutineDetailResponse;
 import de.phil.fitness.backend.routine.dto.RoutineExerciseResponse;
 import de.phil.fitness.backend.routine.service.RoutineService;
+import de.phil.fitness.backend.workout.dto.LastTimeResponse;
 import de.phil.fitness.backend.workout.dto.StartWorkoutRequest;
 import de.phil.fitness.backend.workout.dto.WorkoutResponse;
 import de.phil.fitness.backend.workout.dto.WorkoutSetRequest;
@@ -18,6 +19,7 @@ import de.phil.fitness.backend.workout.model.Workout;
 import de.phil.fitness.backend.workout.model.WorkoutExercise;
 import de.phil.fitness.backend.workout.model.WorkoutSet;
 import de.phil.fitness.backend.workout.model.WorkoutStatus;
+import de.phil.fitness.backend.workout.repository.LastTimeEntry;
 import de.phil.fitness.backend.workout.repository.WorkoutRepository;
 import de.phil.fitness.backend.workout.repository.WorkoutSetRepository;
 import org.springframework.stereotype.Service;
@@ -83,8 +85,15 @@ public class WorkoutService {
         Set<Long> exerciseIds = workout.getExercises().stream()
                 .map(WorkoutExercise::getExerciseId)
                 .collect(Collectors.toSet());
+        Map<Long, LastTimeResponse> lastTimes = Map.of();
+        if (!exerciseIds.isEmpty()) {
+            List<LastTimeEntry> entries = workoutRepository.findLastTimeEntries(userId, workout.getId(), exerciseIds);
+            List<WorkoutSet> sets = entries.isEmpty() ? List.of()
+                    : workoutSetRepository.getSetsOfEntries(entries.stream().map(LastTimeEntry::getEntryId).toList());
+            lastTimes = workoutMapper.toLastTimeResponses(entries, sets);
+        }
         return Optional.of(workoutMapper.toWorkoutResponse(
-                workout, exerciseService.findSummariesByExerciseId(exerciseIds), Map.of()));
+                workout, exerciseService.findSummariesByExerciseId(exerciseIds), lastTimes));
     }
 
     /**
@@ -177,7 +186,16 @@ public class WorkoutService {
             exercises.put(re.exercise().id(), re.exercise());
         }
 
-        return workoutMapper.toWorkoutResponse(workoutRepository.saveAndFlush(workout), exercises, Map.of());
+        Workout saved = workoutRepository.saveAndFlush(workout);
+
+        Map<Long, LastTimeResponse> lastTimes = Map.of();
+        if (!exercises.isEmpty()) {
+            List<LastTimeEntry> entries = workoutRepository.findLastTimeEntries(userId, saved.getId(), exercises.keySet());
+            List<WorkoutSet> sets = entries.isEmpty() ? List.of()
+                    : workoutSetRepository.getSetsOfEntries(entries.stream().map(LastTimeEntry::getEntryId).toList());
+            lastTimes = workoutMapper.toLastTimeResponses(entries, sets);
+        }
+        return workoutMapper.toWorkoutResponse(saved, exercises, lastTimes);
     }
 
     /**

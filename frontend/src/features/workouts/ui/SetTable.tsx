@@ -132,9 +132,18 @@ export default function SetTable({
                     ? 'W'
                     : 'D'}
               </button>
-              <span className="truncate text-meta text-text-secondary">
-                {last ? formatSetValues(type, last, false) : '-'}
-              </span>
+              {last ? (
+                <span className="truncate text-meta text-text-secondary">
+                  {formatSetValues(type, last, false)}
+                </span>
+              ) : (
+                <span
+                  aria-label="Not done last time"
+                  className="truncate text-meta text-text-secondary"
+                >
+                  -
+                </span>
+              )}
               {columns[type].map((field) => {
                 const value = row[field];
                 const text =

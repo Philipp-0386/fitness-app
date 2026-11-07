@@ -2,7 +2,11 @@ package de.phil.fitness.backend.workout.repository;
 
 import de.phil.fitness.backend.workout.model.WorkoutSet;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -14,4 +18,16 @@ public interface WorkoutSetRepository extends JpaRepository<WorkoutSet, Long> {
      * @return The set, empty if no set has this client id.
      */
     Optional<WorkoutSet> findByClientId(UUID clientId);
+
+    /**
+     * Returns the sets of the given workout exercise entries, used for the last time of each exercise.
+     * @param entryIds Ids of the entries.
+     * @return Their sets, ordered by set number.
+     */
+    @Query("""
+        SELECT s FROM WorkoutSet s
+        WHERE s.workoutExercise.id IN :entryIds
+        ORDER BY s.setNumber ASC
+    """)
+    List<WorkoutSet> getSetsOfEntries(@Param("entryIds") Collection<Long> entryIds);
 }

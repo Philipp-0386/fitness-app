@@ -53,7 +53,10 @@ export default function SwipeableRow({
           setOffset(0);
           onAction();
         }}
-        className="absolute inset-y-0 right-0 font-semibold text-bg bg-danger"
+        className={cn(
+          'absolute inset-y-0 right-0 bg-danger font-semibold text-bg transition-[visibility] duration-180 motion-reduce:transition-none',
+          offset === 0 && !dragging && 'invisible',
+        )}
         style={{ width: ACTION_WIDTH }}
       >
         {actionLabel}

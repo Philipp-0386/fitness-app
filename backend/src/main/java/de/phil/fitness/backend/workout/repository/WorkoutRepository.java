@@ -6,6 +6,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.Instant;
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 public interface WorkoutRepository extends JpaRepository<Workout,Long> {
@@ -48,4 +50,26 @@ public interface WorkoutRepository extends JpaRepository<Workout,Long> {
             WHERE s.workoutExercise.workout.id = :workoutId
     """)
     Instant findNewestSetCreatedAt(@Param("workoutId") Long workoutId);
+
+    /**
+     * Finds, per exercise, the newest entry in another workout of the user that has at least one set, across all
+     * routines. Native for Postgres' DISTINCT ON. The caller must not pass an empty collection, IN () is invalid SQL.
+     * @param userId Id of the requesting user.
+     * @param workoutId Id of the workout asking, excluded from the search.
+     * @param exerciseIds Ids of the exercises to look up.
+     * @return At most one entry per exercise, exercises never done before are missing.
+     */
+    @Query(value = """
+        SELECT DISTINCT ON (we.exercise_id)
+               we.exercise_id AS "exerciseId", we.id AS "entryId", w.started_at AS "startedAt"
+        FROM workout_exercise we
+            JOIN workout w ON w.id = we.workout_id
+        WHERE w.user_id = :userId
+            AND w.id <> :workoutId
+            AND we.exercise_id IN (:exerciseIds)
+            AND EXISTS (SELECT 1 FROM workout_set s WHERE s.workout_exercise_id = we.id)
+        ORDER BY we.exercise_id, w.started_at DESC, we.order_index
+    """, nativeQuery = true)
+    List<LastTimeEntry> findLastTimeEntries(@Param("userId") Long userId, @Param("workoutId") Long workoutId,
+                                            @Param("exerciseIds") Collection<Long> exerciseIds);
 }

@@ -8,9 +8,12 @@ import de.phil.fitness.backend.workout.dto.WorkoutSetResponse;
 import de.phil.fitness.backend.workout.model.Workout;
 import de.phil.fitness.backend.workout.model.WorkoutExercise;
 import de.phil.fitness.backend.workout.model.WorkoutSet;
+import de.phil.fitness.backend.workout.repository.LastTimeEntry;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Component
 public class WorkoutMapper {
@@ -54,6 +57,20 @@ public class WorkoutMapper {
                         .toList(),
                 lastTimes.get(we.getExerciseId())
         );
+    }
+
+    /**
+     * @param entries the newest earlier entry per exercise
+     * @param sets the sets of those entries, ordered by set number
+     * @return last performance keyed by exercise id
+     */
+    public Map<Long, LastTimeResponse> toLastTimeResponses(List<LastTimeEntry> entries, List<WorkoutSet> sets) {
+        Map<Long, List<WorkoutSetResponse>> setsByEntry = sets.stream()
+                .collect(Collectors.groupingBy(s -> s.getWorkoutExercise().getId(),
+                        Collectors.mapping(this::toWorkoutSetResponse, Collectors.toList())));
+        return entries.stream()
+                .collect(Collectors.toMap(LastTimeEntry::getExerciseId,
+                        e -> new LastTimeResponse(e.getStartedAt(), setsByEntry.getOrDefault(e.getEntryId(), List.of()))));
     }
 
     public WorkoutSetResponse toWorkoutSetResponse(WorkoutSet set) {
