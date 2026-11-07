@@ -1,5 +1,6 @@
 package de.phil.fitness.backend.program.repository;
 
+import de.phil.fitness.backend.program.model.ProgramDay;
 import org.springframework.data.jpa.repository.JpaRepository;
 import de.phil.fitness.backend.program.model.Program;
 import org.springframework.data.jpa.repository.Modifying;
@@ -113,4 +114,17 @@ public interface ProgramRepository extends JpaRepository<Program, Long> {
         WHERE p.id = :id AND p.userId = :userId
     """)
     int activateUserProgram(@Param("userId") Long userId, @Param("id") Long id);
+
+    /**
+     * Returns a specific day owned by the user, used by other slices like "workout" to start a day.
+     * @param userId Id of the requesting user.
+     * @param id Id of the searched day.
+     * @return Singular user-owned day, empty if the user owns no day with this id.
+     */
+    @Query("""
+        SELECT pd FROM ProgramDay pd
+        WHERE pd.userId = :userId
+            AND pd.id = :id
+    """)
+    Optional<ProgramDay> getUserProgramDayById(@Param("userId") Long userId, @Param("id") Long id);
 }

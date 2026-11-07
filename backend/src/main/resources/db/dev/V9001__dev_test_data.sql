@@ -91,6 +91,44 @@ BEGIN
         (v_entry, 2, 'WORKING', 60),
         (v_entry, 3, 'WORKING', 45);
 
+    -- an older Push A, so last time has to pick the newest workout
+    INSERT INTO workout (user_id, routine_id, name, started_at, status, ended_at)
+    VALUES (v_user, v_routine, 'Push A', TIMESTAMPTZ '2026-09-21 18:00:00+02', 'COMPLETED', TIMESTAMPTZ '2026-09-21 19:00:00+02')
+    RETURNING id INTO v_workout;
+
+    INSERT INTO workout_exercise (workout_id, exercise_id, order_index, target_sets_snapshot, target_reps_min_snapshot, target_reps_max_snapshot)
+    VALUES (v_workout, (SELECT id FROM exercise WHERE slug = 'barbell-bench-press'), 0, 3, 8, 10)
+    RETURNING id INTO v_entry;
+    INSERT INTO workout_set (workout_exercise_id, set_number, set_type, reps, weight_kg) VALUES
+        (v_entry, 1, 'WARMUP', 10, 20),
+        (v_entry, 2, 'WORKING', 10, 77.5),
+        (v_entry, 3, 'WORKING', 9, 77.5),
+        (v_entry, 4, 'WORKING', 8, 77.5);
+
+    INSERT INTO workout_exercise (workout_id, exercise_id, order_index, target_sets_snapshot, target_reps_min_snapshot, target_reps_max_snapshot)
+    VALUES (v_workout, (SELECT id FROM exercise WHERE slug = 'seated-dumbbell-shoulder-press'), 1, 3, 10, 12)
+    RETURNING id INTO v_entry;
+    INSERT INTO workout_set (workout_exercise_id, set_number, set_type, reps, weight_kg) VALUES
+        (v_entry, 1, 'WORKING', 12, 22),
+        (v_entry, 2, 'WORKING', 11, 22),
+        (v_entry, 3, 'WORKING', 10, 22);
+
+    INSERT INTO workout_exercise (workout_id, exercise_id, order_index, target_sets_snapshot, target_reps_min_snapshot, target_reps_max_snapshot)
+    VALUES (v_workout, (SELECT id FROM exercise WHERE slug = 'triceps-rope-pushdown'), 2, 3, 12, 15)
+    RETURNING id INTO v_entry;
+    INSERT INTO workout_set (workout_exercise_id, set_number, set_type, reps, weight_kg) VALUES
+        (v_entry, 1, 'WORKING', 15, 25),
+        (v_entry, 2, 'WORKING', 14, 25),
+        (v_entry, 3, 'WORKING', 12, 25);
+
+    INSERT INTO workout_exercise (workout_id, exercise_id, order_index, target_sets_snapshot, target_duration_seconds_snapshot)
+    VALUES (v_workout, (SELECT id FROM exercise WHERE slug = 'plank'), 3, 3, 60)
+    RETURNING id INTO v_entry;
+    INSERT INTO workout_set (workout_exercise_id, set_number, set_type, duration_seconds) VALUES
+        (v_entry, 1, 'WORKING', 60),
+        (v_entry, 2, 'WORKING', 60),
+        (v_entry, 3, 'WORKING', 60);
+
     -- freestyle: no routine, the name is chosen freely
     INSERT INTO workout (user_id, routine_id, name, started_at, status, ended_at, notes)
     VALUES (v_user, NULL, 'Pull-ups at home', TIMESTAMPTZ '2026-09-30 07:15:00+02', 'COMPLETED', TIMESTAMPTZ '2026-09-30 07:40:00+02', 'Door frame bar, short on time.')
@@ -107,6 +145,12 @@ BEGIN
 
     INSERT INTO workout_exercise (workout_id, exercise_id, order_index)
     VALUES (v_workout, (SELECT id FROM exercise WHERE slug = 'dead-hang'), 1)
+    RETURNING id INTO v_entry;
+    INSERT INTO workout_set (workout_exercise_id, set_number, set_type, duration_seconds)
+    VALUES (v_entry, 1, 'WORKING', 45);
+
+    INSERT INTO workout_exercise (workout_id, exercise_id, order_index)
+    VALUES (v_workout, (SELECT id FROM exercise WHERE slug = 'plank'), 2)
     RETURNING id INTO v_entry;
     INSERT INTO workout_set (workout_exercise_id, set_number, set_type, duration_seconds)
     VALUES (v_entry, 1, 'WORKING', 45);
@@ -137,10 +181,11 @@ BEGIN
     INSERT INTO workout_exercise (workout_id, exercise_id, order_index, target_sets_snapshot, target_reps_min_snapshot, target_reps_max_snapshot)
     VALUES (v_workout, (SELECT id FROM exercise WHERE slug = 'barbell-back-squat'), 0, 4, 5, 8)
     RETURNING id INTO v_entry;
-    INSERT INTO workout_set (workout_exercise_id, set_number, set_type, reps, weight_kg, rpe) VALUES
-        (v_entry, 1, 'WARMUP', 8, 40, NULL),
-        (v_entry, 2, 'WORKING', 6, 70, 7.5),
-        (v_entry, 3, 'WORKING', 6, 70, 8.0);
+    -- created_at as logged
+    INSERT INTO workout_set (workout_exercise_id, set_number, set_type, reps, weight_kg, rpe, created_at) VALUES
+        (v_entry, 1, 'WARMUP', 8, 40, NULL, TIMESTAMPTZ '2026-09-30 17:35:00+02'),
+        (v_entry, 2, 'WORKING', 6, 70, 7.5, TIMESTAMPTZ '2026-09-30 17:40:00+02'),
+        (v_entry, 3, 'WORKING', 6, 70, 8.0, TIMESTAMPTZ '2026-09-30 17:44:00+02');
 
     INSERT INTO workout_exercise (workout_id, exercise_id, order_index, target_sets_snapshot, target_reps_min_snapshot, target_reps_max_snapshot) VALUES
         (v_workout, (SELECT id FROM exercise WHERE slug = 'romanian-deadlift'), 1, 3, 8, 10),
@@ -211,6 +256,8 @@ DECLARE
     v_pull BIGINT;
     v_program BIGINT;
     v_first_day BIGINT;
+    v_workout BIGINT;
+    v_entry BIGINT;
 BEGIN
     -- taking a preset always creates an own copy
     INSERT INTO routine (user_id, name, description)
@@ -234,6 +281,33 @@ BEGIN
 
     UPDATE workout SET program_day_id = v_first_day
     WHERE user_id = v_user AND started_at = TIMESTAMPTZ '2026-09-28 18:00:00+02';
+
+    -- Lat Pulldown was taken, swapped for the assisted pull-up; the snapshot stays
+    INSERT INTO workout (user_id, routine_id, program_day_id, name, started_at, status, ended_at)
+    VALUES (v_user, v_pull, (SELECT id FROM program_day WHERE program_id = v_program AND routine_id = v_pull), 'Pull',
+            TIMESTAMPTZ '2026-09-25 18:00:00+02', 'COMPLETED', TIMESTAMPTZ '2026-09-25 19:00:00+02')
+    RETURNING id INTO v_workout;
+
+    -- assisted exercise: weight_kg is the assistance, stored positive
+    INSERT INTO workout_exercise (workout_id, exercise_id, order_index, target_sets_snapshot, target_reps_min_snapshot, target_reps_max_snapshot)
+    VALUES (v_workout, (SELECT id FROM exercise WHERE slug = 'assisted-pull-up'), 0, 3, 8, 12)
+    RETURNING id INTO v_entry;
+    INSERT INTO workout_set (workout_exercise_id, set_number, set_type, reps, weight_kg) VALUES
+        (v_entry, 1, 'WORKING', 10, 30),
+        (v_entry, 2, 'WORKING', 9, 30),
+        (v_entry, 3, 'WORKING', 8, 25);
+
+    INSERT INTO workout_exercise (workout_id, exercise_id, order_index, target_sets_snapshot, target_reps_min_snapshot, target_reps_max_snapshot)
+    VALUES (v_workout, (SELECT id FROM exercise WHERE slug = 'wide-grip-seated-cable-row'), 1, 3, 8, 12)
+    RETURNING id INTO v_entry;
+    INSERT INTO workout_set (workout_exercise_id, set_number, set_type, reps, weight_kg) VALUES
+        (v_entry, 1, 'WORKING', 12, 55),
+        (v_entry, 2, 'WORKING', 10, 55),
+        (v_entry, 3, 'WORKING', 10, 55);
+
+    INSERT INTO workout_exercise (workout_id, exercise_id, order_index, target_sets_snapshot, target_reps_min_snapshot, target_reps_max_snapshot) VALUES
+        (v_workout, (SELECT id FROM exercise WHERE slug = 'machine-preacher-curl'), 2, 3, 8, 12),
+        (v_workout, (SELECT id FROM exercise WHERE slug = 'hammer-curl'), 3, 3, 8, 12);
 
     INSERT INTO program (user_id, name, description)
     VALUES (v_user, 'Push only', 'Trying out a lower frequency.')

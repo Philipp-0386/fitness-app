@@ -101,7 +101,7 @@ public class ExerciseController {
     @PutMapping("/{id}")
     @Operation(summary = "Update an own exercise", description = "Replaces all fields of the exercise, provided it is "
             + "owned by the caller. An omitted description or instructions is cleared, omitted muscles remove all "
-            + "muscles. The tracking type can only be changed while no routine references the exercise.")
+            + "muscles. The tracking type can only be changed while no routine or workout references the exercise.")
     @ApiResponse(responseCode = "200", description = "The updated exercise")
     @ApiResponse(responseCode = "400", description = "INVALID_JSON or VALIDATION_FAILED: a field is missing, too long or, for "
             + "exerciseType, trackingType or a muscle role, not one of their enum values, or muscles holds more than 10 "
@@ -114,7 +114,7 @@ public class ExerciseController {
     @ApiResponse(responseCode = "404", description = "EXERCISE_NOT_FOUND: no exercise with this id is available to the caller",
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     @ApiResponse(responseCode = "409", description = "TRACKING_TYPE_LOCKED: the tracking type changes while the exercise "
-            + "is referenced, or DATA_CONFLICT: the caller already has an exercise with this name",
+            + "is referenced by a routine or workout, or DATA_CONFLICT: the caller already has an exercise with this name",
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     public ResponseEntity<ExerciseResponse> updateExercise(@PathVariable Long id, @Valid @RequestBody UpdateExerciseRequest req) {
         return ResponseEntity.ok(exerciseService.updateExercise(currentUser.currentUserId(), id, req));

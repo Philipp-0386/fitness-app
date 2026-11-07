@@ -34,6 +34,12 @@ export type ErrorCode =
   | 'PROGRAM_DAY_NOT_FOUND'
   | 'PROGRAM_LIMIT_REACHED'
   | 'USER_PROGRAM_NOT_FOUND'
+  // Spring backend (workout)
+  | 'REST_DAY_NOT_STARTABLE'
+  | 'WORKOUT_ALREADY_ACTIVE'
+  | 'WORKOUT_HAS_NO_SETS'
+  | 'WORKOUT_NOT_FOUND'
+  | 'WORKOUT_NOT_IN_PROGRESS'
   // Next route handlers and proxy
   | 'BACKEND_UNREACHABLE'
   | 'INVALID_BACKEND_RESPONSE'
@@ -41,6 +47,7 @@ export type ErrorCode =
   // Fallbacks when a body carries no code
   | 'UNKNOWN_ERROR'
   | 'ACTIVE_PROGRAM_FETCH_FAILED'
+  | 'ACTIVE_WORKOUT_FETCH_FAILED'
   | 'USER_FETCH_FAILED'
   | 'EXERCISE_FETCH_FAILED'
   | 'EXERCISES_FETCH_FAILED'
