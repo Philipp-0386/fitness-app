@@ -84,6 +84,20 @@ public class ProgramService {
     }
 
     /**
+     * Resolves the routine of a user-owned day, used by the "workout" slice to start a workout from a day.
+     * @param userId Id of the requesting user.
+     * @param dayId Id of the day.
+     * @return Id of the day's routine, null if the day is a rest day.
+     * @throws ProgramDayNotFoundException if no day with this id is owned by the user
+     */
+    @Transactional(readOnly = true)
+    public Long findRoutineIdOfUserProgramDay(Long userId, Long dayId) {
+        return programRepository.getUserProgramDayById(userId, dayId)
+                .orElseThrow(() -> new ProgramDayNotFoundException("The program day with id " + dayId + " is not owned by user " + userId))
+                .getRoutineId();
+    }
+
+    /**
      * Lists all preset-programs.
      * @return List of all preset-programs.
      */

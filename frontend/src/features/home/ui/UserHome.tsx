@@ -2,14 +2,17 @@ import Link from 'next/link';
 import { ChevronRight, UserRound } from 'lucide-react';
 
 import { ProgramDayList, type ProgramDetail } from '@/features/programs';
+import type { Workout } from '@/features/workouts/types/api.types';
+import ResumeCard from '@/features/workouts/ui/ResumeCard';
 
 type UserHomeProps = {
   username: string | null;
   /** null without an active program, an Error if it could not be loaded. */
   program: ProgramDetail | null | Error;
+  activeWorkout: Workout | null;
 };
 
-export default function UserHome({ username, program }: UserHomeProps) {
+export default function UserHome({ username, program, activeWorkout }: UserHomeProps) {
   const links = [
     {
       title: 'Plans',
@@ -45,18 +48,7 @@ export default function UserHome({ username, program }: UserHomeProps) {
         </Link>
       </header>
 
-      <section
-        className="mt-3 rounded-card bg-surface px-4 pt-5 pb-4"
-        aria-labelledby="status-title"
-      >
-        <h2 id="status-title" className="text-title">
-          Logging is coming
-        </h2>
-        <p className="mt-1 text-text-secondary">
-          Sessions, history and progress are in development. For now you can build
-          routines from the exercise catalog.
-        </p>
-      </section>
+      {activeWorkout && <ResumeCard workout={activeWorkout} />}
 
       {program instanceof Error ? (
         <section role="alert" className="mt-8" aria-labelledby="program-title">

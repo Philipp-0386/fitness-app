@@ -166,10 +166,11 @@ CREATE TABLE workout_exercise (
     CONSTRAINT fk_workout_exercise_exercise FOREIGN KEY (exercise_id) REFERENCES exercise(id) DEFERRABLE
 );
 
--- One logged set. Which values are filled depends on exercise.tracking_type.
+-- One logged set. Which values are filled depends on exercise.tracking_type. The client generates client_id, the default only serves seed data.
 CREATE TABLE workout_set (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     workout_exercise_id BIGINT NOT NULL,
+    client_id UUID DEFAULT gen_random_uuid() NOT NULL,
     set_number INTEGER NOT NULL,
     set_type VARCHAR(16) DEFAULT 'WORKING' NOT NULL CHECK (set_type IN ('WARMUP', 'WORKING', 'DROP')),
     reps INTEGER CHECK (reps >= 0),
@@ -180,6 +181,7 @@ CREATE TABLE workout_set (
     notes VARCHAR(1000),
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    CONSTRAINT uq_workout_set_client_id UNIQUE (client_id),
     CONSTRAINT uq_workout_set_number UNIQUE (workout_exercise_id, set_number) DEFERRABLE INITIALLY DEFERRED,
     CONSTRAINT fk_workout_set_workout_exercise FOREIGN KEY (workout_exercise_id) REFERENCES workout_exercise(id) ON DELETE CASCADE
 );

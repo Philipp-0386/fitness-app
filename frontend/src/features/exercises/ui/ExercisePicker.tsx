@@ -22,6 +22,8 @@ const ownerOptions = [
 type ExercisePickerProps = {
   exercises: Exercise[];
   muscleGroups: MuscleGroup[];
+  /** Exercises with these ids are not listed. */
+  excludedIds?: number[];
   open: boolean;
   onSelect: (exercise: Exercise) => void;
   onClose: () => void;
@@ -31,6 +33,7 @@ type ExercisePickerProps = {
 export default function ExercisePicker({
   exercises,
   muscleGroups,
+  excludedIds,
   open,
   onSelect,
   onClose,
@@ -61,6 +64,7 @@ export default function ExercisePicker({
   const search = query.trim().toLowerCase();
   const visible = exercises.filter(
     (exercise) =>
+      !excludedIds?.includes(exercise.id) &&
       (owner === 'all' || exercise.custom) &&
       (type === 'all' || exercise.exerciseType === type) &&
       matchesMuscleFilter(exercise, muscle) &&

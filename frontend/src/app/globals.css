@@ -85,6 +85,33 @@
   --container-app: 430px;
 
   --ease-standard: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --animate-saved-flash: saved-flash 2.5s linear both;
+  --animate-saved-pop: saved-pop 400ms var(--ease-standard) both;
+
+  @keyframes saved-flash {
+    0%,
+    60% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+
+  @keyframes saved-pop {
+    0% {
+      opacity: 0;
+      transform: scale(0.4);
+    }
+    50% {
+      transform: scale(1.2);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
 }
 
 @theme inline {
