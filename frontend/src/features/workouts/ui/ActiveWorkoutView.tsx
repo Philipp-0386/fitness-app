@@ -33,6 +33,9 @@ import {
 } from '../lib/set-rows';
 import SetTable from './SetTable';
 
+//how long the spinner shows at least, a fast save would otherwise only flicker
+const MIN_SAVING_MS = 800;
+
 type ActiveWorkoutViewProps = {
   workout: Workout;
   /** The exercises the picker offers. */
@@ -111,21 +114,22 @@ export default function ActiveWorkoutView({
       );
     inFlight.current.set(row.clientId, request);
 
-    request
-      .then(
+    Promise.all([
+      request.then(
         () => 'saved' as const,
         () => 'failed' as const,
-      )
-      .then((status) => {
-        if (inFlight.current.get(row.clientId) !== request) return;
-        inFlight.current.delete(row.clientId);
-        setRows((prev) => ({
-          ...prev,
-          [entryId]: prev[entryId].map((r) =>
-            r.clientId === row.clientId ? { ...r, status } : r,
-          ),
-        }));
-      });
+      ),
+      new Promise((resolve) => setTimeout(resolve, MIN_SAVING_MS)),
+    ]).then(([status]) => {
+      if (inFlight.current.get(row.clientId) !== request) return;
+      inFlight.current.delete(row.clientId);
+      setRows((prev) => ({
+        ...prev,
+        [entryId]: prev[entryId].map((r) =>
+          r.clientId === row.clientId ? { ...r, status } : r,
+        ),
+      }));
+    });
   }
 
   //an open row only exists here; a logged one is deleted on the server first, behind a save still running
