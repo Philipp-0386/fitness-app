@@ -7,7 +7,7 @@ import type { TrackingType } from '@/features/exercises';
 import { cn } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui/button';
 import { formatSetValues, weightHead } from '../lib/format-set';
-import type { SetField, SetRow } from '../lib/set-rows';
+import { requiredFields, type SetField, type SetRow } from '../lib/set-rows';
 import type { WorkoutExercise } from '../types/api.types';
 import SetSheet from './SetSheet';
 import SwipeableRow from './SwipeableRow';
@@ -63,6 +63,8 @@ export default function SetTable({
     }
     const cleaned = text.trim().replace(',', '.').replace(/^[+-]/, '');
     if (cleaned === '') {
+      //the backend would reject a logged set without it, so the old value stays
+      if (rows[index].status !== 'open' && requiredFields[type].includes(field)) return;
       onChange(index, field, null);
       return;
     }

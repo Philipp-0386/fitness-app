@@ -1,6 +1,6 @@
 import { Button } from '@/shared/ui/button';
 import { formatSetValues } from '../lib/format-set';
-import type { SetRow } from '../lib/set-rows';
+import { requiredFields, type SetRow } from '../lib/set-rows';
 import type { WorkoutExercise } from '../types/api.types';
 
 type LogBarProps = {
@@ -42,14 +42,7 @@ export default function LogBar({
   const workingNumber = rows
     .slice(0, index + 1)
     .filter((r) => r.setType === 'WORKING').length;
-  const missing =
-    ((type === 'WEIGHT_REPS' || type === 'BODYWEIGHT_REPS' || type === 'ASSISTED_REPS') &&
-      row.reps === null) ||
-    ((type === 'WEIGHT_REPS' || type === 'WEIGHT_DISTANCE') && row.weightKg === null) ||
-    ((type === 'DURATION' || type === 'DISTANCE_DURATION') &&
-      row.durationSeconds === null) ||
-    ((type === 'WEIGHT_DISTANCE' || type === 'DISTANCE_DURATION') &&
-      row.distanceMeters === null);
+  const missing = requiredFields[type].some((field) => row[field] === null);
 
   return (
     <Button

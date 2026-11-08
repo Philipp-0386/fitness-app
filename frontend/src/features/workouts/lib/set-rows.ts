@@ -10,6 +10,16 @@ export type SetRow = WorkoutSet & { status: RowStatus };
 /** The value fields of a set, which of them a row shows depends on the tracking type. */
 export type SetField = 'weightKg' | 'reps' | 'durationSeconds' | 'distanceMeters';
 
+/** The values a logged set must have per tracking type, the same rule as the backend's saveSet. */
+export const requiredFields: Record<TrackingType, SetField[]> = {
+  WEIGHT_REPS: ['weightKg', 'reps'],
+  BODYWEIGHT_REPS: ['reps'],
+  ASSISTED_REPS: ['reps'],
+  DURATION: ['durationSeconds'],
+  WEIGHT_DISTANCE: ['weightKg', 'distanceMeters'],
+  DISTANCE_DURATION: ['distanceMeters', 'durationSeconds'],
+};
+
 /**
  * The rows of an entry: its logged sets, then open working rows until the target number of working sets is reached
  * (the routine's target, otherwise last time's, at least one). An open row takes the values of the same working set
