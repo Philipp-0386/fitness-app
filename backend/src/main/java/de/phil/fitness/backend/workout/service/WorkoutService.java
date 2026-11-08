@@ -9,6 +9,9 @@ import de.phil.fitness.backend.routine.dto.RoutineExerciseResponse;
 import de.phil.fitness.backend.routine.service.RoutineService;
 import de.phil.fitness.backend.workout.dto.LastTimeResponse;
 import de.phil.fitness.backend.workout.dto.StartWorkoutRequest;
+import de.phil.fitness.backend.workout.dto.WorkoutExerciseOrderRequest;
+import de.phil.fitness.backend.workout.dto.WorkoutExerciseRequest;
+import de.phil.fitness.backend.workout.dto.WorkoutExerciseResponse;
 import de.phil.fitness.backend.workout.dto.WorkoutResponse;
 import de.phil.fitness.backend.workout.dto.WorkoutSetRequest;
 import de.phil.fitness.backend.workout.dto.WorkoutSetResponse;
@@ -295,5 +298,135 @@ public class WorkoutService {
         workoutSetRepository.findByClientId(clientId)
                 .filter(set -> set.getWorkoutExercise().getWorkout().getId().equals(workoutId))
                 .ifPresent(set -> set.getWorkoutExercise().getSets().remove(set));
+    }
+
+    /**
+     * Appends an exercise to a workout owned by the user, without targets.
+     * @param userId Id of the requesting user.
+     * @param workoutId Id of the workout.
+     * @param request The exercise to add.
+     * @return The new entry with the exercise's last time.
+     * @throws WorkoutNotFoundException if no workout with this id is owned by the user
+     * @throws de.phil.fitness.backend.exercise.exception.ExerciseNotFoundException if the exercise is not available
+     *         to the user or deleted
+     * @throws ExerciseAlreadyInWorkoutException if another entry of the workout already has this exercise
+     */
+    @Transactional
+    public WorkoutExerciseResponse addExercise(Long userId, Long workoutId, WorkoutExerciseRequest request) {
+        Workout workout = workoutRepository.getUserWorkoutById(userId, workoutId)
+                .orElseThrow(() -> new WorkoutNotFoundException("Workout with the id " + workoutId + " does not exist"));
+        Long exerciseId = request.exerciseId();
+        exerciseService.idAvailabilityCheck(userId, Set.of(exerciseId));
+        if (workout.getExercises().stream().anyMatch(we -> we.getExerciseId().equals(exerciseId))) {
+            throw new ExerciseAlreadyInWorkoutException("Exercise " + exerciseId + " is already part of workout " + workoutId);
+        }
+
+        WorkoutExercise entry = new WorkoutExercise();
+        entry.setExerciseId(exerciseId);
+        entry.setOrderIndex(workout.getExercises().stream()
+                .mapToInt(WorkoutExercise::getOrderIndex)
+                .max()
+                .orElse(-1) + 1);
+        workout.addExercise(entry);
+        workoutRepository.flush();
+
+        List<LastTimeEntry> entries = workoutRepository.findLastTimeEntries(userId, workoutId, Set.of(exerciseId));
+        List<WorkoutSet> sets = entries.isEmpty() ? List.of()
+                : workoutSetRepository.getSetsOfEntries(entries.stream().map(LastTimeEntry::getEntryId).toList());
+        return workoutMapper.toWorkoutExerciseResponse(entry, exerciseService.findSummariesByExerciseId(Set.of(exerciseId)),
+                workoutMapper.toLastTimeResponses(entries, sets));
+    }
+
+    /**
+     * Replaces the exercise of an entry without logged sets. The position stays, the target snapshots are kept as far
+     * as the new exercise's tracking type uses them.
+     * @param userId Id of the requesting user.
+     * @param workoutId Id of the workout.
+     * @param entryId Id of the entry to swap.
+     * @param request The new exercise.
+     * @return The changed entry with the new exercise's last time.
+     * @throws WorkoutNotFoundException if no workout with this id is owned by the user
+     * @throws WorkoutExerciseNotFoundException if the entry is not part of the workout
+     * @throws WorkoutExerciseHasSetsException if the entry has logged sets
+     * @throws de.phil.fitness.backend.exercise.exception.ExerciseNotFoundException if the exercise is not available
+     *         to the user or deleted
+     * @throws ExerciseAlreadyInWorkoutException if another entry of the workout already has this exercise
+     */
+    @Transactional
+    public WorkoutExerciseResponse swapExercise(Long userId, Long workoutId, Long entryId, WorkoutExerciseRequest request) {
+        Workout workout = workoutRepository.getUserWorkoutById(userId, workoutId)
+                .orElseThrow(() -> new WorkoutNotFoundException("Workout with the id " + workoutId + " does not exist"));
+        WorkoutExercise entry = workout.getExercises().stream()
+                .filter(we -> we.getId().equals(entryId))
+                .findFirst()
+                .orElseThrow(() -> new WorkoutExerciseNotFoundException("Workout exercise " + entryId + " does not belong to workout " + workoutId));
+        if (!entry.getSets().isEmpty()) {
+            throw new WorkoutExerciseHasSetsException("Workout exercise " + entryId + " has logged sets");
+        }
+        Long exerciseId = request.exerciseId();
+        exerciseService.idAvailabilityCheck(userId, Set.of(exerciseId));
+        if (workout.getExercises().stream().anyMatch(we -> we != entry && we.getExerciseId().equals(exerciseId))) {
+            throw new ExerciseAlreadyInWorkoutException("Exercise " + exerciseId + " is already part of workout " + workoutId);
+        }
+
+        Map<Long, ExerciseSummary> summaries = exerciseService.findSummariesByExerciseId(Set.of(exerciseId));
+        TrackingType type = summaries.get(exerciseId).trackingType();
+        entry.setExerciseId(exerciseId);
+        if (!type.holdsReps()) {
+            entry.setTargetRepsMinSnapshot(null);
+            entry.setTargetRepsMaxSnapshot(null);
+        }
+        if (!type.holdsDuration()) entry.setTargetDurationSecondsSnapshot(null);
+        if (!type.holdsDistance()) entry.setTargetDistanceMetersSnapshot(null);
+        workoutRepository.saveAndFlush(workout);
+
+        List<LastTimeEntry> entries = workoutRepository.findLastTimeEntries(userId, workoutId, Set.of(exerciseId));
+        List<WorkoutSet> sets = entries.isEmpty() ? List.of()
+                : workoutSetRepository.getSetsOfEntries(entries.stream().map(LastTimeEntry::getEntryId).toList());
+        return workoutMapper.toWorkoutExerciseResponse(entry, summaries, workoutMapper.toLastTimeResponses(entries, sets));
+    }
+
+    /**
+     * Removes an entry including its sets from a workout owned by the user. The other entries keep their order index.
+     * @param userId Id of the requesting user.
+     * @param workoutId Id of the workout.
+     * @param entryId Id of the entry to remove.
+     * @throws WorkoutNotFoundException if no workout with this id is owned by the user
+     * @throws WorkoutExerciseNotFoundException if the entry is not part of the workout
+     */
+    @Transactional
+    public void removeExercise(Long userId, Long workoutId, Long entryId) {
+        Workout workout = workoutRepository.getUserWorkoutById(userId, workoutId)
+                .orElseThrow(() -> new WorkoutNotFoundException("Workout with the id " + workoutId + " does not exist"));
+        WorkoutExercise entry = workout.getExercises().stream()
+                .filter(we -> we.getId().equals(entryId))
+                .findFirst()
+                .orElseThrow(() -> new WorkoutExerciseNotFoundException("Workout exercise " + entryId + " does not belong to workout " + workoutId));
+        workout.getExercises().remove(entry);
+    }
+
+    /**
+     * Sets the complete new order of a workout's entries; entries with sets move too.
+     * @param userId Id of the requesting user.
+     * @param workoutId Id of the workout.
+     * @param request Every entry id of the workout exactly once, in the new order.
+     * @throws WorkoutNotFoundException if no workout with this id is owned by the user
+     * @throws InvalidExerciseOrderException if an entry is missing, twice or not part of the workout
+     */
+    @Transactional
+    public void reorderExercises(Long userId, Long workoutId, WorkoutExerciseOrderRequest request) {
+        Workout workout = workoutRepository.getUserWorkoutById(userId, workoutId)
+                .orElseThrow(() -> new WorkoutNotFoundException("Workout with the id " + workoutId + " does not exist"));
+        List<Long> order = request.entryIds();
+        Map<Long, WorkoutExercise> entries = workout.getExercises().stream()
+                .collect(Collectors.toMap(WorkoutExercise::getId, we -> we));
+        if (order.size() != entries.size() || !new HashSet<>(order).equals(entries.keySet())) {
+            throw new InvalidExerciseOrderException("Order " + order + " does not match the entries " + entries.keySet() + " of workout " + workoutId);
+        }
+
+        for (int i = 0; i < order.size(); i++) {
+            entries.get(order.get(i)).setOrderIndex(i);
+        }
+        workoutRepository.saveAndFlush(workout);
     }
 }
