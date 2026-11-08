@@ -6,18 +6,16 @@ This documentation will be dynamically adjusted. The only purpose it serves is b
 
 ## What now?
 
-The ui-rework is basically done. All existing pages are redone with the new design. `Exercise` and `routines` are still missing update, delete and create feature in the frontend. Current plan is, to implement existing backend features to the frontend and add user settings table before implementing new slices in `programms` and `workout`.
+The ui-rework is basically done. All existing pages are redone with the new design. `Exercise` and `routines` are still missing update, delete and create feature in the frontend. `Program` is fully implemented, and `workout` is functional, but not finished.
 
 The current goal is to finish these tasks:
 
-
+- Make UI/UX adjustment following feedback and own ideas (#205 #208)
 - New DB-Table for user settings (#170)
-  - units (kg/lb as display conversion) and time zone, before `workout`
-- Add token revocation (not started)
-  - see issue #128
-- Implement PWA function (mostly done for now) (#180)
-- Add feature for user created exercises to be mapped to muscle groups (#184)
-- Start with ´Workout´ slice implementation
+  - units (kg/lb as display conversion) and time zone
+- Add token revocation (not started) (#128)
+- Start with ´Workout´ slice implementation (#193)
+  - mostly functional at this point, but not finished (live on prod post #195)
 
 - Research open-source visual sources (pictures, gifs) for `exercise` catalog
   - S3 storing? -> Research
