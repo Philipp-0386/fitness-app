@@ -60,7 +60,7 @@ export default function LogBar({
       onClick={() => onLog(row)}
       className="tabular-nums"
     >
-      Log Set {workingNumber}, {formatSetValues(type, row)}
+      Log Set {workingNumber}: {formatSetValues(type, row)}
     </Button>
   );
 }

@@ -1,18 +1,25 @@
 'use client';
 
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Ellipsis, Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 
+import type { Exercise, MuscleGroup } from '@/features/exercises';
+import ExercisePicker from '@/features/exercises/ui/ExercisePicker';
 import { formatTarget } from '@/features/routines/lib/format-target';
 import { fallbackErrorMessage } from '@/shared/api/errors/fallback-error-message';
 import { Button } from '@/shared/ui/button';
+import { addExercise } from '../client/add-exercise.client';
 import { deleteSet } from '../client/delete-set.client';
 import { discardWorkout } from '../client/discard-workout.client';
 import { finishWorkout } from '../client/finish-workout.client';
+import { removeExercise } from '../client/remove-exercise.client';
+import { reorderExercises } from '../client/reorder-exercises.client';
 import { saveSet } from '../client/save-set.client';
+import { swapExercise } from '../client/swap-exercise.client';
 import type { Workout } from '../types/api.types';
+import ExerciseSheet from './ExerciseSheet';
 import FinishSheet from './FinishSheet';
 import LogBar from './LogBar';
 import OverviewSheet from './OverviewSheet';
@@ -28,12 +35,24 @@ import SetTable from './SetTable';
 
 type ActiveWorkoutViewProps = {
   workout: Workout;
+  /** The exercises the picker offers. */
+  catalog: Exercise[];
+  muscleGroups: MuscleGroup[];
 };
 
-export default function ActiveWorkoutView({ workout }: ActiveWorkoutViewProps) {
+export default function ActiveWorkoutView({
+  workout,
+  catalog,
+  muscleGroups,
+}: ActiveWorkoutViewProps) {
+  const [exercises, setExercises] = useState(workout.exercises);
   const [current, setCurrent] = useState(0);
   const [overviewOpen, setOverviewOpen] = useState(false);
+  const [exerciseSheetOpen, setExerciseSheetOpen] = useState(false);
   const [finishOpen, setFinishOpen] = useState(false);
+  const [picker, setPicker] = useState<'add' | 'swap' | null>(null);
+  const [reordering, setReordering] = useState(false);
+  const [reorderError, setReorderError] = useState<string | null>(null);
   const router = useRouter();
   const [rows, setRows] = useState<Record<number, SetRow[]>>(() =>
     Object.fromEntries(workout.exercises.map((e) => [e.id, buildRows(e)])),
@@ -41,10 +60,12 @@ export default function ActiveWorkoutView({ workout }: ActiveWorkoutViewProps) {
 
   const inFlight = useRef(new Map<string, Promise<unknown>>());
 
-  const entry = workout.exercises[current];
-  const last = workout.exercises.length - 1;
+  const entry = exercises[current];
+  const last = exercises.length - 1;
   const hasOpenRow =
-    workout.exercises.length > 0 && rows[entry.id].some((row) => row.status === 'open');
+    exercises.length > 0 && rows[entry.id].some((row) => row.status === 'open');
+  const hasLogged =
+    exercises.length > 0 && rows[entry.id].some((row) => row.status !== 'open');
   const allRows = Object.values(rows).flat();
   const loggedCount = allRows.filter(
     (row) => row.status === 'saved' || row.status === 'saving',
@@ -139,6 +160,59 @@ export default function ActiveWorkoutView({ workout }: ActiveWorkoutViewProps) {
       });
   }
 
+  //the move shows at once; one request at a time, the buttons wait for it, and a failure restores the old order
+  function moveExercise(index: number, delta: number) {
+    const before = exercises;
+    const beforeCurrent = current;
+    const next = [...exercises];
+    [next[index], next[index + delta]] = [next[index + delta], next[index]];
+    setExercises(next);
+    setCurrent(next.findIndex((e) => e.id === entry.id));
+    setReordering(true);
+    setReorderError(null);
+
+    reorderExercises(
+      workout.id,
+      next.map((e) => e.id),
+    )
+      .catch((error) => {
+        setExercises(before);
+        setCurrent(beforeCurrent);
+        setReorderError(fallbackErrorMessage(error));
+      })
+      .finally(() => setReordering(false));
+  }
+
+  async function handlePick(exercise: Exercise) {
+    const kind = picker;
+    setPicker(null);
+    try {
+      if (kind === 'swap') {
+        const swapped = await swapExercise(workout.id, entry.id, exercise.id);
+        setRows((prev) => ({ ...prev, [swapped.id]: buildRows(swapped) }));
+        setExercises((prev) => prev.map((e) => (e.id === swapped.id ? swapped : e)));
+      } else {
+        const added = await addExercise(workout.id, exercise.id);
+        setRows((prev) => ({ ...prev, [added.id]: buildRows(added) }));
+        setExercises((prev) => [...prev, added]);
+        setCurrent(exercises.length);
+      }
+    } catch (error) {
+      toast.error(fallbackErrorMessage(error));
+    }
+  }
+
+  async function handleRemoveExercise() {
+    setExerciseSheetOpen(false);
+    try {
+      await removeExercise(workout.id, entry.id);
+      setExercises((prev) => prev.filter((e) => e.id !== entry.id));
+      setCurrent(Math.max(0, Math.min(current, exercises.length - 2)));
+    } catch (error) {
+      toast.error(fallbackErrorMessage(error));
+    }
+  }
+
   function handleChange(index: number, field: SetField, value: number | null) {
     const before = rows[entry.id];
     const oldWeight = before[index].weightKg;
@@ -160,19 +234,44 @@ export default function ActiveWorkoutView({ workout }: ActiveWorkoutViewProps) {
         name={workout.name}
         startedAt={workout.startedAt}
         current={current}
-        total={workout.exercises.length}
+        total={exercises.length}
         onOpenOverview={() => setOverviewOpen(true)}
         onFinish={() => setFinishOpen(true)}
       />
 
-      {workout.exercises.length === 0 ? (
-        <main className="flex-1 px-4 pt-2">
-          <p className="text-text-secondary">No exercises yet.</p>
+      {exercises.length === 0 ? (
+        <main className="flex-1 px-4 pt-6">
+          <h1 className="text-title">No exercises yet</h1>
+          <p className="mt-1 text-text-secondary">
+            Add the exercises you want to train. Sets are saved as you log them.
+          </p>
+          <Button
+            type="button"
+            variant="primary"
+            size="lg"
+            className="mt-5"
+            onClick={() => setPicker('add')}
+          >
+            <Plus aria-hidden="true" />
+            Add Exercise
+          </Button>
         </main>
       ) : (
         <>
           <main className="flex-1 px-4 pt-2">
-            <h1 className="text-display text-balance">{entry.exercise.name}</h1>
+            <div className="flex items-start justify-between gap-2">
+              <h1 className="min-w-0 text-display text-balance">{entry.exercise.name}</h1>
+              <Button
+                type="button"
+                variant="text"
+                size="icon"
+                aria-label="Exercise options"
+                aria-haspopup="dialog"
+                onClick={() => setExerciseSheetOpen(true)}
+              >
+                <Ellipsis aria-hidden="true" />
+              </Button>
+            </div>
             <p className="mt-1 text-text-secondary tabular-nums">{formatTarget(entry)}</p>
             <SetTable
               entry={entry}
@@ -232,15 +331,49 @@ export default function ActiveWorkoutView({ workout }: ActiveWorkoutViewProps) {
 
       {overviewOpen && (
         <OverviewSheet
-          workout={workout}
+          name={workout.name}
+          exercises={exercises}
+          rows={rows}
           current={current}
+          reordering={reordering}
+          error={reorderError}
           onSelect={(index) => {
             setCurrent(index);
             setOverviewOpen(false);
           }}
-          onClose={() => setOverviewOpen(false)}
+          onMove={moveExercise}
+          onAdd={() => {
+            setOverviewOpen(false);
+            setPicker('add');
+          }}
+          onClose={() => {
+            setOverviewOpen(false);
+            setReorderError(null);
+          }}
         />
       )}
+
+      {exerciseSheetOpen && (
+        <ExerciseSheet
+          name={entry.exercise.name}
+          hasLogged={hasLogged}
+          onSwap={() => {
+            setExerciseSheetOpen(false);
+            setPicker('swap');
+          }}
+          onRemove={handleRemoveExercise}
+          onClose={() => setExerciseSheetOpen(false)}
+        />
+      )}
+
+      <ExercisePicker
+        exercises={catalog}
+        muscleGroups={muscleGroups}
+        excludedIds={exercises.map((e) => e.exercise.id)}
+        open={picker !== null}
+        onSelect={handlePick}
+        onClose={() => setPicker(null)}
+      />
     </div>
   );
 }

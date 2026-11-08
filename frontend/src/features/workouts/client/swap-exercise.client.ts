@@ -1,0 +1,22 @@
+import { WorkoutExercise } from '../types/api.types';
+import { toApiError } from '@/shared/api/errors/to-api-error';
+
+export async function swapExercise(
+  workoutId: number,
+  entryId: number,
+  exerciseId: number,
+): Promise<WorkoutExercise> {
+  const response = await fetch(`/api/workouts/${workoutId}/exercises/${entryId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ exerciseId }),
+  });
+
+  if (!response.ok) {
+    throw await toApiError(response);
+  }
+
+  return response.json();
+}
