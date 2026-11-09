@@ -10,7 +10,15 @@ type ExerciseSheetProps = {
   name: string;
   /** The entry has a logged set, so it can neither be swapped nor removed. */
   hasLogged: boolean;
+  /** Place of the exercise in the workout, counted from 1. */
+  position: number;
+  total: number;
+  canMoveUp: boolean;
+  canMoveDown: boolean;
+  error: string | null;
   onSwap: () => void;
+  onMoveUp: () => void;
+  onMoveDown: () => void;
   onRemove: () => void;
   onClose: () => void;
 };
@@ -19,7 +27,14 @@ type ExerciseSheetProps = {
 export default function ExerciseSheet({
   name,
   hasLogged,
+  position,
+  total,
+  canMoveUp,
+  canMoveDown,
+  error,
   onSwap,
+  onMoveUp,
+  onMoveDown,
   onRemove,
   onClose,
 }: ExerciseSheetProps) {
@@ -45,6 +60,12 @@ export default function ExerciseSheet({
         </Button>
       </div>
 
+      {error && (
+        <p role="alert" className="mt-3 text-meta text-danger">
+          {error}
+        </p>
+      )}
+
       <div className="mt-4">
         <Button type="button" className="w-full" disabled={hasLogged} onClick={onSwap}>
           <ArrowLeftRight aria-hidden="true" />
@@ -55,6 +76,21 @@ export default function ExerciseSheet({
             Has logged sets. Add the other exercise instead.
           </p>
         )}
+      </div>
+
+      <div className="mt-2 grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+        <Button type="button" onClick={onMoveUp} disabled={!canMoveUp}>
+          Move Back
+        </Button>
+        <span
+          aria-live="polite"
+          className="px-1 font-semibold whitespace-nowrap text-text-secondary tabular-nums"
+        >
+          {position} of {total}
+        </span>
+        <Button type="button" onClick={onMoveDown} disabled={!canMoveDown}>
+          Move Forward
+        </Button>
       </div>
 
       {!hasLogged && (

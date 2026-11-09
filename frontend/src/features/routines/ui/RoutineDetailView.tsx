@@ -1,5 +1,6 @@
 'use client';
 
+import { ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 
@@ -87,6 +88,10 @@ export default function RoutineDetailView({
                   className={listRowClass}
                 >
                   {content}
+                  <ChevronRight
+                    className="size-5 shrink-0 text-text-tertiary"
+                    aria-hidden="true"
+                  />
                 </button>
               </li>
             ) : (

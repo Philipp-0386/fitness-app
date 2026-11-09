@@ -20,7 +20,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { CircleAlert, GripVertical, Plus, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 import type { Routine, RoutineDetail } from '@/features/routines';
@@ -41,6 +41,7 @@ import DeleteProgramDialog from './DeleteProgramDialog';
 import ProgramPresetSheet from './ProgramPresetSheet';
 
 const MAX_DAYS = 14;
+const REMOVED_TOAST_ID = 'day-removed';
 
 const cancelClass =
   '-ml-2 flex min-h-tap items-center justify-self-start px-2 font-semibold text-text-secondary hover:text-text-primary';
@@ -97,6 +98,27 @@ export default function ProgramEditor({
 
   const sheetIndex = sheet?.dayKey ? days.findIndex((d) => d.key === sheet.dayKey) : -1;
   const sheetDay = sheetIndex >= 0 ? days[sheetIndex] : null;
+
+  // An undo offered after leaving the editor would do nothing.
+  useEffect(() => () => void toast.dismiss(REMOVED_TOAST_ID), []);
+
+  function removeDay(day: DayDraft) {
+    const index = days.findIndex((d) => d.key === day.key);
+    setDays(days.filter((d) => d.key !== day.key));
+    toast('Day removed.', {
+      id: REMOVED_TOAST_ID,
+      duration: 5000,
+      action: {
+        label: 'Undo',
+        onClick: () =>
+          setDays((current) => [
+            ...current.slice(0, index),
+            day,
+            ...current.slice(index),
+          ]),
+      },
+    });
+  }
 
   function handleSelect(routine: Routine | null) {
     if (sheetDay) {
@@ -337,7 +359,7 @@ export default function ProgramEditor({
                       day={day}
                       number={index + 1}
                       onOpen={() => setSheet({ dayKey: day.key })}
-                      onRemove={() => setDays(days.filter((d) => d.key !== day.key))}
+                      onRemove={() => removeDay(day)}
                     />
                   ))}
                 </ol>
@@ -348,8 +370,7 @@ export default function ProgramEditor({
           {days.length < MAX_DAYS && (
             <Button
               type="button"
-              variant="text"
-              className="mt-2 -ml-2 px-2"
+              className="mt-3 w-full"
               onClick={() => setSheet({ dayKey: null })}
             >
               <Plus aria-hidden="true" />
@@ -388,7 +409,7 @@ export default function ProgramEditor({
           onMoveUp={() => setDays(arrayMove(days, sheetIndex, sheetIndex - 1))}
           onMoveDown={() => setDays(arrayMove(days, sheetIndex, sheetIndex + 1))}
           onRemove={() => {
-            setDays(days.filter((d) => d.key !== sheet.dayKey));
+            if (sheetDay) removeDay(sheetDay);
             setSheet(null);
           }}
           onClose={() => setSheet(null)}

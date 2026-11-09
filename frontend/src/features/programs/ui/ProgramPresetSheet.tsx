@@ -68,7 +68,7 @@ export default function ProgramPresetSheet({
           )}
           <ol className="mt-3 divide-y divide-field-on-overlay">
             {selected.days.map((day, index) => (
-              <li key={day.id} className="flex min-h-14 items-center gap-3 px-1 py-2.5">
+              <li key={day.id} className="flex items-center gap-3 px-1 py-2.5">
                 <span
                   className="w-5 shrink-0 text-center font-semibold text-text-tertiary tabular-nums"
                   aria-hidden="true"

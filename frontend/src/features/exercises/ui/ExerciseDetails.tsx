@@ -1,8 +1,11 @@
 import { cn } from '@/shared/lib/utils';
-import { listClass } from '@/shared/ui/list';
 import { trackingOptions } from '../lib/tracking-options';
 import { typeLabels } from '../lib/type-labels';
 import { Exercise } from '../types/api.types';
+
+//read only rows: flat and lower than tappable rows, so they do not look like controls
+const infoListClass = 'divide-y divide-field-on-overlay';
+const infoRowClass = 'flex items-center gap-3 py-2.5';
 
 type ExerciseDetailsProps = {
   exercise: Exercise;
@@ -16,7 +19,7 @@ export default function ExerciseDetails({ exercise }: ExerciseDetailsProps) {
     <>
       {exercise.custom && (
         <p className="mt-1">
-          <span className="rounded-full border border-border-strong px-2 text-caption font-semibold text-text-secondary">
+          <span className="rounded-full border border-border-on-overlay px-2 text-caption font-semibold text-text-secondary">
             Yours
           </span>
         </p>
@@ -26,13 +29,13 @@ export default function ExerciseDetails({ exercise }: ExerciseDetailsProps) {
         <p className="mt-3 max-w-[62ch] text-text-secondary">{exercise.description}</p>
       )}
 
-      <dl className={cn(listClass, 'mt-5')}>
-        <div className="flex min-h-14 items-center gap-3 px-4 py-2.5">
+      <dl className={cn(infoListClass, 'mt-5')}>
+        <div className={infoRowClass}>
           <dt className="min-w-0 flex-1 text-text-secondary">Type</dt>
           <dd className="shrink-0 font-semibold">{typeLabels[exercise.exerciseType]}</dd>
         </div>
         {tracking && (
-          <div className="flex min-h-14 items-center gap-3 px-4 py-2.5">
+          <div className={infoRowClass}>
             <dt className="min-w-0 flex-1 text-text-secondary">Logged per set</dt>
             <dd className="shrink-0 font-semibold">{tracking.label}</dd>
           </div>
@@ -44,16 +47,13 @@ export default function ExerciseDetails({ exercise }: ExerciseDetailsProps) {
           Muscles
         </h2>
         {exercise.muscles.length > 0 ? (
-          <ul className={cn(listClass, 'mt-3')}>
+          <ul className={cn(infoListClass, 'mt-3')}>
             {exercise.muscles.map((muscle) => (
-              <li
-                key={muscle.id}
-                className="flex min-h-14 items-center gap-3 px-4 py-2.5"
-              >
-                <span className="min-w-0 flex-1 font-semibold">{muscle.name}</span>
-                <span className="shrink-0 text-meta text-text-secondary">
+              <li key={muscle.id} className={infoRowClass}>
+                <span className="min-w-0 flex-1 text-text-secondary">
                   {muscle.role === 'PRIMARY' ? 'Primary' : 'Secondary'}
                 </span>
+                <span className="shrink-0 font-semibold">{muscle.name}</span>
               </li>
             ))}
           </ul>
