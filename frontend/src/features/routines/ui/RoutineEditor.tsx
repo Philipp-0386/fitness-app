@@ -17,7 +17,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { CircleAlert, GripVertical, Plus } from 'lucide-react';
+import { CircleAlert, GripVertical, Plus, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useRef, useState } from 'react';
@@ -47,16 +47,8 @@ const MAX_SLOTS = 50;
 const cancelClass =
   '-ml-2 flex min-h-tap items-center justify-self-start px-2 font-semibold text-text-secondary hover:text-text-primary';
 
-const emptySlot: Omit<Slot, 'key'> = {
-  exercise: null,
-  targetSets: null,
-  targetRepsMin: null,
-  targetRepsMax: null,
-  targetDurationSeconds: null,
-  targetDistanceMeters: null,
-};
-
-type OpenSheet = { kind: 'picker' | 'targets'; slotKey: string } | null;
+/** A picker without a slot key adds a new slot. */
+type OpenSheet = { kind: 'picker' | 'targets'; slotKey: string | null } | null;
 
 type RoutineEditorProps = {
   /** null for a new routine. */
@@ -88,7 +80,7 @@ export default function RoutineEditor({
           targetDurationSeconds: re.targetDurationSeconds,
           targetDistanceMeters: re.targetDistanceMeters,
         }))
-      : Array.from({ length: 5 }, (_, i) => ({ key: `initial-${i}`, ...emptySlot })),
+      : [],
   );
   const [sheet, setSheet] = useState<OpenSheet>(null);
   const [presetsOpen, setPresetsOpen] = useState(false);
@@ -126,17 +118,35 @@ export default function RoutineEditor({
   function handleSelect(exercise: Exercise) {
     if (!sheet) return;
     const fields = trackingFields(exercise.trackingType);
+    const picked = {
+      id: exercise.id,
+      name: exercise.name,
+      trackingType: exercise.trackingType,
+      deleted: false,
+    };
+    if (!sheet.slotKey) {
+      const key = `added-${++addedSlots.current}`;
+      setSlots([
+        ...slots,
+        {
+          key,
+          exercise: picked,
+          targetSets: null,
+          targetRepsMin: null,
+          targetRepsMax: null,
+          targetDurationSeconds: null,
+          targetDistanceMeters: null,
+        },
+      ]);
+      setSheet({ kind: 'targets', slotKey: key });
+      return;
+    }
     setSlots(
       slots.map((s) =>
         s.key === sheet.slotKey
           ? {
               ...s,
-              exercise: {
-                id: exercise.id,
-                name: exercise.name,
-                trackingType: exercise.trackingType,
-                deleted: false,
-              },
+              exercise: picked,
               targetRepsMin: fields.reps ? s.targetRepsMin : null,
               targetRepsMax: fields.reps ? s.targetRepsMax : null,
               targetDurationSeconds: fields.duration ? s.targetDurationSeconds : null,
@@ -170,7 +180,7 @@ export default function RoutineEditor({
       setNameError('Please enter a name.');
       return;
     }
-    if (slots.some((s) => s.exercise?.deleted)) {
+    if (slots.some((s) => s.exercise.deleted)) {
       setError('Replace or remove the exercises that are no longer in the catalog.');
       return;
     }
@@ -178,20 +188,14 @@ export default function RoutineEditor({
     const payload = {
       name: name.trim(),
       description: description.trim() || null,
-      exercises: slots.flatMap((s) =>
-        s.exercise
-          ? [
-              {
-                exerciseId: s.exercise.id,
-                targetSets: s.targetSets,
-                targetRepsMin: s.targetRepsMin,
-                targetRepsMax: s.targetRepsMax,
-                targetDurationSeconds: s.targetDurationSeconds,
-                targetDistanceMeters: s.targetDistanceMeters,
-              },
-            ]
-          : [],
-      ),
+      exercises: slots.map((s) => ({
+        exerciseId: s.exercise.id,
+        targetSets: s.targetSets,
+        targetRepsMin: s.targetRepsMin,
+        targetRepsMax: s.targetRepsMax,
+        targetDurationSeconds: s.targetDurationSeconds,
+        targetDistanceMeters: s.targetDistanceMeters,
+      })),
     };
 
     setIsSaving(true);
@@ -324,12 +328,8 @@ export default function RoutineEditor({
                     <SlotRow
                       key={slot.key}
                       slot={slot}
-                      onOpen={() =>
-                        setSheet({
-                          kind: slot.exercise ? 'targets' : 'picker',
-                          slotKey: slot.key,
-                        })
-                      }
+                      onOpen={() => setSheet({ kind: 'targets', slotKey: slot.key })}
+                      onRemove={() => setSlots(slots.filter((s) => s.key !== slot.key))}
                     />
                   ))}
                 </ul>
@@ -342,15 +342,10 @@ export default function RoutineEditor({
               type="button"
               variant="text"
               className="mt-2 -ml-2 px-2"
-              onClick={() =>
-                setSlots([
-                  ...slots,
-                  { key: `added-${++addedSlots.current}`, ...emptySlot },
-                ])
-              }
+              onClick={() => setSheet({ kind: 'picker', slotKey: null })}
             >
               <Plus aria-hidden="true" />
-              Add slot
+              Add Exercise
             </Button>
           )}
         </div>
@@ -360,9 +355,7 @@ export default function RoutineEditor({
         <PresetSheet
           presets={presets}
           replacesInput={
-            name.trim() !== '' ||
-            description.trim() !== '' ||
-            slots.some((s) => s.exercise !== null)
+            name.trim() !== '' || description.trim() !== '' || slots.length > 0
           }
           onUse={handleUsePreset}
           onClose={() => setPresetsOpen(false)}
@@ -383,7 +376,7 @@ export default function RoutineEditor({
         onClose={() => closeSheet('picker')}
       />
 
-      {sheet?.kind === 'targets' && sheetSlot?.exercise && (
+      {sheet?.kind === 'targets' && sheetSlot && (
         <TargetSheet
           key={sheetSlot.key}
           slot={sheetSlot}
@@ -413,9 +406,10 @@ export default function RoutineEditor({
 type SlotRowProps = {
   slot: Slot;
   onOpen: () => void;
+  onRemove: () => void;
 };
 
-function SlotRow({ slot, onOpen }: SlotRowProps) {
+function SlotRow({ slot, onOpen, onRemove }: SlotRowProps) {
   const {
     attributes,
     listeners,
@@ -424,7 +418,7 @@ function SlotRow({ slot, onOpen }: SlotRowProps) {
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: slot.key, disabled: slot.exercise === null });
+  } = useSortable({ id: slot.key });
 
   return (
     <li
@@ -432,42 +426,42 @@ function SlotRow({ slot, onOpen }: SlotRowProps) {
       style={{ transform: CSS.Transform.toString(transform), transition }}
       className={cn('flex items-center', isDragging && 'relative z-10 bg-surface-raised')}
     >
-      {slot.exercise ? (
-        <button
-          type="button"
-          ref={setActivatorNodeRef}
-          {...attributes}
-          {...listeners}
-          aria-label={`Reorder ${slot.exercise.name}`}
-          className="grid size-tap shrink-0 cursor-grab touch-none place-items-center text-text-tertiary hover:text-text-secondary"
-        >
-          <GripVertical className="size-5" aria-hidden="true" />
-        </button>
-      ) : (
-        <span className="size-tap shrink-0" aria-hidden="true" />
-      )}
-      <button type="button" onClick={onOpen} className={cn(listRowClass, 'pl-0')}>
-        {slot.exercise ? (
-          <>
-            <span className="min-w-0 flex-1">
-              <span className="block truncate font-semibold">{slot.exercise.name}</span>
-              {slot.exercise.deleted && (
-                <span className="block text-meta text-warning">
-                  No longer in the catalog, replace or remove it
-                </span>
-              )}
+      <button
+        type="button"
+        ref={setActivatorNodeRef}
+        {...attributes}
+        {...listeners}
+        aria-label={`Reorder ${slot.exercise.name}`}
+        className="grid size-tap shrink-0 cursor-grab touch-none place-items-center text-text-tertiary hover:text-text-secondary"
+      >
+        <GripVertical className="size-5" aria-hidden="true" />
+      </button>
+      <button
+        type="button"
+        onClick={onOpen}
+        className={cn(listRowClass, 'min-w-0 pr-3 pl-2')}
+      >
+        <span className="min-w-0 flex-1">
+          <span className="block truncate font-semibold">{slot.exercise.name}</span>
+          {slot.exercise.deleted && (
+            <span className="block text-meta text-warning">
+              No longer in the catalog, replace or remove it
             </span>
-            {!slot.exercise.deleted && (
-              <span className="shrink-0 text-meta text-text-secondary tabular-nums">
-                {formatTarget(slot)}
-              </span>
-            )}
-          </>
-        ) : (
-          <span className="flex-1 rounded-field border border-dashed border-border-strong px-3 py-2 text-text-tertiary">
-            Tap to choose an exercise
+          )}
+        </span>
+        {!slot.exercise.deleted && (
+          <span className="shrink-0 text-meta text-text-secondary tabular-nums">
+            {formatTarget(slot)}
           </span>
         )}
+      </button>
+      <button
+        type="button"
+        onClick={onRemove}
+        aria-label={`Remove ${slot.exercise.name}`}
+        className="mr-1 grid size-tap shrink-0 place-items-center text-text-tertiary hover:text-danger"
+      >
+        <Trash2 className="size-5" aria-hidden="true" />
       </button>
     </li>
   );

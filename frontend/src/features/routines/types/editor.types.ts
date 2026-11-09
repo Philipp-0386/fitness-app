@@ -11,6 +11,5 @@ export type Targets = {
 /** One row of the routine editor. The key is client side and never an exercise id, the same exercise may appear twice. */
 export type Slot = Targets & {
   key: string;
-  /** null while the slot is empty. */
-  exercise: RoutineExerciseSummary | null;
+  exercise: RoutineExerciseSummary;
 };
