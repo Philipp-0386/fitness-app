@@ -1,5 +1,6 @@
 'use client';
 
+import { arrayMove } from '@dnd-kit/sortable';
 import { ChevronLeft, ChevronRight, Ellipsis, Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useRef, useState } from 'react';
@@ -164,12 +165,11 @@ export default function ActiveWorkoutView({
       });
   }
 
-  //the move shows at once; one request at a time, the buttons wait for it, and a failure restores the old order
-  function moveExercise(index: number, delta: number) {
+  //the move shows at once; one request at a time, moving waits for it, and a failure restores the old order
+  function moveExercise(from: number, to: number) {
     const before = exercises;
     const beforeCurrent = current;
-    const next = [...exercises];
-    [next[index], next[index + delta]] = [next[index + delta], next[index]];
+    const next = arrayMove(exercises, from, to);
     setExercises(next);
     setCurrent(next.findIndex((e) => e.id === entry.id));
     setReordering(true);
@@ -361,12 +361,22 @@ export default function ActiveWorkoutView({
         <ExerciseSheet
           name={entry.exercise.name}
           hasLogged={hasLogged}
+          position={current + 1}
+          total={exercises.length}
+          canMoveUp={current > 0 && !reordering}
+          canMoveDown={current < exercises.length - 1 && !reordering}
+          error={reorderError}
           onSwap={() => {
             setExerciseSheetOpen(false);
             setPicker('swap');
           }}
+          onMoveUp={() => moveExercise(current, current - 1)}
+          onMoveDown={() => moveExercise(current, current + 1)}
           onRemove={handleRemoveExercise}
-          onClose={() => setExerciseSheetOpen(false)}
+          onClose={() => {
+            setExerciseSheetOpen(false);
+            setReorderError(null);
+          }}
         />
       )}
 
