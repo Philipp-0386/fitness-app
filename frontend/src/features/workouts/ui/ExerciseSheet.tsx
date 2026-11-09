@@ -80,7 +80,7 @@ export default function ExerciseSheet({
 
       <div className="mt-2 grid grid-cols-[1fr_auto_1fr] items-center gap-2">
         <Button type="button" onClick={onMoveUp} disabled={!canMoveUp}>
-          Move Up
+          Move Back
         </Button>
         <span
           aria-live="polite"
@@ -89,7 +89,7 @@ export default function ExerciseSheet({
           {position} of {total}
         </span>
         <Button type="button" onClick={onMoveDown} disabled={!canMoveDown}>
-          Move Down
+          Move Forward
         </Button>
       </div>
 
