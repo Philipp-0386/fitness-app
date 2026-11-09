@@ -20,7 +20,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { CircleAlert, GripVertical, Plus, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 import ExercisePicker from '@/features/exercises/ui/ExercisePicker';
@@ -43,6 +43,7 @@ import PresetSheet from './PresetSheet';
 import TargetSheet from './TargetSheet';
 
 const MAX_SLOTS = 50;
+const REMOVED_TOAST_ID = 'slot-removed';
 
 const cancelClass =
   '-ml-2 flex min-h-tap items-center justify-self-start px-2 font-semibold text-text-secondary hover:text-text-primary';
@@ -95,6 +96,27 @@ export default function RoutineEditor({
 
   const sheetIndex = sheet ? slots.findIndex((s) => s.key === sheet.slotKey) : -1;
   const sheetSlot = sheetIndex >= 0 ? slots[sheetIndex] : null;
+
+  // An undo offered after leaving the editor would do nothing.
+  useEffect(() => () => void toast.dismiss(REMOVED_TOAST_ID), []);
+
+  function removeSlot(slot: Slot) {
+    const index = slots.findIndex((s) => s.key === slot.key);
+    setSlots(slots.filter((s) => s.key !== slot.key));
+    toast('Exercise removed.', {
+      id: REMOVED_TOAST_ID,
+      duration: 5000,
+      action: {
+        label: 'Undo',
+        onClick: () =>
+          setSlots((current) => [
+            ...current.slice(0, index),
+            slot,
+            ...current.slice(index),
+          ]),
+      },
+    });
+  }
 
   function handleUsePreset(preset: RoutineDetail) {
     setName(`${preset.name} (Preset)`);
@@ -329,7 +351,7 @@ export default function RoutineEditor({
                       key={slot.key}
                       slot={slot}
                       onOpen={() => setSheet({ kind: 'targets', slotKey: slot.key })}
-                      onRemove={() => setSlots(slots.filter((s) => s.key !== slot.key))}
+                      onRemove={() => removeSlot(slot)}
                     />
                   ))}
                 </ul>
@@ -340,8 +362,7 @@ export default function RoutineEditor({
           {slots.length < MAX_SLOTS && (
             <Button
               type="button"
-              variant="text"
-              className="mt-2 -ml-2 px-2"
+              className="mt-3 w-full"
               onClick={() => setSheet({ kind: 'picker', slotKey: null })}
             >
               <Plus aria-hidden="true" />
@@ -393,7 +414,7 @@ export default function RoutineEditor({
           onMoveUp={() => setSlots(arrayMove(slots, sheetIndex, sheetIndex - 1))}
           onMoveDown={() => setSlots(arrayMove(slots, sheetIndex, sheetIndex + 1))}
           onRemove={() => {
-            setSlots(slots.filter((s) => s.key !== sheetSlot.key));
+            removeSlot(sheetSlot);
             setSheet(null);
           }}
           onClose={() => closeSheet('targets')}

@@ -46,6 +46,8 @@ export default function RootLayout({
               toast:
                 'flex w-full items-center gap-3 rounded-card bg-surface-overlay px-4 py-3.5 font-sans text-body text-text-primary shadow-[0_8px_24px_rgb(0_0_0/0.5)]',
               icon: 'flex shrink-0',
+              actionButton:
+                '-my-3 -mr-2 ml-auto min-h-tap shrink-0 px-2 font-semibold text-text-primary',
             },
           }}
         />
