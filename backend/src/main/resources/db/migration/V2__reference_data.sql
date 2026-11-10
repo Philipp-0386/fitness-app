@@ -150,6 +150,54 @@ INSERT INTO exercise (owner_user_id, slug, name, exercise_type, tracking_type, d
 INSERT INTO exercise (owner_user_id, slug, name, exercise_type, tracking_type, description, instructions) VALUES (NULL, 'treadmill', 'Treadmill', 'CARDIO', 'DISTANCE_DURATION', 'Walking or running on the treadmill.', 'Set speed and incline, log the distance and time.');
 INSERT INTO exercise (owner_user_id, slug, name, exercise_type, tracking_type, description, instructions) VALUES (NULL, 'rowing-machine', 'Rowing Machine', 'CARDIO', 'DISTANCE_DURATION', 'Full body cardio on the rowing ergometer.', 'Drive with the legs first, then lean back and pull the handle to the lower ribs, return in reverse order.');
 INSERT INTO exercise (owner_user_id, slug, name, exercise_type, tracking_type, description, instructions) VALUES (NULL, 'stationary-bike', 'Stationary Bike', 'CARDIO', 'DISTANCE_DURATION', 'Low impact cardio on the bike.', 'Saddle at hip height, keep a steady cadence, log the distance and time.');
+-- Chest
+INSERT INTO exercise (owner_user_id, slug, name, exercise_type, tracking_type, description, instructions) VALUES (NULL, 'incline-barbell-bench-press', 'Incline Barbell Bench Press', 'STRENGTH', 'WEIGHT_REPS', 'Barbell press on an incline for the upper chest.', 'Set the bench to 30 degrees, lower the bar to the upper chest, press back up.');
+INSERT INTO exercise (owner_user_id, slug, name, exercise_type, tracking_type, description, instructions) VALUES (NULL, 'incline-machine-press', 'Incline Machine Press', 'STRENGTH', 'WEIGHT_REPS', 'Guided incline press for the upper chest.', 'Handles at upper chest height, press up and forward, control the return.');
+INSERT INTO exercise (owner_user_id, slug, name, exercise_type, tracking_type, description, instructions) VALUES (NULL, 'low-to-high-cable-fly', 'Low-to-High Cable Fly', 'STRENGTH', 'WEIGHT_REPS', 'Cable fly with an upward path for the upper chest.', 'Cables from the low pulleys, slight elbow bend, bring the handles together at chin height.');
+INSERT INTO exercise (owner_user_id, slug, name, exercise_type, tracking_type, description, instructions) VALUES (NULL, 'dumbbell-fly', 'Dumbbell Fly', 'STRENGTH', 'WEIGHT_REPS', 'Free weight fly with a deep stretch.', 'Lie flat, slight elbow bend, open the arms in a wide arc, bring the dumbbells back together over the chest.');
+-- Upper Back
+INSERT INTO exercise (owner_user_id, slug, name, exercise_type, tracking_type, description, instructions) VALUES (NULL, 't-bar-row', 'T-Bar Row', 'STRENGTH', 'WEIGHT_REPS', 'Heavy row with a neutral grip.', 'Hinge at the hips, row the handle to the lower chest, keep the spine neutral.');
+INSERT INTO exercise (owner_user_id, slug, name, exercise_type, tracking_type, description, instructions) VALUES (NULL, 'machine-row', 'Machine Row', 'STRENGTH', 'WEIGHT_REPS', 'Guided horizontal pull with chest support.', 'Chest against the pad, pull the handles to the lower ribs, control the return.');
+-- Lats
+INSERT INTO exercise (owner_user_id, slug, name, exercise_type, tracking_type, description, instructions) VALUES (NULL, 'close-grip-lat-pulldown', 'Close-Grip Lat Pulldown', 'STRENGTH', 'WEIGHT_REPS', 'Vertical pull with a narrow neutral grip.', 'V-handle on the cable, pull to the upper chest, keep the torso nearly upright.');
+INSERT INTO exercise (owner_user_id, slug, name, exercise_type, tracking_type, description, instructions) VALUES (NULL, 'single-arm-lat-pulldown', 'Single-Arm Lat Pulldown', 'STRENGTH', 'WEIGHT_REPS', 'Unilateral vertical pull.', 'One handle overhead, drive the elbow down to the side, let the lat stretch at the top.');
+-- Front Delts
+INSERT INTO exercise (owner_user_id, slug, name, exercise_type, tracking_type, description, instructions) VALUES (NULL, 'machine-shoulder-press', 'Machine Shoulder Press', 'STRENGTH', 'WEIGHT_REPS', 'Guided vertical press.', 'Handles at shoulder height, press overhead, lower under control.');
+INSERT INTO exercise (owner_user_id, slug, name, exercise_type, tracking_type, description, instructions) VALUES (NULL, 'arnold-press', 'Arnold Press', 'STRENGTH', 'WEIGHT_REPS', 'Dumbbell press with a rotation.', 'Start with the palms facing you, rotate them forward while pressing overhead, reverse on the way down.');
+-- Side Delts
+INSERT INTO exercise (owner_user_id, slug, name, exercise_type, tracking_type, description, instructions) VALUES (NULL, 'machine-lateral-raise', 'Machine Lateral Raise', 'STRENGTH', 'WEIGHT_REPS', 'Guided isolation for the lateral deltoid.', 'Pads against the upper arms, raise to shoulder height, lower under control.');
+-- Rear Delts
+INSERT INTO exercise (owner_user_id, slug, name, exercise_type, tracking_type, description, instructions) VALUES (NULL, 'cable-rear-delt-fly', 'Cable Rear Delt Fly', 'STRENGTH', 'WEIGHT_REPS', 'Reverse fly with constant cable tension.', 'Cross the cables at shoulder height, open the arms in a wide arc with slightly bent elbows.');
+-- Biceps
+INSERT INTO exercise (owner_user_id, slug, name, exercise_type, tracking_type, description, instructions) VALUES (NULL, 'ez-bar-curl', 'EZ-Bar Curl', 'STRENGTH', 'WEIGHT_REPS', 'Biceps curl with an angled grip that is easier on the wrists.', 'Elbows at the sides, curl up, lower under control.');
+INSERT INTO exercise (owner_user_id, slug, name, exercise_type, tracking_type, description, instructions) VALUES (NULL, 'cable-curl', 'Cable Curl', 'STRENGTH', 'WEIGHT_REPS', 'Biceps curl with constant cable tension.', 'Bar on the low pulley, elbows at the sides, curl up, lower under control.');
+INSERT INTO exercise (owner_user_id, slug, name, exercise_type, tracking_type, description, instructions) VALUES (NULL, 'ez-bar-preacher-curl', 'EZ-Bar Preacher Curl', 'STRENGTH', 'WEIGHT_REPS', 'Free weight curl with the upper arms fixed on a pad.', 'Upper arms flat on the pad, curl up, lower until the arms are almost straight.');
+-- Triceps
+INSERT INTO exercise (owner_user_id, slug, name, exercise_type, tracking_type, description, instructions) VALUES (NULL, 'triceps-straight-bar-pushdown', 'Triceps Straight-Bar Pushdown', 'STRENGTH', 'WEIGHT_REPS', 'Cable pushdown with a straight bar.', 'Overhand grip, elbows fixed at the sides, push down to lockout.');
+INSERT INTO exercise (owner_user_id, slug, name, exercise_type, tracking_type, description, instructions) VALUES (NULL, 'triceps-v-bar-pushdown', 'Triceps V-Bar Pushdown', 'STRENGTH', 'WEIGHT_REPS', 'Cable pushdown with an angled V-bar.', 'Elbows fixed at the sides, push down to lockout, control the return.');
+INSERT INTO exercise (owner_user_id, slug, name, exercise_type, tracking_type, description, instructions) VALUES (NULL, 'single-arm-cable-pushdown', 'Single-Arm Cable Pushdown', 'STRENGTH', 'WEIGHT_REPS', 'Unilateral cable pushdown.', 'One handle, elbow fixed at the side, push down to lockout.');
+INSERT INTO exercise (owner_user_id, slug, name, exercise_type, tracking_type, description, instructions) VALUES (NULL, 'overhead-dumbbell-triceps-extension', 'Overhead Dumbbell Triceps Extension', 'STRENGTH', 'WEIGHT_REPS', 'Triceps work in the stretched position with one dumbbell.', 'Hold the dumbbell overhead with both hands, lower behind the head, extend the elbows.');
+-- Abs
+INSERT INTO exercise (owner_user_id, slug, name, exercise_type, tracking_type, description, instructions) VALUES (NULL, 'machine-crunch', 'Machine Crunch', 'STRENGTH', 'WEIGHT_REPS', 'Loadable crunch on the machine.', 'Set the pads at chest height, flex the spine down, return slowly.');
+INSERT INTO exercise (owner_user_id, slug, name, exercise_type, tracking_type, description, instructions) VALUES (NULL, 'hanging-knee-raise', 'Hanging Knee Raise', 'STRENGTH', 'BODYWEIGHT_REPS', 'Easier variation of the hanging leg raise.', 'Hang from the bar, pull the knees towards the chest, lower without swinging.');
+INSERT INTO exercise (owner_user_id, slug, name, exercise_type, tracking_type, description, instructions) VALUES (NULL, 'decline-sit-up', 'Decline Sit-Up', 'STRENGTH', 'BODYWEIGHT_REPS', 'Sit-up on a decline bench.', 'Feet secured, curl the torso up towards the knees, lower slowly.');
+-- Quadriceps
+INSERT INTO exercise (owner_user_id, slug, name, exercise_type, tracking_type, description, instructions) VALUES (NULL, 'front-squat', 'Front Squat', 'STRENGTH', 'WEIGHT_REPS', 'Squat with the bar on the front of the shoulders.', 'Bar on the front delts, elbows high, squat deep with an upright torso.');
+INSERT INTO exercise (owner_user_id, slug, name, exercise_type, tracking_type, description, instructions) VALUES (NULL, 'smith-machine-squat', 'Smith Machine Squat', 'STRENGTH', 'WEIGHT_REPS', 'Squat on a guided bar.', 'Bar on the upper back, feet slightly in front, squat deep, press back up.');
+INSERT INTO exercise (owner_user_id, slug, name, exercise_type, tracking_type, description, instructions) VALUES (NULL, 'reverse-lunge', 'Reverse Lunge', 'STRENGTH', 'WEIGHT_REPS', 'Lunge stepping backwards, easier on the knees.', 'Dumbbells at the sides, step back, lower the back knee towards the floor, return to standing.');
+INSERT INTO exercise (owner_user_id, slug, name, exercise_type, tracking_type, description, instructions) VALUES (NULL, 'step-up', 'Step-Up', 'STRENGTH', 'WEIGHT_REPS', 'Unilateral step onto a box.', 'Dumbbells at the sides, step onto the box, drive through the front foot, lower slowly.');
+-- Hamstrings
+INSERT INTO exercise (owner_user_id, slug, name, exercise_type, tracking_type, description, instructions) VALUES (NULL, 'dumbbell-romanian-deadlift', 'Dumbbell Romanian Deadlift', 'STRENGTH', 'WEIGHT_REPS', 'Hip hinge with dumbbells.', 'Push the hips back, dumbbells close to the legs, stop at the end of the stretch.');
+INSERT INTO exercise (owner_user_id, slug, name, exercise_type, tracking_type, description, instructions) VALUES (NULL, 'sumo-deadlift', 'Sumo Deadlift', 'STRENGTH', 'WEIGHT_REPS', 'Wide stance pull from the floor.', 'Wide stance, grip inside the knees, brace, push the floor apart, lock out the hips.');
+INSERT INTO exercise (owner_user_id, slug, name, exercise_type, tracking_type, description, instructions) VALUES (NULL, 'nordic-curl', 'Nordic Curl', 'STRENGTH', 'BODYWEIGHT_REPS', 'Eccentric knee flexion with bodyweight.', 'Ankles secured, lower the torso forward as slowly as possible, push back up with the hands.');
+-- Glutes
+INSERT INTO exercise (owner_user_id, slug, name, exercise_type, tracking_type, description, instructions) VALUES (NULL, 'glute-bridge', 'Glute Bridge', 'STRENGTH', 'BODYWEIGHT_REPS', 'Hip extension from the floor.', 'Lie on the back with the knees bent, drive the hips up, squeeze at the top.');
+-- Calves
+INSERT INTO exercise (owner_user_id, slug, name, exercise_type, tracking_type, description, instructions) VALUES (NULL, 'leg-press-calf-raise', 'Leg Press Calf Raise', 'STRENGTH', 'WEIGHT_REPS', 'Calf raise on the leg press.', 'Balls of the feet on the platform edge, knees nearly straight, push through the toes, full stretch at the bottom.');
+-- Cardio
+INSERT INTO exercise (owner_user_id, slug, name, exercise_type, tracking_type, description, instructions) VALUES (NULL, 'elliptical', 'Elliptical', 'CARDIO', 'DISTANCE_DURATION', 'Low impact cardio on the elliptical trainer.', 'Keep a steady pace, log the distance and time.');
+INSERT INTO exercise (owner_user_id, slug, name, exercise_type, tracking_type, description, instructions) VALUES (NULL, 'stair-climber', 'Stair Climber', 'CARDIO', 'DISTANCE_DURATION', 'Cardio on the stair machine.', 'Upright posture, light hand contact, log the distance and time.');
+INSERT INTO exercise (owner_user_id, slug, name, exercise_type, tracking_type, description, instructions) VALUES (NULL, 'zone-2-treadmill', 'Zone 2 Treadmill', 'CARDIO', 'DISTANCE_DURATION', 'Steady low intensity cardio on the treadmill.', 'Pick a pace where you can still hold a conversation, log the distance and time.');
 
 -- exercise_musclegroup
 -- Chest
@@ -172,6 +220,16 @@ INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((S
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'push-up'), (SELECT id FROM muscle_group WHERE name = 'Chest'), 'PRIMARY');
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'push-up'), (SELECT id FROM muscle_group WHERE name = 'Triceps'), 'SECONDARY');
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'push-up'), (SELECT id FROM muscle_group WHERE name = 'Front Delts'), 'SECONDARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'incline-barbell-bench-press'), (SELECT id FROM muscle_group WHERE name = 'Upper Chest'), 'PRIMARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'incline-barbell-bench-press'), (SELECT id FROM muscle_group WHERE name = 'Front Delts'), 'SECONDARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'incline-barbell-bench-press'), (SELECT id FROM muscle_group WHERE name = 'Triceps'), 'SECONDARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'incline-machine-press'), (SELECT id FROM muscle_group WHERE name = 'Upper Chest'), 'PRIMARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'incline-machine-press'), (SELECT id FROM muscle_group WHERE name = 'Front Delts'), 'SECONDARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'incline-machine-press'), (SELECT id FROM muscle_group WHERE name = 'Triceps'), 'SECONDARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'low-to-high-cable-fly'), (SELECT id FROM muscle_group WHERE name = 'Upper Chest'), 'PRIMARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'low-to-high-cable-fly'), (SELECT id FROM muscle_group WHERE name = 'Front Delts'), 'SECONDARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'dumbbell-fly'), (SELECT id FROM muscle_group WHERE name = 'Chest'), 'PRIMARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'dumbbell-fly'), (SELECT id FROM muscle_group WHERE name = 'Front Delts'), 'SECONDARY');
 -- Upper Back
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'barbell-row'), (SELECT id FROM muscle_group WHERE name = 'Upper Back'), 'PRIMARY');
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'barbell-row'), (SELECT id FROM muscle_group WHERE name = 'Lats'), 'SECONDARY');
@@ -186,6 +244,13 @@ INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((S
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'wide-grip-seated-cable-row'), (SELECT id FROM muscle_group WHERE name = 'Upper Back'), 'PRIMARY');
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'wide-grip-seated-cable-row'), (SELECT id FROM muscle_group WHERE name = 'Biceps'), 'SECONDARY');
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'wide-grip-seated-cable-row'), (SELECT id FROM muscle_group WHERE name = 'Rear Delts'), 'SECONDARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 't-bar-row'), (SELECT id FROM muscle_group WHERE name = 'Upper Back'), 'PRIMARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 't-bar-row'), (SELECT id FROM muscle_group WHERE name = 'Lats'), 'SECONDARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 't-bar-row'), (SELECT id FROM muscle_group WHERE name = 'Biceps'), 'SECONDARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 't-bar-row'), (SELECT id FROM muscle_group WHERE name = 'Lower Back'), 'SECONDARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'machine-row'), (SELECT id FROM muscle_group WHERE name = 'Upper Back'), 'PRIMARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'machine-row'), (SELECT id FROM muscle_group WHERE name = 'Lats'), 'SECONDARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'machine-row'), (SELECT id FROM muscle_group WHERE name = 'Biceps'), 'SECONDARY');
 -- Lats
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'pull-up'), (SELECT id FROM muscle_group WHERE name = 'Lats'), 'PRIMARY');
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'pull-up'), (SELECT id FROM muscle_group WHERE name = 'Biceps'), 'SECONDARY');
@@ -204,6 +269,11 @@ INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((S
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'one-arm-dumbbell-row'), (SELECT id FROM muscle_group WHERE name = 'Lats'), 'PRIMARY');
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'one-arm-dumbbell-row'), (SELECT id FROM muscle_group WHERE name = 'Upper Back'), 'SECONDARY');
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'one-arm-dumbbell-row'), (SELECT id FROM muscle_group WHERE name = 'Biceps'), 'SECONDARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'close-grip-lat-pulldown'), (SELECT id FROM muscle_group WHERE name = 'Lats'), 'PRIMARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'close-grip-lat-pulldown'), (SELECT id FROM muscle_group WHERE name = 'Biceps'), 'SECONDARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'close-grip-lat-pulldown'), (SELECT id FROM muscle_group WHERE name = 'Upper Back'), 'SECONDARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'single-arm-lat-pulldown'), (SELECT id FROM muscle_group WHERE name = 'Lats'), 'PRIMARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'single-arm-lat-pulldown'), (SELECT id FROM muscle_group WHERE name = 'Biceps'), 'SECONDARY');
 -- Traps
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'barbell-shrug'), (SELECT id FROM muscle_group WHERE name = 'Traps'), 'PRIMARY');
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'barbell-shrug'), (SELECT id FROM muscle_group WHERE name = 'Forearms'), 'SECONDARY');
@@ -220,11 +290,18 @@ INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((S
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'seated-dumbbell-shoulder-press'), (SELECT id FROM muscle_group WHERE name = 'Triceps'), 'SECONDARY');
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'seated-dumbbell-shoulder-press'), (SELECT id FROM muscle_group WHERE name = 'Side Delts'), 'SECONDARY');
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'dumbbell-front-raise'), (SELECT id FROM muscle_group WHERE name = 'Front Delts'), 'PRIMARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'machine-shoulder-press'), (SELECT id FROM muscle_group WHERE name = 'Front Delts'), 'PRIMARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'machine-shoulder-press'), (SELECT id FROM muscle_group WHERE name = 'Triceps'), 'SECONDARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'machine-shoulder-press'), (SELECT id FROM muscle_group WHERE name = 'Side Delts'), 'SECONDARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'arnold-press'), (SELECT id FROM muscle_group WHERE name = 'Front Delts'), 'PRIMARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'arnold-press'), (SELECT id FROM muscle_group WHERE name = 'Triceps'), 'SECONDARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'arnold-press'), (SELECT id FROM muscle_group WHERE name = 'Side Delts'), 'SECONDARY');
 -- Side Delts
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'dumbbell-lateral-raise'), (SELECT id FROM muscle_group WHERE name = 'Side Delts'), 'PRIMARY');
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'cable-lateral-raise'), (SELECT id FROM muscle_group WHERE name = 'Side Delts'), 'PRIMARY');
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'upright-row'), (SELECT id FROM muscle_group WHERE name = 'Side Delts'), 'PRIMARY');
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'upright-row'), (SELECT id FROM muscle_group WHERE name = 'Traps'), 'SECONDARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'machine-lateral-raise'), (SELECT id FROM muscle_group WHERE name = 'Side Delts'), 'PRIMARY');
 -- Rear Delts
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'face-pull'), (SELECT id FROM muscle_group WHERE name = 'Rear Delts'), 'PRIMARY');
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'face-pull'), (SELECT id FROM muscle_group WHERE name = 'Upper Back'), 'SECONDARY');
@@ -232,6 +309,8 @@ INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((S
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'reverse-pec-deck'), (SELECT id FROM muscle_group WHERE name = 'Upper Back'), 'SECONDARY');
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'bent-over-dumbbell-reverse-fly'), (SELECT id FROM muscle_group WHERE name = 'Rear Delts'), 'PRIMARY');
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'bent-over-dumbbell-reverse-fly'), (SELECT id FROM muscle_group WHERE name = 'Upper Back'), 'SECONDARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'cable-rear-delt-fly'), (SELECT id FROM muscle_group WHERE name = 'Rear Delts'), 'PRIMARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'cable-rear-delt-fly'), (SELECT id FROM muscle_group WHERE name = 'Upper Back'), 'SECONDARY');
 -- Biceps
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'barbell-curl'), (SELECT id FROM muscle_group WHERE name = 'Biceps'), 'PRIMARY');
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'barbell-curl'), (SELECT id FROM muscle_group WHERE name = 'Forearms'), 'SECONDARY');
@@ -241,6 +320,10 @@ INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((S
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'machine-preacher-curl'), (SELECT id FROM muscle_group WHERE name = 'Biceps'), 'PRIMARY');
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'dumbbell-curl'), (SELECT id FROM muscle_group WHERE name = 'Biceps'), 'PRIMARY');
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'dumbbell-curl'), (SELECT id FROM muscle_group WHERE name = 'Forearms'), 'SECONDARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'ez-bar-curl'), (SELECT id FROM muscle_group WHERE name = 'Biceps'), 'PRIMARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'ez-bar-curl'), (SELECT id FROM muscle_group WHERE name = 'Forearms'), 'SECONDARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'cable-curl'), (SELECT id FROM muscle_group WHERE name = 'Biceps'), 'PRIMARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'ez-bar-preacher-curl'), (SELECT id FROM muscle_group WHERE name = 'Biceps'), 'PRIMARY');
 -- Triceps
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'close-grip-bench-press'), (SELECT id FROM muscle_group WHERE name = 'Triceps'), 'PRIMARY');
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'close-grip-bench-press'), (SELECT id FROM muscle_group WHERE name = 'Chest'), 'SECONDARY');
@@ -254,6 +337,10 @@ INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((S
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'assisted-dip'), (SELECT id FROM muscle_group WHERE name = 'Chest'), 'SECONDARY');
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'assisted-dip'), (SELECT id FROM muscle_group WHERE name = 'Front Delts'), 'SECONDARY');
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'ez-bar-skull-crusher'), (SELECT id FROM muscle_group WHERE name = 'Triceps'), 'PRIMARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'triceps-straight-bar-pushdown'), (SELECT id FROM muscle_group WHERE name = 'Triceps'), 'PRIMARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'triceps-v-bar-pushdown'), (SELECT id FROM muscle_group WHERE name = 'Triceps'), 'PRIMARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'single-arm-cable-pushdown'), (SELECT id FROM muscle_group WHERE name = 'Triceps'), 'PRIMARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'overhead-dumbbell-triceps-extension'), (SELECT id FROM muscle_group WHERE name = 'Triceps'), 'PRIMARY');
 -- Forearms
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'wrist-curl'), (SELECT id FROM muscle_group WHERE name = 'Forearms'), 'PRIMARY');
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'reverse-wrist-curl'), (SELECT id FROM muscle_group WHERE name = 'Forearms'), 'PRIMARY');
@@ -274,6 +361,10 @@ INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((S
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'crunch'), (SELECT id FROM muscle_group WHERE name = 'Abs'), 'PRIMARY');
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'ab-wheel-rollout'), (SELECT id FROM muscle_group WHERE name = 'Abs'), 'PRIMARY');
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'ab-wheel-rollout'), (SELECT id FROM muscle_group WHERE name = 'Lats'), 'SECONDARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'machine-crunch'), (SELECT id FROM muscle_group WHERE name = 'Abs'), 'PRIMARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'hanging-knee-raise'), (SELECT id FROM muscle_group WHERE name = 'Abs'), 'PRIMARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'hanging-knee-raise'), (SELECT id FROM muscle_group WHERE name = 'Forearms'), 'SECONDARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'decline-sit-up'), (SELECT id FROM muscle_group WHERE name = 'Abs'), 'PRIMARY');
 -- Obliques
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'russian-twist'), (SELECT id FROM muscle_group WHERE name = 'Obliques'), 'PRIMARY');
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'russian-twist'), (SELECT id FROM muscle_group WHERE name = 'Abs'), 'SECONDARY');
@@ -306,6 +397,15 @@ INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((S
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'goblet-squat'), (SELECT id FROM muscle_group WHERE name = 'Glutes'), 'SECONDARY');
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'walking-lunge'), (SELECT id FROM muscle_group WHERE name = 'Quadriceps'), 'PRIMARY');
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'walking-lunge'), (SELECT id FROM muscle_group WHERE name = 'Glutes'), 'PRIMARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'front-squat'), (SELECT id FROM muscle_group WHERE name = 'Quadriceps'), 'PRIMARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'front-squat'), (SELECT id FROM muscle_group WHERE name = 'Glutes'), 'SECONDARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'front-squat'), (SELECT id FROM muscle_group WHERE name = 'Upper Back'), 'SECONDARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'smith-machine-squat'), (SELECT id FROM muscle_group WHERE name = 'Quadriceps'), 'PRIMARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'smith-machine-squat'), (SELECT id FROM muscle_group WHERE name = 'Glutes'), 'SECONDARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'reverse-lunge'), (SELECT id FROM muscle_group WHERE name = 'Quadriceps'), 'PRIMARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'reverse-lunge'), (SELECT id FROM muscle_group WHERE name = 'Glutes'), 'PRIMARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'step-up'), (SELECT id FROM muscle_group WHERE name = 'Quadriceps'), 'PRIMARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'step-up'), (SELECT id FROM muscle_group WHERE name = 'Glutes'), 'PRIMARY');
 -- Hamstrings
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'romanian-deadlift'), (SELECT id FROM muscle_group WHERE name = 'Hamstrings'), 'PRIMARY');
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'romanian-deadlift'), (SELECT id FROM muscle_group WHERE name = 'Glutes'), 'SECONDARY');
@@ -314,6 +414,16 @@ INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((S
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'lying-leg-curl'), (SELECT id FROM muscle_group WHERE name = 'Calves'), 'SECONDARY');
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'seated-leg-curl'), (SELECT id FROM muscle_group WHERE name = 'Hamstrings'), 'PRIMARY');
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'seated-leg-curl'), (SELECT id FROM muscle_group WHERE name = 'Calves'), 'SECONDARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'dumbbell-romanian-deadlift'), (SELECT id FROM muscle_group WHERE name = 'Hamstrings'), 'PRIMARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'dumbbell-romanian-deadlift'), (SELECT id FROM muscle_group WHERE name = 'Glutes'), 'SECONDARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'dumbbell-romanian-deadlift'), (SELECT id FROM muscle_group WHERE name = 'Lower Back'), 'SECONDARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'sumo-deadlift'), (SELECT id FROM muscle_group WHERE name = 'Glutes'), 'PRIMARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'sumo-deadlift'), (SELECT id FROM muscle_group WHERE name = 'Hamstrings'), 'PRIMARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'sumo-deadlift'), (SELECT id FROM muscle_group WHERE name = 'Quadriceps'), 'PRIMARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'sumo-deadlift'), (SELECT id FROM muscle_group WHERE name = 'Lower Back'), 'SECONDARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'sumo-deadlift'), (SELECT id FROM muscle_group WHERE name = 'Traps'), 'SECONDARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'sumo-deadlift'), (SELECT id FROM muscle_group WHERE name = 'Forearms'), 'SECONDARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'nordic-curl'), (SELECT id FROM muscle_group WHERE name = 'Hamstrings'), 'PRIMARY');
 -- Glutes
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'barbell-hip-thrust'), (SELECT id FROM muscle_group WHERE name = 'Glutes'), 'PRIMARY');
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'barbell-hip-thrust'), (SELECT id FROM muscle_group WHERE name = 'Hamstrings'), 'SECONDARY');
@@ -321,10 +431,13 @@ INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((S
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'bulgarian-split-squat'), (SELECT id FROM muscle_group WHERE name = 'Quadriceps'), 'PRIMARY');
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'cable-glute-kickback'), (SELECT id FROM muscle_group WHERE name = 'Glutes'), 'PRIMARY');
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'cable-glute-kickback'), (SELECT id FROM muscle_group WHERE name = 'Hamstrings'), 'SECONDARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'glute-bridge'), (SELECT id FROM muscle_group WHERE name = 'Glutes'), 'PRIMARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'glute-bridge'), (SELECT id FROM muscle_group WHERE name = 'Hamstrings'), 'SECONDARY');
 -- Calves
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'standing-calf-raise'), (SELECT id FROM muscle_group WHERE name = 'Calves'), 'PRIMARY');
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'seated-calf-raise'), (SELECT id FROM muscle_group WHERE name = 'Calves'), 'PRIMARY');
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'donkey-calf-raise'), (SELECT id FROM muscle_group WHERE name = 'Calves'), 'PRIMARY');
+INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'leg-press-calf-raise'), (SELECT id FROM muscle_group WHERE name = 'Calves'), 'PRIMARY');
 -- Hip Adductors
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'hip-adduction-machine'), (SELECT id FROM muscle_group WHERE name = 'Hip Adductors'), 'PRIMARY');
 INSERT INTO exercise_musclegroup (exercise_id, muscle_group_id, role) VALUES ((SELECT id FROM exercise WHERE slug = 'cable-hip-adduction'), (SELECT id FROM muscle_group WHERE name = 'Hip Adductors'), 'PRIMARY');
