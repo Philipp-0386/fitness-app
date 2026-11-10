@@ -32,6 +32,7 @@ import {
   type SetField,
   type SetRow,
 } from '../lib/set-rows';
+import { formatDaysAgo } from '../lib/format-days-ago';
 import SetTable from './SetTable';
 
 //how long the spinner shows at least, a fast save would otherwise only flicker
@@ -288,7 +289,14 @@ export default function ActiveWorkoutView({
                 <Ellipsis aria-hidden="true" />
               </Button>
             </div>
-            <p className="mt-1 text-text-secondary tabular-nums">{formatTarget(entry)}</p>
+            <p className="mt-1 flex items-baseline justify-between gap-3 text-text-secondary tabular-nums">
+              <span>{formatTarget(entry)}</span>
+              {entry.lastTime && (
+                <span suppressHydrationWarning className="text-meta text-text-tertiary">
+                  Last time {formatDaysAgo(entry.lastTime.startedAt)}
+                </span>
+              )}
+            </p>
             <SetTable
               entry={entry}
               rows={rows[entry.id]}

@@ -57,17 +57,20 @@ export default function SetTable({
     durationSeconds: 'TIME',
     distanceMeters: 'M',
   };
-  const lastWorking = entry.lastTime?.sets.filter((s) => s.setType === 'WORKING') ?? [];
   const active = rows.findIndex((row) => row.status === 'open');
+  //the k-th row of a type is compared with the k-th set of that type last time
   const labels = rows.map((row, index) => {
-    const workingNumber = rows
+    const number = rows
       .slice(0, index + 1)
-      .filter((r) => r.setType === 'WORKING').length;
+      .filter((r) => r.setType === row.setType).length;
+    const last = entry.lastTime?.sets.filter((s) => s.setType === row.setType)[
+      number - 1
+    ];
     return row.setType === 'WORKING'
-      ? { workingNumber, short: String(workingNumber), title: `Set ${workingNumber}` }
+      ? { last, short: String(number), title: `Set ${number}` }
       : row.setType === 'WARMUP'
-        ? { workingNumber, short: 'W', title: 'Warm-Up' }
-        : { workingNumber, short: 'D', title: 'Drop Set' };
+        ? { last, short: 'W', title: 'Warm-Up' }
+        : { last, short: 'D', title: 'Drop Set' };
   });
   const sheetIndex = rows.findIndex((row) => row.clientId === sheetId);
 
@@ -112,9 +115,7 @@ export default function SetTable({
 
       <ol className="flex flex-col gap-1">
         {rows.map((row, index) => {
-          const { workingNumber, short, title } = labels[index];
-          const last =
-            row.setType === 'WORKING' ? lastWorking[workingNumber - 1] : undefined;
+          const { last, short, title } = labels[index];
 
           return (
             <SwipeableRow

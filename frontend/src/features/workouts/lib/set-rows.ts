@@ -1,5 +1,5 @@
 import type { TrackingType } from '@/features/exercises';
-import type { WorkoutExercise, WorkoutSet } from '../types/api.types';
+import type { SetType, WorkoutExercise, WorkoutSet } from '../types/api.types';
 import { newClientId } from './client-id';
 
 export type RowStatus = 'open' | 'saving' | 'saved' | 'failed';
@@ -21,19 +21,55 @@ export const requiredFields: Record<TrackingType, SetField[]> = {
 };
 
 /**
- * The rows of an entry: its logged sets, then open working rows until the target number of working sets is reached
- * (the routine's target, otherwise last time's, at least one). An open row takes the values of the same working set
- * last time, otherwise those of the row above, otherwise the targets.
+ * The rows of an entry: its logged sets, then open rows that follow last time's sets in their order (warm-ups,
+ * working and drop sets) with as many working sets as the target asks for (the routine's target, otherwise last
+ * time's, at least one). Missing working sets go after the last one, surplus ones are left out. The k-th set of a
+ * type is open as long as fewer than k sets of that type are logged; warm-ups only until a working or drop set is
+ * logged. An open row takes the values of its set last time, otherwise those of the working row above, otherwise the
+ * targets.
  */
 export function buildRows(entry: WorkoutExercise): SetRow[] {
   const rows: SetRow[] = entry.sets.map((set) => ({ ...set, status: 'saved' }));
-  const lastWorking = entry.lastTime?.sets.filter((s) => s.setType === 'WORKING') ?? [];
-  const target = Math.max(1, entry.targetSets ?? lastWorking.length);
+  const lastSets = entry.lastTime?.sets ?? [];
+  const target = Math.max(
+    1,
+    entry.targetSets ?? lastSets.filter((s) => s.setType === 'WORKING').length,
+  );
 
-  let working = rows.filter((row) => row.setType === 'WORKING').length;
-  while (working < target) {
-    const values = lastWorking[working] ??
-      rows.at(-1) ?? {
+  const plan: { setType: SetType; values: WorkoutSet | null }[] = [];
+  let working = 0;
+  for (const set of lastSets) {
+    if (set.setType === 'WORKING') {
+      if (working === target) continue;
+      working++;
+    }
+    plan.push({ setType: set.setType, values: set });
+  }
+  let afterLastWorking = plan.length;
+  for (let i = plan.length - 1; i >= 0; i--) {
+    if (plan[i].setType === 'WORKING') {
+      afterLastWorking = i + 1;
+      break;
+    }
+  }
+  plan.splice(
+    afterLastWorking,
+    0,
+    ...Array.from({ length: target - working }, () => ({
+      setType: 'WORKING' as const,
+      values: null,
+    })),
+  );
+
+  const logged: Record<SetType, number> = { WARMUP: 0, WORKING: 0, DROP: 0 };
+  for (const row of rows) logged[row.setType]++;
+  const warmedUp = logged.WORKING + logged.DROP > 0;
+  const seen: Record<SetType, number> = { WARMUP: 0, WORKING: 0, DROP: 0 };
+  for (const { setType, values } of plan) {
+    seen[setType]++;
+    if (seen[setType] <= logged[setType] || (setType === 'WARMUP' && warmedUp)) continue;
+    const filled = values ??
+      rows.findLast((row) => row.setType === 'WORKING') ?? {
         reps: entry.targetRepsMin,
         weightKg: null,
         durationSeconds: entry.targetDurationSeconds,
@@ -42,22 +78,24 @@ export function buildRows(entry: WorkoutExercise): SetRow[] {
     rows.push({
       clientId: newClientId(),
       setNumber: Math.max(0, ...rows.map((row) => row.setNumber)) + 1,
-      setType: 'WORKING',
+      setType,
       rpe: null,
-      reps: values.reps,
-      weightKg: values.weightKg,
-      durationSeconds: values.durationSeconds,
-      distanceMeters: values.distanceMeters,
+      reps: filled.reps,
+      weightKg: filled.weightKg,
+      durationSeconds: filled.durationSeconds,
+      distanceMeters: filled.distanceMeters,
       status: 'open',
     });
-    working++;
   }
   return rows;
 }
 
-/** Appends an open working row ("Add Set") with the values of the row above, or the targets if there is none. */
+/**
+ * Appends an open working row ("Add Set") with the values of the last working row, otherwise the row above,
+ * otherwise the targets.
+ */
 export function addRow(entry: WorkoutExercise, rows: SetRow[]): SetRow[] {
-  const above = rows.at(-1);
+  const above = rows.findLast((row) => row.setType === 'WORKING') ?? rows.at(-1);
   return [
     ...rows,
     {
