@@ -78,6 +78,7 @@ public class WorkoutMapper {
                 set.getClientId(),
                 set.getSetNumber(),
                 set.getSetType(),
+                set.getRpe(),
                 set.getReps(),
                 set.getWeightKg(),
                 set.getDurationSeconds(),

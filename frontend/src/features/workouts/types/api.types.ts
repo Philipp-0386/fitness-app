@@ -8,6 +8,8 @@ export type WorkoutSet = {
   clientId: string;
   setNumber: number;
   setType: SetType;
+  /** Rate of perceived exertion, 1 to 10 with one decimal. */
+  rpe: number | null;
   reps: number | null;
   weightKg: number | null;
   durationSeconds: number | null;

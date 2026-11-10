@@ -107,6 +107,7 @@ export default function ActiveWorkoutView({
           workoutExerciseId: entryId,
           setNumber: row.setNumber,
           setType: row.setType,
+          rpe: row.rpe,
           reps: row.reps,
           weightKg: row.weightKg,
           durationSeconds: row.durationSeconds,
@@ -232,6 +233,17 @@ export default function ActiveWorkoutView({
     if (next[index].status !== 'open') save(entry.id, next[index]);
   }
 
+  function handleOptionChange(
+    index: number,
+    option: Partial<Pick<SetRow, 'setType' | 'rpe'>>,
+  ) {
+    const next = rows[entry.id].map((row, i) =>
+      i === index ? { ...row, ...option } : row,
+    );
+    setRows({ ...rows, [entry.id]: next });
+    if (next[index].status !== 'open') save(entry.id, next[index]);
+  }
+
   return (
     <div className="mx-auto flex w-full max-w-app flex-1 flex-col">
       <WorkoutTopBar
@@ -281,6 +293,7 @@ export default function ActiveWorkoutView({
               entry={entry}
               rows={rows[entry.id]}
               onChange={handleChange}
+              onOptionChange={handleOptionChange}
               onAdd={() =>
                 setRows({ ...rows, [entry.id]: addRow(entry, rows[entry.id]) })
               }

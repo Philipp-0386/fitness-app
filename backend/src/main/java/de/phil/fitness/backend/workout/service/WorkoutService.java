@@ -274,6 +274,7 @@ public class WorkoutService {
         });
         set.setSetNumber(req.setNumber());
         set.setSetType(req.setType() != null ? req.setType() : SetType.WORKING);
+        set.setRpe(req.rpe());
         set.setReps(req.reps());
         set.setWeightKg(req.weightKg());
         set.setDurationSeconds(req.durationSeconds());

@@ -53,7 +53,12 @@ export default function LogBar({
       onClick={() => onLog(row)}
       className="tabular-nums"
     >
-      Log Set {workingNumber}: {formatSetValues(type, row)}
+      {row.setType === 'WORKING'
+        ? `Log Set ${workingNumber}`
+        : row.setType === 'WARMUP'
+          ? 'Log Warm-Up'
+          : 'Log Drop Set'}
+      : {formatSetValues(type, row)}
     </Button>
   );
 }
