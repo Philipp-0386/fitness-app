@@ -19,3 +19,16 @@ export type UpdatePasswordPayload = {
   currentPassword: string;
   newPassword: string;
 };
+
+/** Mirrors the backend UserSettingsResponse record. */
+export type UserSettings = {
+  weightUnit: 'KG' | 'LB';
+  distanceUnit: 'KM' | 'MI';
+  timeZone: string;
+};
+
+export type UpdateUserSettingsPayload = {
+  weightUnit: 'KG' | 'LB';
+  distanceUnit: 'KM' | 'MI';
+  timeZone: string;
+};
