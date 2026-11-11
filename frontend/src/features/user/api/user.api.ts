@@ -2,7 +2,7 @@ import 'server-only';
 
 import backendFetch from '@/shared/api/backend';
 import { toApiError } from '@/shared/api/errors/to-api-error';
-import { User } from '../types/api.types';
+import { User, UserSettings } from '../types/api.types';
 
 /**
  * Reads the account of the current user.
@@ -14,6 +14,16 @@ export async function fetchMe(): Promise<User> {
 
   if (!response.ok) {
     throw await toApiError(response, 'USER_FETCH_FAILED');
+  }
+
+  return response.json();
+}
+
+export async function fetchSettings(): Promise<UserSettings> {
+  const response = await backendFetch('/backend/me/settings');
+
+  if (!response.ok) {
+    throw await toApiError(response, 'SETTINGS_FETCH_FAILED');
   }
 
   return response.json();

@@ -2,13 +2,12 @@ package de.phil.fitness.backend.user.service;
 
 import java.util.Optional;
 
+import de.phil.fitness.backend.user.dto.*;
+import de.phil.fitness.backend.user.model.UserSettings;
+import de.phil.fitness.backend.user.repository.UserSettingsRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import de.phil.fitness.backend.user.dto.PasswordUpdateRequest;
-import de.phil.fitness.backend.user.dto.UserDeleteRequest;
-import de.phil.fitness.backend.user.dto.UserResponse;
-import de.phil.fitness.backend.user.dto.UserUpdateRequest;
 import de.phil.fitness.backend.user.exception.DefaultRoleNotFoundException;
 import de.phil.fitness.backend.user.exception.EmailAlreadyExistsException;
 import de.phil.fitness.backend.user.exception.InvalidPasswordException;
@@ -39,14 +38,16 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final EntityManager entityManager;
     private final UserMapper userMapper;
+    private final UserSettingsRepository userSettingsRepository;
 
     public UserService(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder,
-                       EntityManager entityManager, UserMapper userMapper) {
+                       EntityManager entityManager, UserMapper userMapper, UserSettingsRepository userSettingsRepository) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.entityManager = entityManager;
         this.userMapper = userMapper;
+        this.userSettingsRepository = userSettingsRepository;
     }
 
     /**
@@ -93,7 +94,9 @@ public class UserService {
                 .orElseThrow(() -> new DefaultRoleNotFoundException("Default role not found during user creation!"));
         user.setRole(defaultRole);
         user.setPasswordHashed(passwordEncoder.encode(rawPassword));
-        return userRepository.save(user);
+        User saved = userRepository.save(user);
+        userSettingsRepository.save(new UserSettings(saved.getId()));
+        return saved;
     }
 
     private User loadUser(Long userId) {
@@ -159,5 +162,22 @@ public class UserService {
         }
         user.setPasswordHashed(passwordEncoder.encode(req.newPassword()));
         log.info("Password updated. userId={}", userId);
+    }
+
+    public UserSettingsResponse getUserSettings(Long userId) {
+        UserSettings settings = userSettingsRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("No user settings found for userId=" + userId));
+        UserSettingsResponse response = userMapper.toSettingsResponse(settings);
+        return response;
+    }
+
+    public UserSettingsResponse updateUserSettings(Long userId, UserSettingsUpdateRequest req) {
+        UserSettings settings = userSettingsRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("No user settings found for userId=" + userId));
+        settings.setWeightUnit(req.weightUnit());
+        settings.setDistanceUnit(req.distanceUnit());
+        settings.setTimeZone(req.timeZone());
+        log.info("User settings updated. userId={}", userId);
+        return userMapper.toSettingsResponse(settings);
     }
 }

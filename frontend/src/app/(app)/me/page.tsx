@@ -5,8 +5,10 @@ import { LogoutButton } from '@/features/home';
 import {
   ChangePasswordDialog,
   DeleteAccountDialog,
+  UnitSettings,
   UpdateAccountDialog,
   fetchMe,
+  fetchSettings,
 } from '@/features/user';
 import { requireSession } from '@/shared/auth/session';
 import { cn } from '@/shared/lib/utils';
@@ -16,7 +18,7 @@ import { listClass, listRowClass } from '@/shared/ui/list';
 export default async function MePage() {
   await requireSession();
 
-  const user = await fetchMe();
+  const [user, settings] = await Promise.all([fetchMe(), fetchSettings()]);
   const memberSince = new Date(user.createdAt).toLocaleDateString('en-GB', {
     month: 'short',
     year: 'numeric',
@@ -42,16 +44,26 @@ export default async function MePage() {
         </div>
       </section>
 
-      <ul className={cn(listClass, 'mx-4 mt-5')}>
-        <li>
-          <UpdateAccountDialog username={user.username} email={user.email} />
-        </li>
-        <li>
-          <ChangePasswordDialog />
-        </li>
-      </ul>
+      <section aria-labelledby="login-title" className="mx-4 mt-6">
+        <h2 id="login-title" className="mb-3 text-title">
+          Login Details
+        </h2>
+        <ul className={listClass}>
+          <li>
+            <UpdateAccountDialog username={user.username} email={user.email} />
+          </li>
+          <li>
+            <ChangePasswordDialog />
+          </li>
+        </ul>
+      </section>
 
-      <nav aria-label="Site" className="mx-4 mt-5 lg:hidden">
+      <UnitSettings initialSettings={settings} />
+
+      <nav aria-labelledby="info-title" className="mx-4 mt-8 lg:hidden">
+        <h2 id="info-title" className="mb-3 text-title">
+          Info
+        </h2>
         <ul className={listClass}>
           <li>
             <Link href="/about" className={listRowClass}>
@@ -91,11 +103,14 @@ export default async function MePage() {
         </ul>
       </nav>
 
-      <div className={cn(listClass, 'mx-4 mt-5')}>
+      <div className={cn(listClass, 'mx-4 mt-8')}>
         <LogoutButton />
       </div>
 
-      <section aria-label="Danger zone" className="mx-4 mt-8">
+      <section aria-labelledby="danger-title" className="mx-4 mt-8">
+        <h2 id="danger-title" className="mb-3 text-title">
+          Danger Zone
+        </h2>
         <ul className={listClass}>
           <li>
             <DeleteAccountDialog />

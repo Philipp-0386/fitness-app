@@ -48,7 +48,7 @@ comparison against a misspelled code fails to compile. A new code in the backend
 | `USERNAME_ALREADY_TAKEN` | 409    | sign-up; `PUT /backend/me` when another user has the username                                                                                               |
 | `DEFAULT_ROLE_NOT_FOUND` | 500    | sign-up, missing seed data; the client only gets a generic message                                                                                          |
 | `SIGNUP_DISABLED`        | 403    | `SignUpDisabledException` from `SignUpService` when `app.signup.enabled` is false; checked before the duplicate checks                                      |
-| `UNAUTHENTICATED`        | 401    | security filter chain, no valid access token; `UserNotFoundException` on `/backend/me` when the token's user was deleted; `InvalidRefreshTokenException` on `/backend/auth/refresh` |
+| `UNAUTHENTICATED`        | 401    | security filter chain, no valid access token; `UserNotFoundException` on `/backend/me` and `/backend/me/settings` when the token's user was deleted; `InvalidRefreshTokenException` on `/backend/auth/refresh` |
 | `ACCESS_DENIED`          | 403    | ownership checks, and the filter chain                                                                                                                      |
 | `EXERCISE_NOT_FOUND`     | 404    | `ExerciseNotFoundException` from `ExerciseService`: missing, soft deleted or owned by someone else; deliberately not 403, which would confirm the id exists |
 | `GLOBAL_EXERCISE_NOT_EDITABLE` | 403 | `GlobalExerciseNotEditableException` on `PUT` and `DELETE /backend/exercises/{id}` for a global catalog entry; 403 instead of 404, global exercises are visible to everyone |
@@ -57,7 +57,7 @@ comparison against a misspelled code fails to compile. A new code in the backend
 | `PRESET_ROUTINE_NOT_FOUND` | 404 | `PresetRoutineNotFoundException` from `RoutineService` on `GET /backend/routines/presets/{id}`: missing, or an own routine (copies of presets included) |
 | `INVALID_PASSWORD`       | 403    | `InvalidPasswordException` on `DELETE /backend/me`, `PUT /backend/me` and `PUT /backend/me/password`, wrong password; not 401, the session is still valid   |
 | `INVALID_JSON`           | 400    | unparseable request body                                                                                                                                    |
-| `VALIDATION_FAILED`      | 400    | bean validation on a `@Valid` request body, a value outside an enum, a routine target the exercise's `tracking_type` does not use (`RoutineTargetMismatchException`), and a new password equal to the current one (`PasswordUnchangedException`); `fieldErrors` maps each rejected field to its first message |
+| `VALIDATION_FAILED`      | 400    | bean validation on a `@Valid` request body (including `@ValidTimeZone`, which accepts only IANA region ids), a value outside an enum, a routine target the exercise's `tracking_type` does not use (`RoutineTargetMismatchException`), and a new password equal to the current one (`PasswordUnchangedException`); `fieldErrors` maps each rejected field to its first message |
 | `RESOURCE_NOT_FOUND`     | 404    | no handler mapped to the path                                                                                                                               |
 | `INVALID_PARAMETER`      | 400    | path variable or query parameter of the wrong type, e.g. `/backend/exercises/abc`                                                                           |
 | `DATA_CONFLICT`          | 409    | the database rejected a write (unique or foreign key constraint) the service did not check first; a safety net, only the constraint name is logged          |
@@ -135,7 +135,7 @@ The first row of failures arrives as an `InvalidFormatException` wrapped in
 
 ## To-Do
 
-- After an account deletion, only `/backend/me` rejects the old access token. Every other endpoint
+- After an account deletion, only `/backend/me` and `/backend/me/settings` reject the old access token. Every other endpoint
   accepts it until it expires (up to 15 min): `GET /backend/exercises` answers 200, a write that
   references the user fails on the foreign key with a 409 `DATA_CONFLICT`. Closes with the token lifecycle
   (revocation), or with a user lookup in `CurrentUser`.

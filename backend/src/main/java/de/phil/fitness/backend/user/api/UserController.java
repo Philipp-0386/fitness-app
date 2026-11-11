@@ -1,5 +1,6 @@
 package de.phil.fitness.backend.user.api;
 
+import de.phil.fitness.backend.user.dto.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,10 +11,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import de.phil.fitness.backend.auth.CurrentUser;
 import de.phil.fitness.backend.common.ErrorResponse;
-import de.phil.fitness.backend.user.dto.PasswordUpdateRequest;
-import de.phil.fitness.backend.user.dto.UserDeleteRequest;
-import de.phil.fitness.backend.user.dto.UserResponse;
-import de.phil.fitness.backend.user.dto.UserUpdateRequest;
 import de.phil.fitness.backend.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -91,5 +88,25 @@ public class UserController {
     public ResponseEntity<Void> updatePassword(@Valid @RequestBody PasswordUpdateRequest req) {
         userService.updatePassword(currentUser.currentUserId(), req);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/settings")
+    @Operation(summary = "Get the own settings")
+    @ApiResponse(responseCode = "200", description = "The current settings")
+    @ApiResponse(responseCode = "401", description = "UNAUTHENTICATED: missing, invalid or expired access token, or the token's user no longer exists",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    public ResponseEntity<UserSettingsResponse> getUserSettings() {
+        return ResponseEntity.ok(userService.getUserSettings(currentUser.currentUserId()));
+    }
+
+    @PutMapping("/settings")
+    @Operation(summary = "Update the own settings", description = "Replaces all settings. The time zone must be an IANA region id, e.g. Europe/Berlin.")
+    @ApiResponse(responseCode = "200", description = "The updated settings")
+    @ApiResponse(responseCode = "400", description = "INVALID_JSON or VALIDATION_FAILED, also for an unknown unit or time zone",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    @ApiResponse(responseCode = "401", description = "UNAUTHENTICATED: missing, invalid or expired access token, or the token's user no longer exists",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    public ResponseEntity<UserSettingsResponse> updateUserSettings(@Valid @RequestBody UserSettingsUpdateRequest req) {
+        return ResponseEntity.ok(userService.updateUserSettings(currentUser.currentUserId(), req));
     }
 }
