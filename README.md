@@ -11,6 +11,10 @@ Current focus:
 
 [For more insights](././docs/general_planning.md#what-now)
 
+Architecture:
+
+[System, backend slices and domain model](/docs/architecture.md)
+
 ---
 
 # Requirements

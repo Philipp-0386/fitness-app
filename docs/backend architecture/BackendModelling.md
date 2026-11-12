@@ -1,12 +1,6 @@
 # README for backend documentation
 
-This part of the documentation will focus on the spring backend structre. Currently (only) two diagramms will be responsible for that.
-
-I have **NOT** made either diagram yet.
-
-- [Domain model](./domain_class_diagram.uxf) — core domain entities
-  and their relationships (User, Workout, Exercise, Set, etc.)
-- [Core infrastructure](./backend_core_infrastructure_class_diagram.uxf) —
-  backend concerns such as JWT authentication and the Spring Security component structure
-
-(Note to myself: Once digrams are finished, include .png copies in documentation)
+The backend structure is documented in [architecture.md](../architecture.md): the system
+overview, the dependencies between the backend slices and the domain model of the JPA entities.
+The diagrams are written in Mermaid, so they live next to the code, and the slice dependencies are
+enforced by `ArchitectureTests` in the backend test sources.
