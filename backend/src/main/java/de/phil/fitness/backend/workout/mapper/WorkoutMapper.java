@@ -1,11 +1,9 @@
 package de.phil.fitness.backend.workout.mapper;
 
 import de.phil.fitness.backend.exercise.dto.ExerciseSummary;
-import de.phil.fitness.backend.workout.dto.LastTimeResponse;
-import de.phil.fitness.backend.workout.dto.WorkoutExerciseResponse;
-import de.phil.fitness.backend.workout.dto.WorkoutResponse;
-import de.phil.fitness.backend.workout.dto.WorkoutSetResponse;
+import de.phil.fitness.backend.workout.dto.*;
 import de.phil.fitness.backend.workout.model.Workout;
+import de.phil.fitness.backend.workout.repository.WorkoutEntryCounts;
 import de.phil.fitness.backend.workout.model.WorkoutExercise;
 import de.phil.fitness.backend.workout.model.WorkoutSet;
 import de.phil.fitness.backend.workout.repository.LastTimeEntry;
@@ -30,10 +28,24 @@ public class WorkoutMapper {
                 workout.getName(),
                 workout.getRoutineId(),
                 workout.getProgramDayId(),
+                workout.getStatus(),
                 workout.getStartedAt(),
+                workout.getEndedAt(),
                 workout.getExercises().stream()
                         .map(we -> toWorkoutExerciseResponse(we, exercises, lastTimes))
                         .toList()
+        );
+    }
+
+    public WorkoutListItemResponse toWorkoutListItemResponse(Workout workout, List<WorkoutEntryCounts> entries,
+                                                             Map<Long, ExerciseSummary> exercises) {
+        return new WorkoutListItemResponse(
+                workout.getId(),
+                workout.getName(),
+                workout.getStartedAt(),
+                workout.getEndedAt(),
+                entries.stream().mapToInt(e -> e.getSetCount().intValue()).sum(),
+                entries.stream().map(e -> exercises.get(e.getExerciseId()).name()).toList()
         );
     }
 

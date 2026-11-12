@@ -17,6 +17,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
@@ -207,6 +208,30 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Handles query or path parameters that break a constraint on the controller method, e.g. a page size above its
+     * maximum. Answers like an invalid body, with the parameter names as field errors.
+     * @param ex The exception object thrown
+     * @return Returns a {@link ResponseEntity} containing key information regarding the exception
+     */
+    @ExceptionHandler(HandlerMethodValidationException.class)
+    public ResponseEntity<ErrorResponse> handleMethodValidation(HandlerMethodValidationException ex, HttpServletRequest req) {
+        Map<String, String> fieldErrors = new LinkedHashMap<>();
+        ex.getParameterValidationResults().forEach(result -> fieldErrors.put(
+                result.getMethodParameter().getParameterName(),
+                result.getResolvableErrors().getFirst().getDefaultMessage()));
+
+        log.warn("Rejected invalid parameter. path={} fields={}", req.getRequestURI(), fieldErrors.keySet());
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(
+                        "VALIDATION_FAILED",
+                        "Request parameters have invalid values",
+                        req.getRequestURI(),
+                        fieldErrors
+                ));
+    }
+
+    /**
      * Handles a write the database rejected, e.g. a unique constraint the service did not check first.
      *
      * Currently only a safety-net that should not be needed, since business logic should create own exception according to the conflict.
@@ -259,4 +284,6 @@ public class GlobalExceptionHandler {
                         req.getRequestURI()
                 ));
     }
+
+
 }
