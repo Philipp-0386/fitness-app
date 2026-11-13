@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
@@ -54,7 +55,7 @@ public class LoginService {
         failedAttempts.invalidate(username);
 
         String accessToken = jwtService.generateAccessToken(user.get().getId().toString());
-        String refreshToken = jwtService.generateRefreshToken(user.get().getId().toString());
+        String refreshToken = jwtService.generateRefreshToken(user.get().getId().toString(), UUID.randomUUID());
 
         return new LoginResponse(accessToken, refreshToken);
     }

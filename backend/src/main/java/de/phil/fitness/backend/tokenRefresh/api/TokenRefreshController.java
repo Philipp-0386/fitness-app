@@ -32,13 +32,14 @@ public class TokenRefreshController {
     }
 
     @PostMapping("/refresh")
-    @Operation(summary = "Refresh the access token", description = "Exchanges a valid refresh token for a new 2h "
-            + "access token. The refresh token itself is not renewed.")
-    @ApiResponse(responseCode = "200", description = "Refresh token valid")
+    @Operation(summary = "Refresh the access token", description = "Exchanges a valid refresh token for a new access "
+            + "token and a new refresh token of the same session, so an active session does not expire. The old "
+            + "refresh token stays valid until it expires.")
+    @ApiResponse(responseCode = "200", description = "Refresh token valid, new access and refresh token")
     @ApiResponse(responseCode = "400", description = "INVALID_JSON or VALIDATION_FAILED",
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     @ApiResponse(responseCode = "401", description = "UNAUTHENTICATED: invalid or expired refresh token, an access "
-            + "token, or the token's user no longer exists",
+            + "token, the token's user no longer exists, its session was logged out or the password changed after it was issued",
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     public AccessRefreshResponse refresh(@Valid @RequestBody AccessRefreshRequest request) {
         return tokenRefreshService.refresh(request);

@@ -13,7 +13,7 @@ export type Session = {
  * Reads the session from the httpOnly access token cookie.
  *
  * The token is NOT verified here. The decoded claims are used for display purposes only.
- * See docs/security/TokenLifecycle.md for the planned lifecycle (refresh, logout).
+ * See docs/security/Authentication.md for the token lifecycle (refresh, logout).
  */
 export async function getSession(): Promise<Session | null> {
   const cookieStore = await cookies();

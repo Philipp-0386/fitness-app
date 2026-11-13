@@ -14,6 +14,7 @@ CREATE TABLE userdata (
     password_hashed VARCHAR(128) NOT NULL,
     role_id INTEGER DEFAULT 1 NOT NULL,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    tokens_valid_after TIMESTAMPTZ,
     CONSTRAINT fk_userdata_role FOREIGN KEY (role_id) REFERENCES roles(id)
 );
 
@@ -24,6 +25,14 @@ CREATE TABLE user_settings (
     distance_unit VARCHAR(8) DEFAULT 'KM' NOT NULL CHECK (distance_unit IN ('KM', 'MI')),
     time_zone VARCHAR(64) DEFAULT 'Europe/Berlin' NOT NULL,
     CONSTRAINT fk_user_settings_user FOREIGN KEY (user_id) REFERENCES userdata(id) ON DELETE CASCADE
+);
+
+-- Sessions ended by logout. A refresh token with a listed sid is rejected
+CREATE TABLE revoked_session (
+    session_id UUID PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    expires_at TIMESTAMPTZ NOT NULL,
+    CONSTRAINT fk_revoked_session_user FOREIGN KEY (user_id) REFERENCES userdata(id) ON DELETE CASCADE
 );
 
 -- Lookup of muscle groups in two levels: groups (Chest, Back, ..., with body_region) and their areas (Upper Chest, Lats, ...).

@@ -5,14 +5,16 @@ import {
   ACCESS_TOKEN_COOKIE,
   REFRESH_TOKEN_COOKIE,
   accessTokenCookieOptions,
+  refreshTokenCookieOptions,
 } from './cookies';
 import { refreshAccessToken } from './refresh';
 import { isExpiringSoon } from './token';
 
 /**
  * Proxy step: renews the access token when it is missing or about to expire.
- * Token is written to the forwarded request as well, so the code rendering this
- * request already sees it.
+ * The access token is written to the forwarded request as well, so the code rendering
+ * this request already sees it. The refresh token comes back renewed too, which keeps
+ * an active session from expiring.
  */
 export async function refreshSession(request: NextRequest): Promise<NextResponse> {
   const accessToken = request.cookies.get(ACCESS_TOKEN_COOKIE)?.value;
@@ -35,6 +37,11 @@ export async function refreshSession(request: NextRequest): Promise<NextResponse
         ACCESS_TOKEN_COOKIE,
         result.accessToken,
         accessTokenCookieOptions,
+      );
+      response.cookies.set(
+        REFRESH_TOKEN_COOKIE,
+        result.refreshToken,
+        refreshTokenCookieOptions,
       );
       return response;
     }

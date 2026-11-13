@@ -3,6 +3,7 @@ package de.phil.fitness.backend.auth;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
+import java.util.UUID;
 
 import javax.crypto.SecretKey;
 
@@ -21,6 +22,9 @@ public class JwtService {
     public static final String TOKEN_TYPE_CLAIM = "type";
     public static final String TOKEN_TYPE_ACCESS = "access";
     public static final String TOKEN_TYPE_REFRESH = "refresh";
+
+    /** Claim of a refresh token naming its session, the unit a logout revokes. */
+    public static final String SESSION_ID_CLAIM = "sid";
 
     private final JwtProperties jwtProperties;
     private final SecretKey key;
@@ -43,7 +47,11 @@ public class JwtService {
                 .compact();
     }
 
-    public String generateRefreshToken(String userId) {
+    /**
+     * @param userId the user the token is issued to
+     * @param sessionId the session of the token, new at login and carried over on every refresh
+     */
+    public String generateRefreshToken(String userId, UUID sessionId) {
         Instant now = Instant.now();
         Instant expiry = now.plus(Duration.ofDays(jwtProperties.refreshTokenExpirationDays()));
 
@@ -52,17 +60,19 @@ public class JwtService {
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(expiry))
                 .claim(TOKEN_TYPE_CLAIM, TOKEN_TYPE_REFRESH)
+                .claim(SESSION_ID_CLAIM, sessionId.toString())
                 .signWith(key)
                 .compact();
     }
 
     /**
-     * Verifies a refresh token and returns the id of the user it was issued to.
+     * Verifies a refresh token and returns its claims. Revocation is not checked here.
      * @param token the given refresh token from the client
-     * @return user id taken from the token's subject claim
-     * @throws InvalidRefreshTokenException thrown if the token is invalid (malformed, expired, wrongly signed or not a refresh token)
+     * @return user id, session id and issue time of the token
+     * @throws InvalidRefreshTokenException thrown if the token is invalid (malformed, expired, wrongly signed, not a
+     *         refresh token or missing a claim)
      */
-    public Long verifyRefreshToken(String token) {
+    public RefreshTokenClaims verifyRefreshToken(String token) {
         Claims claims;
         try {
             claims = Jwts.parser()
@@ -78,10 +88,18 @@ public class JwtService {
             throw new InvalidRefreshTokenException("Token is not a refresh token");
         }
 
+        String sessionId = claims.get(SESSION_ID_CLAIM, String.class);
+        if (sessionId == null || claims.getIssuedAt() == null) {
+            throw new InvalidRefreshTokenException("Refresh token has no session id or issue time");
+        }
+
         try {
-            return Long.valueOf(claims.getSubject());
-        } catch (NumberFormatException e) {
-            throw new InvalidRefreshTokenException("Refresh token subject is not a user id");
+            return new RefreshTokenClaims(
+                    Long.valueOf(claims.getSubject()),
+                    UUID.fromString(sessionId),
+                    claims.getIssuedAt().toInstant());
+        } catch (IllegalArgumentException e) {
+            throw new InvalidRefreshTokenException("Refresh token subject is not a user id or session id is not a UUID");
         }
     }
 }

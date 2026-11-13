@@ -3,6 +3,7 @@ package de.phil.fitness.backend.auth;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
+import java.util.UUID;
 
 import javax.crypto.SecretKey;
 
@@ -171,7 +172,7 @@ class AuthTests {
     @DisplayName("a refresh token is not accepted as a bearer token")
     void refreshTokenIsNotAnAccessToken() throws Exception {
         Long maxId = userRepository.findByUsernameIgnoreCase("max12").orElseThrow().getId();
-        String refreshToken = jwtService.generateRefreshToken(maxId.toString());
+        String refreshToken = jwtService.generateRefreshToken(maxId.toString(), UUID.randomUUID());
 
         mockMvc.perform(get(PROTECTED_PATH).header("Authorization", "Bearer " + refreshToken))
                 .andExpect(status().isUnauthorized())

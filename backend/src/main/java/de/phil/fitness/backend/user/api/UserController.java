@@ -4,6 +4,7 @@ import de.phil.fitness.backend.user.dto.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -76,8 +77,10 @@ public class UserController {
     }
 
     @PutMapping("/password")
-    @Operation(summary = "Change the password", description = "Confirmed by the current password. Tokens issued before the change stay valid until they expire.")
-    @ApiResponse(responseCode = "204", description = "Password changed")
+    @Operation(summary = "Change the password", description = "Confirmed by the current password. Ends every session: "
+            + "refresh tokens issued before the change are rejected, access tokens stay valid until they expire. "
+            + "Returns a token pair of a new session for the caller.")
+    @ApiResponse(responseCode = "200", description = "Password changed, new access and refresh token")
     @ApiResponse(responseCode = "400", description = "INVALID_JSON or VALIDATION_FAILED",
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     @ApiResponse(responseCode = "401", description = "UNAUTHENTICATED: missing, invalid or expired access token, "
@@ -85,9 +88,20 @@ public class UserController {
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     @ApiResponse(responseCode = "403", description = "INVALID_PASSWORD: the current password does not match, the session stays valid",
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
-    public ResponseEntity<Void> updatePassword(@Valid @RequestBody PasswordUpdateRequest req) {
-        userService.updatePassword(currentUser.currentUserId(), req);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<TokenPairResponse> updatePassword(@Valid @RequestBody PasswordUpdateRequest req) {
+        return ResponseEntity.ok(userService.updatePassword(currentUser.currentUserId(), req));
+    }
+
+    @PostMapping("/logout-others")
+    @Operation(summary = "Log out other devices", description = "Ends every session: refresh tokens issued before now "
+            + "are rejected, access tokens stay valid until they expire. Returns a token pair of a new session for "
+            + "the caller, so only the other devices are logged out.")
+    @ApiResponse(responseCode = "200", description = "Other sessions ended, new access and refresh token")
+    @ApiResponse(responseCode = "401", description = "UNAUTHENTICATED: missing, invalid or expired access token, "
+            + "or the token's user no longer exists",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    public ResponseEntity<TokenPairResponse> logoutOtherSessions() {
+        return ResponseEntity.ok(userService.logoutOtherSessions(currentUser.currentUserId()));
     }
 
     @GetMapping("/settings")
