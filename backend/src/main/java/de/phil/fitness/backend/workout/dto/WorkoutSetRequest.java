@@ -11,7 +11,7 @@ public record WorkoutSetRequest(
         SetType setType,
         @DecimalMin("1") @DecimalMax("10") @Digits(integer = 2, fraction = 1) BigDecimal rpe,
         @PositiveOrZero Integer reps,
-        @PositiveOrZero @Digits(integer = 4, fraction = 2) BigDecimal weightKg,
+        @PositiveOrZero @Digits(integer = 4, fraction = 3) BigDecimal weightKg,
         @Positive Integer durationSeconds,
         @PositiveOrZero @Digits(integer = 6, fraction = 2) BigDecimal distanceMeters
 ) {}

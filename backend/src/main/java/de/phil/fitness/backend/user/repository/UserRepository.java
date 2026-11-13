@@ -9,7 +9,7 @@ import java.util.Optional;
  *  Repository for {@link User} persistence operations.
  */
 public interface UserRepository extends JpaRepository<User, Long> {
-    boolean existsByEmail(String email);
-    boolean existsByUsername(String username);
-    Optional<User> findByUsername(String username);
+    boolean existsByEmailIgnoreCase(String email);
+    boolean existsByUsernameIgnoreCase(String username);
+    Optional<User> findByUsernameIgnoreCase(String username);
 }

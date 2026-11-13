@@ -34,7 +34,7 @@ public class WorkoutSet {
     @Column(name = "REPS")
     private Integer reps;
 
-    @Column(name = "WEIGHT_KG", precision = 6, scale = 2)
+    @Column(name = "WEIGHT_KG", precision = 7, scale = 3)
     private BigDecimal weightKg;
 
     @Column(name = "RPE", precision = 3, scale = 1)

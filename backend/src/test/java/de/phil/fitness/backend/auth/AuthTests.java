@@ -58,7 +58,7 @@ class AuthTests {
     private UserRepository userRepository;
 
     private String accessTokenFor(String username) {
-        Long id = userRepository.findByUsername(username).orElseThrow().getId();
+        Long id = userRepository.findByUsernameIgnoreCase(username).orElseThrow().getId();
         return jwtService.generateAccessToken(id.toString());
     }
 
@@ -170,7 +170,7 @@ class AuthTests {
     @Test
     @DisplayName("a refresh token is not accepted as a bearer token")
     void refreshTokenIsNotAnAccessToken() throws Exception {
-        Long maxId = userRepository.findByUsername("max12").orElseThrow().getId();
+        Long maxId = userRepository.findByUsernameIgnoreCase("max12").orElseThrow().getId();
         String refreshToken = jwtService.generateRefreshToken(maxId.toString());
 
         mockMvc.perform(get(PROTECTED_PATH).header("Authorization", "Bearer " + refreshToken))

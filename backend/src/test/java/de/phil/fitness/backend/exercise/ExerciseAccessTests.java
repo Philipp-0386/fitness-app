@@ -52,7 +52,7 @@ class ExerciseAccessTests {
     private ExerciseRepository exerciseRepository;
 
     private String tokenFor(String username) {
-        Long id = userRepository.findByUsername(username).orElseThrow().getId();
+        Long id = userRepository.findByUsernameIgnoreCase(username).orElseThrow().getId();
         return jwtService.generateAccessToken(id.toString());
     }
 
@@ -67,7 +67,7 @@ class ExerciseAccessTests {
     }
 
     private long idOfOwnedExercise(String username) {
-        Long ownerId = userRepository.findByUsername(username).orElseThrow().getId();
+        Long ownerId = userRepository.findByUsernameIgnoreCase(username).orElseThrow().getId();
         return exerciseRepository.findAllAvailableToUser(ownerId).stream()
                 .filter(e -> ownerId.equals(e.getOwnerUserId()))
                 .map(Exercise::getId)

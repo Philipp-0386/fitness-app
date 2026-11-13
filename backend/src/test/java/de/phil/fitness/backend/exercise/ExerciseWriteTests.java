@@ -74,7 +74,7 @@ class ExerciseWriteTests {
     }
 
     private Long userId(String username) {
-        return userRepository.findByUsername(username).orElseThrow().getId();
+        return userRepository.findByUsernameIgnoreCase(username).orElseThrow().getId();
     }
 
     /** Writes pending changes to the database and forgets all loaded entities, so the next read hits the database. */
