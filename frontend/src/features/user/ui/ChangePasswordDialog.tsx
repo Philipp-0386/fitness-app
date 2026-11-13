@@ -66,7 +66,9 @@ export default function ChangePasswordDialog() {
     try {
       await updatePassword({ currentPassword, newPassword });
       close();
-      toast.success('Your password has been changed.');
+      toast.success(
+        'Your password has been changed. Other devices have been logged out.',
+      );
     } catch (err) {
       if (err instanceof ApiError && err.code === 'INVALID_PASSWORD') {
         setError('The current password is incorrect.');

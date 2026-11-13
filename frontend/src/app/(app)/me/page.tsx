@@ -5,6 +5,7 @@ import { LogoutButton } from '@/features/home';
 import {
   ChangePasswordDialog,
   DeleteAccountDialog,
+  LogoutOthersButton,
   UnitSettings,
   UpdateAccountDialog,
   fetchMe,
@@ -103,9 +104,14 @@ export default async function MePage() {
         </ul>
       </nav>
 
-      <div className={cn(listClass, 'mx-4 mt-8')}>
-        <LogoutButton />
-      </div>
+      <ul className={cn(listClass, 'mx-4 mt-8')}>
+        <li>
+          <LogoutButton />
+        </li>
+        <li>
+          <LogoutOthersButton />
+        </li>
+      </ul>
 
       <section aria-labelledby="danger-title" className="mx-4 mt-8">
         <h2 id="danger-title" className="mb-3 text-title">
