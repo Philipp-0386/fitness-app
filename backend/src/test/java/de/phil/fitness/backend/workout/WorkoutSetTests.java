@@ -241,7 +241,7 @@ class WorkoutSetTests extends WorkoutTestBase {
             "\"setNumber\": 1, \"reps\": -1, \"weightKg\": 80",
             "\"setNumber\": 1, \"reps\": 8, \"weightKg\": -5",
             "\"setNumber\": 1, \"reps\": 8, \"weightKg\": 12345",
-            "\"setNumber\": 1, \"reps\": 8, \"weightKg\": 80.123",
+            "\"setNumber\": 1, \"reps\": 8, \"weightKg\": 80.1234",
             "\"setNumber\": 1, \"reps\": 8, \"weightKg\": 80, \"rpe\": 0.5",
             "\"setNumber\": 1, \"reps\": 8, \"weightKg\": 80, \"rpe\": 10.5",
             "\"setNumber\": 1, \"reps\": 8, \"weightKg\": 80, \"rpe\": 8.25",

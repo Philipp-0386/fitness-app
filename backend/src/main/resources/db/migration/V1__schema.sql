@@ -173,7 +173,7 @@ CREATE TABLE workout_set (
     set_number INTEGER NOT NULL,
     set_type VARCHAR(16) DEFAULT 'WORKING' NOT NULL CHECK (set_type IN ('WARMUP', 'WORKING', 'DROP')),
     reps INTEGER CHECK (reps >= 0),
-    weight_kg NUMERIC(6,2) CHECK (weight_kg >= 0),
+    weight_kg NUMERIC(7,3) CHECK (weight_kg >= 0),
     rpe NUMERIC(3,1) CHECK (rpe BETWEEN 1 AND 10),
     duration_seconds INTEGER CHECK (duration_seconds > 0),
     distance_meters NUMERIC(8,2) CHECK (distance_meters >= 0),
