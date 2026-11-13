@@ -1,7 +1,5 @@
 import { formatTarget } from '@/features/routines/lib/format-target';
 import { TopBar } from '@/shared/layout';
-import { cn } from '@/shared/lib/utils';
-import { listClass } from '@/shared/ui/list';
 import { formatDuration } from '../lib/format-duration';
 import { formatSetValues } from '../lib/format-set';
 import { TIME_ZONE } from '../lib/group-by-week';
@@ -45,9 +43,9 @@ export default function WorkoutDetailView({ workout }: { workout: Workout }) {
           { label: 'Sets', value: String(setCount) },
           { label: 'Exercises', value: String(workout.exercises.length) },
         ].map((stat) => (
-          <div key={stat.label} className="rounded-card bg-surface px-3 py-2.5">
+          <div key={stat.label}>
             <dt className="text-meta text-text-secondary">{stat.label}</dt>
-            <dd className="font-semibold tabular-nums">{stat.value}</dd>
+            <dd className="text-title tabular-nums">{stat.value}</dd>
           </div>
         ))}
       </dl>
@@ -82,7 +80,7 @@ export default function WorkoutDetailView({ workout }: { workout: Workout }) {
             {entry.sets.length === 0 ? (
               <p className="mt-2 text-meta text-text-secondary">No sets logged.</p>
             ) : (
-              <ol className={cn(listClass, 'mt-2')}>
+              <ol className="mt-2 divide-y divide-border-subtle border-y border-border-subtle">
                 {entry.sets.map((set, index) => {
                   const workingNumber = entry.sets
                     .slice(0, index + 1)
@@ -90,7 +88,7 @@ export default function WorkoutDetailView({ workout }: { workout: Workout }) {
                   return (
                     <li
                       key={set.clientId}
-                      className="grid min-h-11 grid-cols-[2.5rem_minmax(0,1fr)_auto] items-center gap-2 px-4 tabular-nums"
+                      className="grid min-h-11 grid-cols-[2.5rem_minmax(0,1fr)_auto] items-center gap-2 tabular-nums"
                     >
                       <span
                         className="font-semibold"
