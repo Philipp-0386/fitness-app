@@ -63,6 +63,9 @@ jobs:
       - name: Type check
         run: npx tsc --noEmit
 
+      - name: Dependency rules
+        run: npm run depcruise
+
       - name: Build
         # shared/api/backend.ts throws at import time when this is unset; the
         # real value is injected at runtime by compose.
