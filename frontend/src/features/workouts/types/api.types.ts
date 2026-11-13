@@ -50,8 +50,30 @@ export type Workout = {
   name: string;
   routineId: number | null;
   programDayId: number | null;
+  status: WorkoutStatus;
   startedAt: string;
+  /** Null while the workout runs. */
+  endedAt: string | null;
   exercises: WorkoutExercise[];
+};
+
+/** Mirrors the backend WorkoutStatus enum. */
+export type WorkoutStatus = 'IN_PROGRESS' | 'COMPLETED';
+
+/** Mirrors the backend WorkoutListItemResponse record. */
+export type WorkoutListItem = {
+  id: number;
+  name: string;
+  startedAt: string;
+  endedAt: string;
+  setCount: number;
+  exerciseNames: string[];
+};
+
+/** Mirrors the backend WorkoutHistoryResponse record. */
+export type WorkoutHistory = {
+  workouts: WorkoutListItem[];
+  hasNext: boolean;
 };
 
 /** Mirrors the backend WorkoutSetRequest record. Which values are required depends on the tracking type. */
