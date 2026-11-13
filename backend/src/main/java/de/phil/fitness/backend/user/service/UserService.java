@@ -52,18 +52,18 @@ public class UserService {
 
     /**
      * @param email email to check, must not be {@code null}
-     * @return {@code true} if a user with this email already exists
+     * @return {@code true} if a user with this email already exists, ignoring case
      */
     public boolean existsByEmail(String email) {
-        return userRepository.existsByEmail(email);
+        return userRepository.existsByEmailIgnoreCase(email);
     }
 
     /**
      * @param username username to check, must not be {@code null}
-     * @return {@code true} if a user with this username already exists
+     * @return {@code true} if a user with this username already exists, ignoring case
      */
     public boolean existsByUsername(String username) {
-        return userRepository.existsByUsername(username);
+        return userRepository.existsByUsernameIgnoreCase(username);
     }
 
     /**
@@ -76,10 +76,10 @@ public class UserService {
 
     /**
      * @param username username to look up, must not be {@code null}
-     * @return the matching user, or an empty {@link Optional} if none exists
+     * @return the user matching regardless of case, or an empty {@link Optional} if none exists
      */
     public Optional<User> findByUsername(String username) {
-        return userRepository.findByUsername(username);
+        return userRepository.findByUsernameIgnoreCase(username);
     }
 
     /**
@@ -142,10 +142,10 @@ public class UserService {
     public UserResponse updateUser(Long userId, UserUpdateRequest req) {
         User user = loadUser(userId);
         verifyPassword(user, req.currentPassword());
-        if(!req.username().equals(user.getUsername()) && userRepository.existsByUsername(req.username())) {
+        if(!req.username().equalsIgnoreCase(user.getUsername()) && userRepository.existsByUsernameIgnoreCase(req.username())) {
             throw new UsernameAlreadyTakenException("Username already taken!");
         }
-        if(!req.email().equals(user.getEmail()) && userRepository.existsByEmail(req.email())) {
+        if(!req.email().equalsIgnoreCase(user.getEmail()) && userRepository.existsByEmailIgnoreCase(req.email())) {
             throw new EmailAlreadyExistsException("User with this email already registered!");
         }
         user.setUsername(req.username());

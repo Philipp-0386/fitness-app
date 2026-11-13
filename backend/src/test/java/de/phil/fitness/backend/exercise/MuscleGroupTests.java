@@ -54,7 +54,7 @@ class MuscleGroupTests {
     private MuscleGroupRepository muscleGroupRepository;
 
     private String tokenFor(String username) {
-        Long id = userRepository.findByUsername(username).orElseThrow().getId();
+        Long id = userRepository.findByUsernameIgnoreCase(username).orElseThrow().getId();
         return jwtService.generateAccessToken(id.toString());
     }
 

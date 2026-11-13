@@ -56,7 +56,7 @@ class UserSettingsTests {
     private JdbcTemplate jdbcTemplate;
 
     private Long userId(String username) {
-        return userRepository.findByUsername(username).orElseThrow().getId();
+        return userRepository.findByUsernameIgnoreCase(username).orElseThrow().getId();
     }
 
     private String tokenFor(String username) {

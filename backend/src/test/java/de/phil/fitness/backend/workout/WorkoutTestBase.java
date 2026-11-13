@@ -57,7 +57,7 @@ abstract class WorkoutTestBase {
     private EntityManager entityManager;
 
     protected String tokenFor(String username) {
-        Long id = userRepository.findByUsername(username).orElseThrow().getId();
+        Long id = userRepository.findByUsernameIgnoreCase(username).orElseThrow().getId();
         return "Bearer " + jwtService.generateAccessToken(id.toString());
     }
 
