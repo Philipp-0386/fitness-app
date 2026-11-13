@@ -42,6 +42,9 @@ public class User {
     @Column(name = "CREATED_AT", nullable = false)
     private Instant createdAt;
 
+    @Column(name = "TOKENS_VALID_AFTER")
+    private Instant tokensValidAfter;
+
     public User() {
     }
 

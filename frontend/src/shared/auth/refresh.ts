@@ -5,7 +5,7 @@ if (!BASE_URL) {
 }
 
 export type RefreshResult =
-  | { status: 'ok'; accessToken: string }
+  | { status: 'ok'; accessToken: string; refreshToken: string }
   | { status: 'invalid' }
   | { status: 'unavailable' };
 
@@ -30,9 +30,9 @@ export async function refreshAccessToken(refreshToken: string): Promise<RefreshR
   }
 
   const body = await res.json().catch(() => null);
-  if (typeof body?.accessToken !== 'string') {
+  if (typeof body?.accessToken !== 'string' || typeof body?.refreshToken !== 'string') {
     return { status: 'unavailable' };
   }
 
-  return { status: 'ok', accessToken: body.accessToken };
+  return { status: 'ok', accessToken: body.accessToken, refreshToken: body.refreshToken };
 }

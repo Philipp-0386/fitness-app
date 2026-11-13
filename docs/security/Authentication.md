@@ -10,16 +10,27 @@ Stack: Spring Boot 4, Spring Security + OAuth2 Resource Server (verification), j
 ## How It Works
 
 1. `POST /backend/auth/login` checks credentials (BCrypt) and returns two signed JWTs (HS512):
-   access token (15 min, `type=access`) and refresh token (7 days, `type=refresh`). `sub` is the user id.
+   access token (15 min, `type=access`) and refresh token (21 days, `type=refresh`). `sub` is the user id.
+   The refresh token also carries `sid`, a session id created at login.
 2. Every other request carries `Authorization: Bearer <accessToken>`. The resource server checks
-   signature, expiry and `type=access`. No session, no DB lookup at all (yet).
+   signature, expiry and `type=access`. No session, no DB lookup at all.
 3. `POST /backend/auth/refresh` takes `{ refreshToken }`, verifies it with jjwt (signature, expiry,
-   `type=refresh`, user still exists) and returns a new access token. The refresh token is not
-   renewed, so a session ends 7 days after login.
+   `type=refresh`), then checks that the user still exists, the session is not revoked and the token
+   is not older than `userdata.tokens_valid_after`. It returns a new access token and a new refresh
+   token with the same `sid`, so a session only ends after 21 days without use. The old refresh token
+   is not revoked (no strict rotation): two parallel refreshes both succeed instead of one logging the
+   user out.
+4. `POST /backend/auth/logout` takes `{ refreshToken }` and stores its `sid` in `revoked_session`,
+   which ends every refresh token of that session. The row is kept for one refresh lifetime, expired
+   rows are deleted on the next logout. An unusable token is accepted too, nothing is left to revoke.
+5. Changing the password sets `tokens_valid_after` to now, truncated to seconds (the precision of
+   `iat`). That ends every session. The response carries a token pair of a new session, so the
+   device that made the change stays logged in.
 
 ```
 login         -> 400 INVALID_JSON / VALIDATION_FAILED, 401 INVALID_CREDENTIALS, 429 TOO_MANY_LOGIN_ATTEMPTS, 200 { accessToken, refreshToken }
-refresh       -> 401 UNAUTHENTICATED on any failure, 200 { accessToken }
+refresh       -> 401 UNAUTHENTICATED on any failure, 200 { accessToken, refreshToken }
+logout        -> 400 INVALID_JSON / VALIDATION_FAILED, 204
 protected API -> 401 UNAUTHENTICATED (missing/invalid/expired/refresh token), 403 ACCESS_DENIED
 ```
 
@@ -47,6 +58,8 @@ first failure, checked before BCrypt. Success resets the counter.
 | `CurrentUser`                                                                      | Reads `sub` of the authenticated request from the security context        |
 | `LoginService` / `LoginController`                                                 | Login endpoint                                                            |
 | `TokenRefreshService` / `TokenRefreshController`                                   | Refresh endpoint                                                          |
+| `LogoutService` / `LogoutController`                                               | Logout endpoint, revokes the session                                      |
+| `RevokedSession` / `RevokedSessionRepository`                                      | Denylist of logged out sessions (`revoked_session`)                       |
 
 ## Filter Chain Notes
 
@@ -55,7 +68,7 @@ first failure, checked before BCrypt. Success resets the counter.
 - **Error handlers registered twice:** on the resource server (bad token) and in
   `exceptionHandling` (no token). Otherwise one path answers with an empty 401.
 - **CSRF disabled, sessions stateless:** the token travels in a header, not a cookie.
-- **Type check is essential:** without `AccessTokenTypeValidator` the 7-day refresh token would open
+- **Type check is essential:** without `AccessTokenTypeValidator` the 21-day refresh token would open
   every protected endpoint. For the same reason the refresh endpoint verifies its token itself
   instead of going through the resource server.
 
@@ -63,6 +76,8 @@ first failure, checked before BCrypt. Success resets the counter.
 
 The browser never talks to Spring. The Next.js `/api/login` route stores both tokens as HttpOnly
 cookies (`SameSite=Lax`, `Path=/`) and server-side calls forward the access token as a bearer header.
+`/api/logout` calls the backend logout with the refresh cookie and clears both cookies even if that
+call fails. `/api/me/password` stores the new token pair returned by a password change.
 Cookie-carrying `/api` routes are protected by a same-origin check on non-safe methods.
 
 The [proxy](../../frontend/src/proxy.ts) runs before every page and `/api` route and refreshes the
@@ -70,7 +85,7 @@ access token when it is missing or expires within 30 seconds:
 
 | Outcome       | Cause                              | Proxy action                                                   |
 | ------------- | ---------------------------------- | -------------------------------------------------------------- |
-| `ok`          | 200                                | Set the new cookie on response and forwarded request, continue |
+| `ok`          | 200                                | Set both new cookies on the response, the access token on the forwarded request too, continue |
 | `invalid`     | 4xx                                | Delete both cookies, `requireSession()` redirects              |
 | `unavailable` | Network error, 5xx, malformed body | Keep cookies, continue (a backend restart logs nobody out)     |
 
@@ -87,9 +102,9 @@ Also use `getBytes(StandardCharsets.UTF_8)` instead of the platform charset.
 
 ## Open Work
 
-Core problem: refresh tokens are not persisted, so nothing can be revoked before expiry.
-
-Target: access tokens stay stateless, only refresh tokens are persisted (probably hashed and rotated).
+Access tokens stay valid for up to 15 minutes after a logout or password change, they are never
+looked up. A stolen refresh token is not detected, that would need strict rotation with reuse
+detection. Both are accepted for now.
 
 Other known limits: no roles and no username in the token (only `sub` and `type`).
 HMAC (HS512) stays until auth and resource server are separated.

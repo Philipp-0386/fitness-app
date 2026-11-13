@@ -76,8 +76,10 @@ public class UserController {
     }
 
     @PutMapping("/password")
-    @Operation(summary = "Change the password", description = "Confirmed by the current password. Tokens issued before the change stay valid until they expire.")
-    @ApiResponse(responseCode = "204", description = "Password changed")
+    @Operation(summary = "Change the password", description = "Confirmed by the current password. Ends every session: "
+            + "refresh tokens issued before the change are rejected, access tokens stay valid until they expire. "
+            + "Returns a token pair of a new session for the caller.")
+    @ApiResponse(responseCode = "200", description = "Password changed, new access and refresh token")
     @ApiResponse(responseCode = "400", description = "INVALID_JSON or VALIDATION_FAILED",
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     @ApiResponse(responseCode = "401", description = "UNAUTHENTICATED: missing, invalid or expired access token, "
@@ -85,9 +87,8 @@ public class UserController {
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     @ApiResponse(responseCode = "403", description = "INVALID_PASSWORD: the current password does not match, the session stays valid",
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
-    public ResponseEntity<Void> updatePassword(@Valid @RequestBody PasswordUpdateRequest req) {
-        userService.updatePassword(currentUser.currentUserId(), req);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<PasswordUpdateResponse> updatePassword(@Valid @RequestBody PasswordUpdateRequest req) {
+        return ResponseEntity.ok(userService.updatePassword(currentUser.currentUserId(), req));
     }
 
     @GetMapping("/settings")

@@ -1,6 +1,11 @@
 package de.phil.fitness.backend.user.service;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Optional;
+import java.util.UUID;
+
+import de.phil.fitness.backend.auth.JwtService;
 
 import de.phil.fitness.backend.user.dto.*;
 import de.phil.fitness.backend.user.model.UserSettings;
@@ -39,15 +44,18 @@ public class UserService {
     private final EntityManager entityManager;
     private final UserMapper userMapper;
     private final UserSettingsRepository userSettingsRepository;
+    private final JwtService jwtService;
 
     public UserService(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder,
-                       EntityManager entityManager, UserMapper userMapper, UserSettingsRepository userSettingsRepository) {
+                       EntityManager entityManager, UserMapper userMapper, UserSettingsRepository userSettingsRepository,
+                       JwtService jwtService) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.entityManager = entityManager;
         this.userMapper = userMapper;
         this.userSettingsRepository = userSettingsRepository;
+        this.jwtService = jwtService;
     }
 
     /**
@@ -72,6 +80,14 @@ public class UserService {
      */
     public boolean existsById(Long userId) {
         return userRepository.existsById(userId);
+    }
+
+    /**
+     * @param userId id to look up, must not be {@code null}
+     * @return the user, or an empty {@link Optional} if none exists
+     */
+    public Optional<User> findById(Long userId) {
+        return userRepository.findById(userId);
     }
 
     /**
@@ -154,14 +170,25 @@ public class UserService {
         return userMapper.toResponse(user);
     }
 
-    public void updatePassword(Long userId, PasswordUpdateRequest req) {
+    /**
+     * Changes the password and ends every session: refresh tokens issued before now are rejected from here on.
+     * The caller gets a fresh token pair of a new session, so the device that made the change stays logged in.
+     *
+     * <p>JWT issue times have second precision, so the cut is truncated to seconds as well. Otherwise the new
+     * refresh token, issued in the same second, would count as older than the cut.
+     */
+    public PasswordUpdateResponse updatePassword(Long userId, PasswordUpdateRequest req) {
         User user = loadUser(userId);
         verifyPassword(user, req.currentPassword());
         if(req.newPassword().equals(req.currentPassword())) {
             throw new PasswordUnchangedException("New password equals the current one for userId=" + userId);
         }
         user.setPasswordHashed(passwordEncoder.encode(req.newPassword()));
-        log.info("Password updated. userId={}", userId);
+        user.setTokensValidAfter(Instant.now().truncatedTo(ChronoUnit.SECONDS));
+        log.info("Password updated, other sessions ended. userId={}", userId);
+        return new PasswordUpdateResponse(
+                jwtService.generateAccessToken(userId.toString()),
+                jwtService.generateRefreshToken(userId.toString(), UUID.randomUUID()));
     }
 
     public UserSettingsResponse getUserSettings(Long userId) {
