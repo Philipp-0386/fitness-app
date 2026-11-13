@@ -177,7 +177,7 @@ public class UserService {
      * <p>JWT issue times have second precision, so the cut is truncated to seconds as well. Otherwise the new
      * refresh token, issued in the same second, would count as older than the cut.
      */
-    public PasswordUpdateResponse updatePassword(Long userId, PasswordUpdateRequest req) {
+    public TokenPairResponse updatePassword(Long userId, PasswordUpdateRequest req) {
         User user = loadUser(userId);
         verifyPassword(user, req.currentPassword());
         if(req.newPassword().equals(req.currentPassword())) {
@@ -186,7 +186,21 @@ public class UserService {
         user.setPasswordHashed(passwordEncoder.encode(req.newPassword()));
         user.setTokensValidAfter(Instant.now().truncatedTo(ChronoUnit.SECONDS));
         log.info("Password updated, other sessions ended. userId={}", userId);
-        return new PasswordUpdateResponse(
+        return new TokenPairResponse(
+                jwtService.generateAccessToken(userId.toString()),
+                jwtService.generateRefreshToken(userId.toString(), UUID.randomUUID()));
+    }
+
+    /**
+     * Ends every session like a password change does, without changing the password. The caller gets a fresh
+     * token pair of a new session and stays logged in.
+     * @throws UserNotFoundException if the user no longer exists
+     */
+    public TokenPairResponse logoutOtherSessions(Long userId) {
+        User user = loadUser(userId);
+        user.setTokensValidAfter(Instant.now().truncatedTo(ChronoUnit.SECONDS));
+        log.info("Other sessions ended. userId={}", userId);
+        return new TokenPairResponse(
                 jwtService.generateAccessToken(userId.toString()),
                 jwtService.generateRefreshToken(userId.toString(), UUID.randomUUID()));
     }

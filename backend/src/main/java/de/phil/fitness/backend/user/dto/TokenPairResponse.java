@@ -1,6 +1,6 @@
 package de.phil.fitness.backend.user.dto;
 
-public record PasswordUpdateResponse(
+public record TokenPairResponse(
         String accessToken,
         String refreshToken
 ) {}

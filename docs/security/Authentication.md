@@ -25,7 +25,8 @@ Stack: Spring Boot 4, Spring Security + OAuth2 Resource Server (verification), j
    rows are deleted on the next logout. An unusable token is accepted too, nothing is left to revoke.
 5. Changing the password sets `tokens_valid_after` to now, truncated to seconds (the precision of
    `iat`). That ends every session. The response carries a token pair of a new session, so the
-   device that made the change stays logged in.
+   device that made the change stays logged in. `POST /backend/me/logout-others` does the same
+   without changing the password.
 
 ```
 login         -> 400 INVALID_JSON / VALIDATION_FAILED, 401 INVALID_CREDENTIALS, 429 TOO_MANY_LOGIN_ATTEMPTS, 200 { accessToken, refreshToken }
