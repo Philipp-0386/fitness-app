@@ -11,6 +11,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -41,6 +42,29 @@ class WorkoutSetTests extends WorkoutTestBase {
                 .andExpect(jsonPath("$.setType").value("WORKING"))
                 .andExpect(jsonPath("$.reps").value(10))
                 .andExpect(jsonPath("$.weightKg").value(80.0));
+    }
+
+    @Test
+    @Transactional
+    @DisplayName("set type and RPE are stored and can be changed back")
+    void setTypeAndRpeAreStored() throws Exception {
+        String body = startWorkout(SINA, createRoutine(SINA, "barbell-bench-press"));
+        int id = workoutId(body);
+        int entry = entryId(body, 0);
+        UUID clientId = UUID.randomUUID();
+
+        putSet(SINA, id, clientId, """
+                {"workoutExerciseId": %d, "setNumber": 1, "setType": "WARMUP", "rpe": 7.5, "reps": 10, "weightKg": 40}
+                """.formatted(entry))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.setType").value("WARMUP"))
+                .andExpect(jsonPath("$.rpe").value(7.5));
+        flushAndClear();
+
+        putSet(SINA, id, clientId, setJson(entry, 1, 10, 40))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.setType").value("WORKING"))
+                .andExpect(jsonPath("$.rpe").value(nullValue()));
     }
 
     @Test
@@ -218,6 +242,9 @@ class WorkoutSetTests extends WorkoutTestBase {
             "\"setNumber\": 1, \"reps\": 8, \"weightKg\": -5",
             "\"setNumber\": 1, \"reps\": 8, \"weightKg\": 12345",
             "\"setNumber\": 1, \"reps\": 8, \"weightKg\": 80.123",
+            "\"setNumber\": 1, \"reps\": 8, \"weightKg\": 80, \"rpe\": 0.5",
+            "\"setNumber\": 1, \"reps\": 8, \"weightKg\": 80, \"rpe\": 10.5",
+            "\"setNumber\": 1, \"reps\": 8, \"weightKg\": 80, \"rpe\": 8.25",
     })
     @DisplayName("malformed numbers are rejected before the tracking type is looked at")
     void malformedNumbersAreRejected(String values) throws Exception {

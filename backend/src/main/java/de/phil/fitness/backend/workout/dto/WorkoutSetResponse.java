@@ -9,6 +9,7 @@ public record WorkoutSetResponse(
         UUID clientId,
         Integer setNumber,
         SetType setType,
+        BigDecimal rpe,
         Integer reps,
         BigDecimal weightKg,
         Integer durationSeconds,

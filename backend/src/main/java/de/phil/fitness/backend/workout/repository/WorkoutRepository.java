@@ -1,6 +1,8 @@
 package de.phil.fitness.backend.workout.repository;
 
 import de.phil.fitness.backend.workout.model.Workout;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -11,6 +13,36 @@ import java.util.List;
 import java.util.Optional;
 
 public interface WorkoutRepository extends JpaRepository<Workout,Long> {
+
+    /**
+     * Returns a page of the user's finished workouts without their exercises.
+     * @param userId Id of the requesting user.
+     * @param pageable Page number and size.
+     * @return The workouts of the page and whether more follow.
+     */
+    @Query("""
+        SELECT w FROM Workout w
+        WHERE w.userId = :userId
+            AND w.status = de.phil.fitness.backend.workout.model.WorkoutStatus.COMPLETED
+        ORDER BY w.startedAt DESC, w.id DESC
+    """)
+    Slice<Workout> findCompletedUserWorkouts(@Param("userId") Long userId, Pageable pageable);
+
+    /**
+     * Counts the sets of every entry of the given workouts. Collection can not be empty.
+     * @param workoutIds Ids of the workouts.
+     * @return One row per entry, ordered by workout and position.
+     */
+    @Query("""
+        SELECT we.workout.id AS workoutId, we.exerciseId AS exerciseId, COUNT(s) AS setCount
+        FROM WorkoutExercise we
+            LEFT JOIN we.sets s
+        WHERE we.workout.id IN :workoutIds
+        GROUP BY we.workout.id, we.exerciseId, we.orderIndex
+        ORDER BY we.workout.id, we.orderIndex
+    """)
+    List<WorkoutEntryCounts> countSetsPerEntry(@Param("workoutIds") Collection<Long> workoutIds);
+
     /**
      * Returns a specific user-owned workout including its exercises, whatever its status.
      * @param userId Id of the requesting user.

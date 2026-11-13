@@ -8,6 +8,8 @@ export type WorkoutSet = {
   clientId: string;
   setNumber: number;
   setType: SetType;
+  /** Rate of perceived exertion, 1 to 10 with one decimal. */
+  rpe: number | null;
   reps: number | null;
   weightKg: number | null;
   durationSeconds: number | null;
@@ -48,8 +50,30 @@ export type Workout = {
   name: string;
   routineId: number | null;
   programDayId: number | null;
+  status: WorkoutStatus;
   startedAt: string;
+  /** Null while the workout runs. */
+  endedAt: string | null;
   exercises: WorkoutExercise[];
+};
+
+/** Mirrors the backend WorkoutStatus enum. */
+export type WorkoutStatus = 'IN_PROGRESS' | 'COMPLETED';
+
+/** Mirrors the backend WorkoutListItemResponse record. */
+export type WorkoutListItem = {
+  id: number;
+  name: string;
+  startedAt: string;
+  endedAt: string;
+  setCount: number;
+  exerciseNames: string[];
+};
+
+/** Mirrors the backend WorkoutHistoryResponse record. */
+export type WorkoutHistory = {
+  workouts: WorkoutListItem[];
+  hasNext: boolean;
 };
 
 /** Mirrors the backend WorkoutSetRequest record. Which values are required depends on the tracking type. */

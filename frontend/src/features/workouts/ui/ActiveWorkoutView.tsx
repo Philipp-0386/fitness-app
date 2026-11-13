@@ -32,6 +32,7 @@ import {
   type SetField,
   type SetRow,
 } from '../lib/set-rows';
+import { formatDaysAgo } from '../lib/format-days-ago';
 import SetTable from './SetTable';
 
 //how long the spinner shows at least, a fast save would otherwise only flicker
@@ -107,6 +108,7 @@ export default function ActiveWorkoutView({
           workoutExerciseId: entryId,
           setNumber: row.setNumber,
           setType: row.setType,
+          rpe: row.rpe,
           reps: row.reps,
           weightKg: row.weightKg,
           durationSeconds: row.durationSeconds,
@@ -232,6 +234,17 @@ export default function ActiveWorkoutView({
     if (next[index].status !== 'open') save(entry.id, next[index]);
   }
 
+  function handleOptionChange(
+    index: number,
+    option: Partial<Pick<SetRow, 'setType' | 'rpe'>>,
+  ) {
+    const next = rows[entry.id].map((row, i) =>
+      i === index ? { ...row, ...option } : row,
+    );
+    setRows({ ...rows, [entry.id]: next });
+    if (next[index].status !== 'open') save(entry.id, next[index]);
+  }
+
   return (
     <div className="mx-auto flex w-full max-w-app flex-1 flex-col">
       <WorkoutTopBar
@@ -276,11 +289,19 @@ export default function ActiveWorkoutView({
                 <Ellipsis aria-hidden="true" />
               </Button>
             </div>
-            <p className="mt-1 text-text-secondary tabular-nums">{formatTarget(entry)}</p>
+            <p className="mt-1 flex items-baseline justify-between gap-3 text-text-secondary tabular-nums">
+              <span>{formatTarget(entry)}</span>
+              {entry.lastTime && (
+                <span suppressHydrationWarning className="text-meta text-text-tertiary">
+                  Last time {formatDaysAgo(entry.lastTime.startedAt)}
+                </span>
+              )}
+            </p>
             <SetTable
               entry={entry}
               rows={rows[entry.id]}
               onChange={handleChange}
+              onOptionChange={handleOptionChange}
               onAdd={() =>
                 setRows({ ...rows, [entry.id]: addRow(entry, rows[entry.id]) })
               }

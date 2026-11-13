@@ -2,13 +2,7 @@ package de.phil.fitness.backend.workout.api;
 
 import de.phil.fitness.backend.auth.CurrentUser;
 import de.phil.fitness.backend.common.ErrorResponse;
-import de.phil.fitness.backend.workout.dto.StartWorkoutRequest;
-import de.phil.fitness.backend.workout.dto.WorkoutExerciseOrderRequest;
-import de.phil.fitness.backend.workout.dto.WorkoutExerciseRequest;
-import de.phil.fitness.backend.workout.dto.WorkoutExerciseResponse;
-import de.phil.fitness.backend.workout.dto.WorkoutResponse;
-import de.phil.fitness.backend.workout.dto.WorkoutSetRequest;
-import de.phil.fitness.backend.workout.dto.WorkoutSetResponse;
+import de.phil.fitness.backend.workout.dto.*;
 import de.phil.fitness.backend.workout.service.WorkoutService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -16,10 +10,15 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.PositiveOrZero;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -35,6 +34,21 @@ public class WorkoutController {
     public WorkoutController(CurrentUser currentUser, WorkoutService workoutService) {
         this.currentUser = currentUser;
         this.workoutService = workoutService;
+    }
+
+    //200, 400, 401, 404
+    @GetMapping
+    public ResponseEntity<WorkoutHistoryResponse> getWorkoutHistory(@RequestParam(defaultValue = "0") @PositiveOrZero int page,
+                                                                    @RequestParam(defaultValue = "20") @Min(1) @Max(50) int size) {
+        return ResponseEntity.ok(workoutService.findWorkoutHistory(
+                currentUser.currentUserId(), PageRequest.of(page, size)));
+    }
+
+    //200, 400, 401, 404
+    @GetMapping("/{id}")
+    public ResponseEntity<WorkoutResponse> getWorkoutById(@PathVariable Long id) {
+        WorkoutResponse response = workoutService.findWorkout(currentUser.currentUserId(), id);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping
@@ -210,4 +224,6 @@ public class WorkoutController {
         workoutService.removeExercise(currentUser.currentUserId(), id, entryId);
         return ResponseEntity.noContent().build();
     }
+
+
 }

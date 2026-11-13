@@ -28,6 +28,10 @@ type SetTableProps = {
   entry: WorkoutExercise;
   rows: SetRow[];
   onChange: (index: number, field: SetField, value: number | null) => void;
+  onOptionChange: (
+    index: number,
+    option: Partial<Pick<SetRow, 'setType' | 'rpe'>>,
+  ) => void;
   onAdd: () => void;
   onRetry: (row: SetRow) => void;
   onRemove: (row: SetRow) => void;
@@ -37,12 +41,13 @@ export default function SetTable({
   entry,
   rows,
   onChange,
+  onOptionChange,
   onAdd,
   onRetry,
   onRemove,
 }: SetTableProps) {
   const [editing, setEditing] = useState<{ index: number; field: SetField } | null>(null);
-  const [sheet, setSheet] = useState<{ row: SetRow; title: string } | null>(null);
+  const [sheetId, setSheetId] = useState<string | null>(null);
   const cancelled = useRef(false);
 
   const type = entry.exercise.trackingType;
@@ -52,8 +57,22 @@ export default function SetTable({
     durationSeconds: 'TIME',
     distanceMeters: 'M',
   };
-  const lastWorking = entry.lastTime?.sets.filter((s) => s.setType === 'WORKING') ?? [];
   const active = rows.findIndex((row) => row.status === 'open');
+  //the k-th row of a type is compared with the k-th set of that type last time
+  const labels = rows.map((row, index) => {
+    const number = rows
+      .slice(0, index + 1)
+      .filter((r) => r.setType === row.setType).length;
+    const last = entry.lastTime?.sets.filter((s) => s.setType === row.setType)[
+      number - 1
+    ];
+    return row.setType === 'WORKING'
+      ? { last, short: String(number), title: `Set ${number}` }
+      : row.setType === 'WARMUP'
+        ? { last, short: 'W', title: 'Warm-Up' }
+        : { last, short: 'D', title: 'Drop Set' };
+  });
+  const sheetIndex = rows.findIndex((row) => row.clientId === sheetId);
 
   function commit(index: number, field: SetField, text: string) {
     setEditing(null);
@@ -96,17 +115,7 @@ export default function SetTable({
 
       <ol className="flex flex-col gap-1">
         {rows.map((row, index) => {
-          const workingNumber = rows
-            .slice(0, index + 1)
-            .filter((r) => r.setType === 'WORKING').length;
-          const last =
-            row.setType === 'WORKING' ? lastWorking[workingNumber - 1] : undefined;
-          const title =
-            row.setType === 'WORKING'
-              ? `Set ${workingNumber}`
-              : row.setType === 'WARMUP'
-                ? 'Warm-Up'
-                : 'Drop Set';
+          const { last, short, title } = labels[index];
 
           return (
             <SwipeableRow
@@ -125,14 +134,15 @@ export default function SetTable({
                 type="button"
                 aria-haspopup="dialog"
                 aria-label={`${title} options`}
-                onClick={() => setSheet({ row, title })}
-                className="min-h-tap text-left font-semibold"
+                onClick={() => setSheetId(row.clientId)}
+                className="flex min-h-tap flex-col items-start justify-center font-semibold"
               >
-                {row.setType === 'WORKING'
-                  ? workingNumber
-                  : row.setType === 'WARMUP'
-                    ? 'W'
-                    : 'D'}
+                {short}
+                {row.rpe !== null && (
+                  <span className="text-caption font-normal text-text-secondary">
+                    @{row.rpe}
+                  </span>
+                )}
               </button>
               {last ? (
                 <span className="truncate text-meta text-text-secondary">
@@ -230,14 +240,17 @@ export default function SetTable({
         Add Set
       </Button>
 
-      {sheet && (
+      {sheetIndex !== -1 && (
         <SetSheet
-          title={sheet.title}
+          title={labels[sheetIndex].title}
+          setType={rows[sheetIndex].setType}
+          rpe={rows[sheetIndex].rpe}
+          onChange={(option) => onOptionChange(sheetIndex, option)}
           onRemove={() => {
-            onRemove(sheet.row);
-            setSheet(null);
+            onRemove(rows[sheetIndex]);
+            setSheetId(null);
           }}
-          onClose={() => setSheet(null)}
+          onClose={() => setSheetId(null)}
         />
       )}
     </div>

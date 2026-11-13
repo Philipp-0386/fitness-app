@@ -69,7 +69,7 @@ function Sheet({
     >
       {/* drag strip: a long enough pull or a quick flick down closes the sheet */}
       <div
-        className="-mx-4 -mt-2 flex touch-none justify-center pt-3 pb-3.5 select-none lg:hidden"
+        className="-mx-4 -mt-2 flex touch-none justify-center pt-4 pb-6 select-none lg:hidden"
         onPointerDown={(e) => {
           drag.current = {
             startY: e.clientY,

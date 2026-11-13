@@ -7,24 +7,16 @@ import de.phil.fitness.backend.program.service.ProgramService;
 import de.phil.fitness.backend.routine.dto.RoutineDetailResponse;
 import de.phil.fitness.backend.routine.dto.RoutineExerciseResponse;
 import de.phil.fitness.backend.routine.service.RoutineService;
-import de.phil.fitness.backend.workout.dto.LastTimeResponse;
-import de.phil.fitness.backend.workout.dto.StartWorkoutRequest;
-import de.phil.fitness.backend.workout.dto.WorkoutExerciseOrderRequest;
-import de.phil.fitness.backend.workout.dto.WorkoutExerciseRequest;
-import de.phil.fitness.backend.workout.dto.WorkoutExerciseResponse;
-import de.phil.fitness.backend.workout.dto.WorkoutResponse;
-import de.phil.fitness.backend.workout.dto.WorkoutSetRequest;
-import de.phil.fitness.backend.workout.dto.WorkoutSetResponse;
+import de.phil.fitness.backend.workout.dto.*;
 import de.phil.fitness.backend.workout.exception.*;
 import de.phil.fitness.backend.workout.mapper.WorkoutMapper;
-import de.phil.fitness.backend.workout.model.SetType;
-import de.phil.fitness.backend.workout.model.Workout;
-import de.phil.fitness.backend.workout.model.WorkoutExercise;
-import de.phil.fitness.backend.workout.model.WorkoutSet;
-import de.phil.fitness.backend.workout.model.WorkoutStatus;
+import de.phil.fitness.backend.workout.model.*;
 import de.phil.fitness.backend.workout.repository.LastTimeEntry;
+import de.phil.fitness.backend.workout.repository.WorkoutEntryCounts;
 import de.phil.fitness.backend.workout.repository.WorkoutRepository;
 import de.phil.fitness.backend.workout.repository.WorkoutSetRepository;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -54,6 +46,48 @@ public class WorkoutService {
         this.programService = programService;
         this.workoutSetRepository = workoutSetRepository;
     }
+
+    @Transactional(readOnly = true)
+    public WorkoutResponse findWorkout(Long userId, Long workoutId) {
+        Workout workout = workoutRepository.getUserWorkoutById(userId, workoutId)
+                .orElseThrow( () -> new WorkoutNotFoundException("The workout with the id "+workoutId+" does not exist"));
+
+        Set<Long> exerciseIds = workout.getExercises().stream()
+                .map(WorkoutExercise::getExerciseId)
+                .collect(Collectors.toSet());
+
+        return workoutMapper.toWorkoutResponse(workout, exerciseService.findSummariesByExerciseId(exerciseIds), Map.of());
+    }
+
+    /**
+     * Retrieves a page of the user's finished workouts, newest first, each with its exercise names and number of sets.
+     * Three queries per page, however many workouts it holds.
+     * @param userId Id of the requesting user.
+     * @param pageable Page number and size.
+     * @return The workouts of the page and whether older ones follow.
+     */
+    @Transactional(readOnly = true)
+    public WorkoutHistoryResponse findWorkoutHistory(Long userId, Pageable pageable) {
+        Slice<Workout> page = workoutRepository.findCompletedUserWorkouts(userId, pageable);
+        if (page.isEmpty()) {
+            return new WorkoutHistoryResponse(List.of(), false);
+        }
+
+        List<WorkoutEntryCounts> entries = workoutRepository.countSetsPerEntry(
+                page.stream().map(Workout::getId).toList());
+        Map<Long, ExerciseSummary> exercises = exerciseService.findSummariesByExerciseId(
+                entries.stream().map(WorkoutEntryCounts::getExerciseId).collect(Collectors.toSet()));
+        Map<Long, List<WorkoutEntryCounts>> byWorkout = entries.stream()
+                .collect(Collectors.groupingBy(WorkoutEntryCounts::getWorkoutId));
+
+        return new WorkoutHistoryResponse(
+                page.stream()
+                        .map(w -> workoutMapper.toWorkoutListItemResponse(
+                                w, byWorkout.getOrDefault(w.getId(), List.of()), exercises))
+                        .toList(),
+                page.hasNext());
+    }
+
 
     /**
      * Retrieves the workout the user has in progress. A workout without activity (start or newest set) for longer than
@@ -274,6 +308,7 @@ public class WorkoutService {
         });
         set.setSetNumber(req.setNumber());
         set.setSetType(req.setType() != null ? req.setType() : SetType.WORKING);
+        set.setRpe(req.rpe());
         set.setReps(req.reps());
         set.setWeightKg(req.weightKg());
         set.setDurationSeconds(req.durationSeconds());
