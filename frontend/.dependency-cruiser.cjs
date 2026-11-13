@@ -3,7 +3,7 @@ const path = require('node:path');
 
 // dependency-cruiser only sees paths, so the 'use client' files are found by reading them.
 const src = path.join(__dirname, 'src');
-const USE_CLIENT = /^(?:\s|\/\/.*|\/\*[\s\S]*?\*\/)*['"]use client['"]/;
+const USE_CLIENT = /^(?:\s|\/\/[^\n]*\n|\/\*(?:[^*]|\*(?!\/))*\*\/)*['"]use client['"]/;
 const useClientFiles = fs
   .readdirSync(src, { recursive: true })
   .filter(
