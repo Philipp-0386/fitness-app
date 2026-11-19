@@ -81,7 +81,7 @@ export default function ActiveWorkoutView({
   async function finish() {
     await Promise.allSettled(inFlight.current.values());
     await finishWorkout(workout.id);
-    router.push('/dashboard');
+    router.push(`/workout/${workout.id}/summary`);
     router.refresh();
   }
 
