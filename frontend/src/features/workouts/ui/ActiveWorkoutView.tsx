@@ -3,7 +3,7 @@
 import { arrayMove } from '@dnd-kit/sortable';
 import { ChevronLeft, ChevronRight, Ellipsis, Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 
 import type { Exercise, MuscleGroup } from '@/features/exercises';
@@ -12,12 +12,10 @@ import { formatTarget } from '@/features/routines/lib/format-target';
 import { fallbackErrorMessage } from '@/shared/api/errors/fallback-error-message';
 import { Button } from '@/shared/ui/button';
 import { addExercise } from '../client/add-exercise.client';
-import { deleteSet } from '../client/delete-set.client';
 import { discardWorkout } from '../client/discard-workout.client';
 import { finishWorkout } from '../client/finish-workout.client';
 import { removeExercise } from '../client/remove-exercise.client';
 import { reorderExercises } from '../client/reorder-exercises.client';
-import { saveSet } from '../client/save-set.client';
 import { swapExercise } from '../client/swap-exercise.client';
 import type { Workout } from '../types/api.types';
 import ExerciseSheet from './ExerciseSheet';
@@ -33,10 +31,8 @@ import {
   type SetRow,
 } from '../lib/set-rows';
 import { formatDaysAgo } from '../lib/format-days-ago';
+import { useSetRows } from '../lib/use-set-rows';
 import SetTable from './SetTable';
-
-//how long the spinner shows at least, a fast save would otherwise only flicker
-const MIN_SAVING_MS = 800;
 
 type ActiveWorkoutViewProps = {
   workout: Workout;
@@ -59,11 +55,9 @@ export default function ActiveWorkoutView({
   const [reordering, setReordering] = useState(false);
   const [reorderError, setReorderError] = useState<string | null>(null);
   const router = useRouter();
-  const [rows, setRows] = useState<Record<number, SetRow[]>>(() =>
+  const { rows, setRows, save, remove, settle } = useSetRows(workout.id, () =>
     Object.fromEntries(workout.exercises.map((e) => [e.id, buildRows(e)])),
   );
-
-  const inFlight = useRef(new Map<string, Promise<unknown>>());
 
   const entry = exercises[current];
   const last = exercises.length - 1;
@@ -79,9 +73,9 @@ export default function ActiveWorkoutView({
 
   //waits for the saves still running, so the newest values are stored before the workout closes
   async function finish() {
-    await Promise.allSettled(inFlight.current.values());
+    await settle();
     await finishWorkout(workout.id);
-    router.push('/dashboard');
+    router.push(`/workout/${workout.id}/summary`);
     router.refresh();
   }
 
@@ -89,82 +83,6 @@ export default function ActiveWorkoutView({
     await discardWorkout(workout.id);
     router.push('/dashboard');
     router.refresh();
-  }
-
-  //one request per row at a time: a new save waits for the previous one, so the server sees them in order
-  function save(entryId: number, row: SetRow) {
-    setRows((prev) => ({
-      ...prev,
-      [entryId]: prev[entryId].map((r) =>
-        r.clientId === row.clientId ? { ...r, status: 'saving' as const } : r,
-      ),
-    }));
-
-    const previous = inFlight.current.get(row.clientId) ?? Promise.resolve();
-    const request = previous
-      .catch(() => {})
-      .then(() =>
-        saveSet(workout.id, row.clientId, {
-          workoutExerciseId: entryId,
-          setNumber: row.setNumber,
-          setType: row.setType,
-          rpe: row.rpe,
-          reps: row.reps,
-          weightKg: row.weightKg,
-          durationSeconds: row.durationSeconds,
-          distanceMeters: row.distanceMeters,
-        }),
-      );
-    inFlight.current.set(row.clientId, request);
-
-    Promise.all([
-      request.then(
-        () => 'saved' as const,
-        () => 'failed' as const,
-      ),
-      new Promise((resolve) => setTimeout(resolve, MIN_SAVING_MS)),
-    ]).then(([status]) => {
-      if (inFlight.current.get(row.clientId) !== request) return;
-      inFlight.current.delete(row.clientId);
-      setRows((prev) => ({
-        ...prev,
-        [entryId]: prev[entryId].map((r) =>
-          r.clientId === row.clientId ? { ...r, status } : r,
-        ),
-      }));
-    });
-  }
-
-  //an open row only exists here; a logged one is deleted on the server first, behind a save still running
-  function remove(entryId: number, row: SetRow) {
-    if (row.status === 'open') {
-      setRows((prev) => ({
-        ...prev,
-        [entryId]: prev[entryId].filter((r) => r.clientId !== row.clientId),
-      }));
-      return;
-    }
-
-    const previous = inFlight.current.get(row.clientId) ?? Promise.resolve();
-    const request = previous
-      .catch(() => {})
-      .then(() => deleteSet(workout.id, row.clientId));
-    inFlight.current.set(row.clientId, request);
-
-    request
-      .then(
-        () =>
-          setRows((prev) => ({
-            ...prev,
-            [entryId]: prev[entryId].filter((r) => r.clientId !== row.clientId),
-          })),
-        (error) => toast.error(fallbackErrorMessage(error)),
-      )
-      .finally(() => {
-        if (inFlight.current.get(row.clientId) === request) {
-          inFlight.current.delete(row.clientId);
-        }
-      });
   }
 
   //the move shows at once; one request at a time, moving waits for it, and a failure restores the old order
