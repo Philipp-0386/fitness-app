@@ -17,4 +17,5 @@ export { default as ElapsedClock } from './ui/ElapsedClock';
 export { default as ActiveWorkoutView } from './ui/ActiveWorkoutView';
 export { default as HistoryList } from './ui/HistoryList';
 export { default as WorkoutDetailView } from './ui/WorkoutDetailView';
+export { default as WorkoutEditView } from './ui/WorkoutEditView';
 export { default as WorkoutSummaryView } from './ui/WorkoutSummaryView';

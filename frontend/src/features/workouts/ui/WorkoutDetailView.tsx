@@ -1,5 +1,8 @@
+import Link from 'next/link';
+
 import { formatTarget } from '@/features/routines/lib/format-target';
 import { TopBar } from '@/shared/layout';
+import { Button } from '@/shared/ui/button';
 import { formatDuration } from '../lib/format-duration';
 import { formatSetValues } from '../lib/format-set';
 import { TIME_ZONE } from '../lib/group-by-week';
@@ -25,7 +28,19 @@ export default function WorkoutDetailView({ workout }: { workout: Workout }) {
 
   return (
     <div className="mx-auto flex w-full max-w-app flex-1 flex-col pb-8 lg:max-w-[560px]">
-      <TopBar backHref="/history" backLabel="History" title={workout.name} inSplitView />
+      <TopBar
+        backHref="/history"
+        backLabel="History"
+        title={workout.name}
+        inSplitView
+        action={
+          workout.status === 'COMPLETED' && (
+            <Button asChild size="sm">
+              <Link href={`/history/${workout.id}/edit`}>Edit</Link>
+            </Button>
+          )
+        }
+      />
 
       <p className="mt-1 px-4 text-text-secondary tabular-nums">
         {dateFormat.format(started)}, {timeFormat.format(started)}
