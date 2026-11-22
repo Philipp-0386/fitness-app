@@ -22,8 +22,8 @@ alone. Forgetting -> ideally prod safe.
   file and refuses to start when one changes. Correct a mistake with a new
   migration.
 
-  Exception until the public launch: there is no user data worth keeping yet,
-  so schema changes still go into `V1` directly.
+  Production is live, so this holds for `V1` and `V2` too. Every change is a new
+  versioned migration, production is never reset with `down -v`.
 
 - **Keep migrations additive** where possible - adding a nullable column or a new
   table lets an older image keep running. A dropped or renamed column makes a

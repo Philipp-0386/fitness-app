@@ -1,6 +1,6 @@
 # Database Modelling
 
-The migrations are the source of truth, mainly [V1\_\_schema.sql](../../backend/src/main/resources/db/migration/V1__schema.sql). This file explains the intent behind them. Until the public launch `V1` is still edited directly, because there is no user data worth keeping yet. Only `exercise` is mapped as a JPA entity so far.
+The migrations are the source of truth, mainly [V1\_\_schema.sql](../../backend/src/main/resources/db/migration/V1__schema.sql). This file explains the intent behind them. Production is live, so `V1` and `V2` are frozen and every change is a new migration. Only `exercise` is mapped as a JPA entity so far.
 
 The [relational model diagram](./database_relational_model.png) is outdated (Oracle types, removed fields, table names from before 01.10.2026).
 
@@ -62,6 +62,12 @@ A `program` is an ordered sequence of `program_day` slots, each holding a routin
 - **Snapshots:** targets become `*_snapshot` columns, the routine's name becomes `workout.name`. Routine edits never change history, freestyle workouts need no routine.
 - **States:** a workout is `IN_PROGRESS` or `COMPLETED`, discarding deletes it. An exercise in a workout has no status, it counts as done once it has sets. No rest tracking: the app tracks training, it does not coach it live.
 - **Open in the slice:** handling a workout left `IN_PROGRESS` (resume, finish, discard), and a client generated id per set against duplicates from retries (deferred).
+
+### Translations
+
+The global catalog and the presets are translated in `muscle_group_translation`, `exercise_translation`, `routine_translation` and `program_translation` ([V3](../../backend/src/main/resources/db/migration/V3__translation_tables.sql)), one row per translated row and locale. The base rows stay English and are the fallback for a missing translation. Only global rows are translated, user owned rows keep what the user typed. The schema cannot enforce that, the plain foreign keys accept any row. Translated names are unique per locale for exercises and muscle groups, like their base names. Content lives in one migration per language, German in [V4](../../backend/src/main/resources/db/migration/V4__reference_data_de.sql).
+
+Copying a preset stores its name in the user's language at that moment, the copy then belongs to the user.
 
 ### Deleting
 
