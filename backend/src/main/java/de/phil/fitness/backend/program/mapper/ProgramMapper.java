@@ -9,6 +9,8 @@ import de.phil.fitness.backend.program.dto.UpdateProgramRequest;
 import de.phil.fitness.backend.program.model.Program;
 import de.phil.fitness.backend.program.model.ProgramDay;
 import de.phil.fitness.backend.routine.dto.RoutineSummary;
+import de.phil.fitness.backend.program.model.ProgramTranslation;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
@@ -22,10 +24,12 @@ import java.util.stream.Collectors;
 @Component
 public class ProgramMapper {
     public ProgramResponse toProgramResponse(Program program) {
+        String language = LocaleContextHolder.getLocale().getLanguage();
+        ProgramTranslation translation = "en".equals(language) ? null : program.getTranslations().get(language);
         return new ProgramResponse(
                 program.getId(),
-                program.getName(),
-                program.getDescription(),
+                translation != null ? translation.getName() : program.getName(),
+                translation != null ? translation.getDescription() : program.getDescription(),
                 program.isActive(),
                 program.getDays().size(),
                 program.getCreatedAt(),
@@ -34,10 +38,12 @@ public class ProgramMapper {
     }
 
     public ProgramDetailResponse toProgramDetailResponse(Program program, Map<Long, RoutineSummary> routines) {
+        String language = LocaleContextHolder.getLocale().getLanguage();
+        ProgramTranslation translation = "en".equals(language) ? null : program.getTranslations().get(language);
         return new ProgramDetailResponse(
                 program.getId(),
-                program.getName(),
-                program.getDescription(),
+                translation != null ? translation.getName() : program.getName(),
+                translation != null ? translation.getDescription() : program.getDescription(),
                 program.isActive(),
                 program.getCreatedAt(),
                 program.getUpdatedAt(),

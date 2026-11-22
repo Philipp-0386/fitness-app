@@ -6,8 +6,12 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.Instant;
+import org.hibernate.annotations.BatchSize;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Entity
 @Table(name="ROUTINE")
@@ -40,6 +44,14 @@ public class Routine {
     @OrderBy("orderIndex ASC")
     @Setter(AccessLevel.NONE)
     private List<RoutineExercise> exercises = new ArrayList<>();
+
+    /** Translations of a preset routine keyed by locale ({@code "de"}), empty for own routines. */
+    @ElementCollection
+    @CollectionTable(name = "ROUTINE_TRANSLATION", joinColumns = @JoinColumn(name = "ROUTINE_ID"))
+    @MapKeyColumn(name = "LOCALE")
+    @Setter(AccessLevel.NONE)
+    @BatchSize(size = 100)
+    private Map<String, RoutineTranslation> translations = new HashMap<>();
 
     public void addExercise(RoutineExercise routineExercise) {
         exercises.add(routineExercise);

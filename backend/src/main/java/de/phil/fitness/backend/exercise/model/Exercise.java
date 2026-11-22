@@ -2,7 +2,9 @@ package de.phil.fitness.backend.exercise.model;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -61,6 +63,14 @@ public class Exercise {
     @Setter(AccessLevel.NONE)
     @BatchSize(size = 100)
     private List<ExerciseMuscle> muscles = new ArrayList<>();
+
+    /** Translations of a global exercise keyed by locale ({@code "de"}), empty for custom exercises. */
+    @ElementCollection
+    @CollectionTable(name = "EXERCISE_TRANSLATION", joinColumns = @JoinColumn(name = "EXERCISE_ID"))
+    @MapKeyColumn(name = "LOCALE")
+    @Setter(AccessLevel.NONE)
+    @BatchSize(size = 100)
+    private Map<String, ExerciseTranslation> translations = new HashMap<>();
 
     public Exercise() {
     }

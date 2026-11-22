@@ -6,8 +6,12 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.Instant;
+import org.hibernate.annotations.BatchSize;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Entity
 @Table(name = "PROGRAM")
@@ -43,6 +47,14 @@ public class Program {
     @OrderBy("orderIndex ASC")
     @Setter(AccessLevel.NONE)
     private List<ProgramDay> days = new ArrayList<>();
+
+    /** Translations of a preset program keyed by locale ({@code "de"}), empty for own programs. */
+    @ElementCollection
+    @CollectionTable(name = "PROGRAM_TRANSLATION", joinColumns = @JoinColumn(name = "PROGRAM_ID"))
+    @MapKeyColumn(name = "LOCALE")
+    @Setter(AccessLevel.NONE)
+    @BatchSize(size = 100)
+    private Map<String, ProgramTranslation> translations = new HashMap<>();
 
     public void addDay(ProgramDay programDay) {
         days.add(programDay);

@@ -3,7 +3,12 @@ package de.phil.fitness.backend.exercise.model;
 import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.Immutable;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -11,6 +16,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.MapKeyColumn;
 import jakarta.persistence.Table;
 import lombok.Getter;
 
@@ -41,6 +47,14 @@ public class MuscleGroup {
     @Enumerated(EnumType.STRING)
     @Column(name = "BODY_REGION", length = 16)
     private BodyRegion bodyRegion;
+
+    /** Translated names keyed by locale ({@code "de"}). */
+    @ElementCollection
+    @CollectionTable(name = "MUSCLE_GROUP_TRANSLATION", joinColumns = @JoinColumn(name = "MUSCLE_GROUP_ID"))
+    @MapKeyColumn(name = "LOCALE")
+    @Column(name = "NAME", nullable = false, length = 64)
+    @BatchSize(size = 100)
+    private Map<String, String> translations = new HashMap<>();
 
     protected MuscleGroup() {
     }

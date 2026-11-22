@@ -1,6 +1,8 @@
 package de.phil.fitness.backend.routine.service;
 
+import java.text.Collator;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +25,7 @@ import de.phil.fitness.backend.routine.model.Routine;
 import de.phil.fitness.backend.routine.model.RoutineExercise;
 import de.phil.fitness.backend.routine.dto.UpdateRoutineRequest;
 import org.springframework.context.event.EventListener;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -156,6 +159,7 @@ public class RoutineService {
         return routineRepository.getAllPresetRoutines()
                 .stream()
                 .map(routineMapper::toRoutineResponse)
+                .sorted(Comparator.comparing(RoutineResponse::name, Collator.getInstance(LocaleContextHolder.getLocale())))
                 .toList();
     }
 

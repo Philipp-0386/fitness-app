@@ -14,7 +14,10 @@ import de.phil.fitness.backend.program.model.Program;
 import de.phil.fitness.backend.program.model.ProgramDay;
 import de.phil.fitness.backend.program.repository.ProgramRepository;
 import de.phil.fitness.backend.routine.service.RoutineService;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
+
+import java.text.Collator;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
@@ -106,6 +109,7 @@ public class ProgramService {
         return programRepository.getAllPresetPrograms()
                 .stream()
                 .map(programMapper::toProgramResponse)
+                .sorted(Comparator.comparing(ProgramResponse::name, Collator.getInstance(LocaleContextHolder.getLocale())))
                 .toList();
     }
 
