@@ -218,6 +218,7 @@ public class UserService {
         settings.setWeightUnit(req.weightUnit());
         settings.setDistanceUnit(req.distanceUnit());
         settings.setTimeZone(req.timeZone());
+        settings.setLanguage(req.language());
         log.info("User settings updated. userId={}", userId);
         return userMapper.toSettingsResponse(settings);
     }

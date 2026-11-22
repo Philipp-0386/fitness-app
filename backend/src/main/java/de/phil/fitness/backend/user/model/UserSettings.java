@@ -24,6 +24,10 @@ public class UserSettings {
     @Column(name = "TIME_ZONE", nullable = false, length = 64)
     private String timeZone = "Europe/Berlin";
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "LANGUAGE", nullable = false, length = 8)
+    private Language language = Language.EN;
+
     protected UserSettings() {
 
     }

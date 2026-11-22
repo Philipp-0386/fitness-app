@@ -21,7 +21,8 @@ public class UserMapper {
         return new UserSettingsResponse(
                 userSettings.getWeightUnit(),
                 userSettings.getDistanceUnit(),
-                userSettings.getTimeZone()
+                userSettings.getTimeZone(),
+                userSettings.getLanguage()
         );
     }
 }

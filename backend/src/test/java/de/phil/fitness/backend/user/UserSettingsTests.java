@@ -99,12 +99,13 @@ class UserSettingsTests {
                         .header("Authorization", tokenFor("max12"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"weightUnit": "LB", "distanceUnit": "MI", "timeZone": "America/New_York"}
+                                {"weightUnit": "LB", "distanceUnit": "MI", "timeZone": "America/New_York", "language": "DE"}
                                 """))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.weightUnit").value("LB"))
                 .andExpect(jsonPath("$.distanceUnit").value("MI"))
-                .andExpect(jsonPath("$.timeZone").value("America/New_York"));
+                .andExpect(jsonPath("$.timeZone").value("America/New_York"))
+                .andExpect(jsonPath("$.language").value("DE"));
 
         flushAndClear();
 
@@ -112,7 +113,8 @@ class UserSettingsTests {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.weightUnit").value("LB"))
                 .andExpect(jsonPath("$.distanceUnit").value("MI"))
-                .andExpect(jsonPath("$.timeZone").value("America/New_York"));
+                .andExpect(jsonPath("$.timeZone").value("America/New_York"))
+                .andExpect(jsonPath("$.language").value("DE"));
     }
 
     @Test
@@ -123,7 +125,7 @@ class UserSettingsTests {
                         .header("Authorization", tokenFor("max12"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"weightUnit": "KG", "distanceUnit": "KM", "timeZone": "Mars/Base"}
+                                {"weightUnit": "KG", "distanceUnit": "KM", "timeZone": "Mars/Base", "language": "EN"}
                                 """))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
@@ -138,7 +140,7 @@ class UserSettingsTests {
                         .header("Authorization", tokenFor("max12"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"weightUnit": "KG", "distanceUnit": "KM", "timeZone": "+01:00"}
+                                {"weightUnit": "KG", "distanceUnit": "KM", "timeZone": "+01:00", "language": "EN"}
                                 """))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.fieldErrors.timeZone").value("Unknown time zone"));
@@ -152,7 +154,7 @@ class UserSettingsTests {
                         .header("Authorization", tokenFor("max12"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"weightUnit": "STONE", "distanceUnit": "KM", "timeZone": "Europe/Berlin"}
+                                {"weightUnit": "STONE", "distanceUnit": "KM", "timeZone": "Europe/Berlin", "language": "EN"}
                                 """))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
@@ -171,7 +173,8 @@ class UserSettingsTests {
                 .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
                 .andExpect(jsonPath("$.fieldErrors.weightUnit").value("Weight unit is required"))
                 .andExpect(jsonPath("$.fieldErrors.distanceUnit").value("Distance unit is required"))
-                .andExpect(jsonPath("$.fieldErrors.timeZone").value("Time zone is required"));
+                .andExpect(jsonPath("$.fieldErrors.timeZone").value("Time zone is required"))
+                .andExpect(jsonPath("$.fieldErrors.language").value("Language is required"));
     }
 
     // -----------------------------------------------------------------------
@@ -196,11 +199,12 @@ class UserSettingsTests {
         flushAndClear();
 
         Map<String, Object> row = jdbcTemplate.queryForMap(
-                "SELECT weight_unit, distance_unit, time_zone FROM user_settings WHERE user_id = ?",
+                "SELECT weight_unit, distance_unit, time_zone, language FROM user_settings WHERE user_id = ?",
                 userId("settings-user"));
         assertThat(row)
                 .containsEntry("weight_unit", "KG")
                 .containsEntry("distance_unit", "KM")
-                .containsEntry("time_zone", "Europe/Berlin");
+                .containsEntry("time_zone", "Europe/Berlin")
+                .containsEntry("language", "EN");
     }
 }
