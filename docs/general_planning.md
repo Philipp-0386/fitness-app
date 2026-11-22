@@ -6,21 +6,19 @@ This documentation will be dynamically adjusted. The only purpose it serves is b
 
 ## What now?
 
-The ui-rework is basically done. All existing pages are redone with the new design. `Exercise` and `routines` are still missing update, delete and create feature in the frontend. `Program` is fully implemented, and `workout` is functional, but not finished.
+At the moment the application is already usable. Tracking of `workouts` works as intended, history can be view and edited. The current focus is on finishing the functions surrounding the actual tracking process (#212), and make key changes for current and new users (see below).
 
 The current goal is to finish these tasks:
 
-- Make UI/UX adjustment following feedback and own ideas (#205 #208)
-- New DB-Table for user settings (#170)
-  - units (kg/lb as display conversion) and time zone
-- Add token revocation (not started) (#128)
-- Start with ´Workout´ slice implementation (#193)
-  - mostly functional at this point, but not finished (live on prod post #195)
+- Make different unit-type display usable/toggleable (#218)
+- Make application available in german (#179, already started on #235)
+- Add invite-code feature to sign-up (#228)
+  - need to take a look at logs
+- Add quick-start function to dashboard (#212)
+- Feedback (#87)
 
-- Research open-source visual sources (pictures, gifs) for `exercise` catalog
+- Research open-source visual sources (pictures, gifs) for `exercise` catalog (currently on hold. not needed, but would be a valuable addition)
   - S3 storing? -> Research
-- [Demo account](./general_planning.md#demo-account-idea)
-  - add temporary accounts allowing outsiders to test for limited time
 
 ## Relevant Points
 
@@ -140,6 +138,11 @@ PWA works, but has some bugs (see issue #185 and #187). The goal is to make the 
 
 I wanna do this relative to the last tracked workout. Depending on the active program, past workouts will be fetched, and based to those the upcoming day within the program determined and displayed (in dashboard).
 
+### Currently planned analytics
+
+- Progression graph per exercise
+- Calender activity display
+
 ## Key Decisions
 
 ### JWT > Sessions
@@ -168,19 +171,6 @@ Before the routine and workout slices are built, V1 was reworked once more, whil
 The app tracks training, it does not coach it live. Rest times are therefore not tracked at all, and the workout keeps only the states that matter: a workout is running or finished, an exercise counts as done once it has sets.
 
 Details and the logging conventions are in [DatabaseModelling.md](./database/DatabaseModelling.md).
-
-### Schema freeze and Flyway (23.09.2026)
-
-`db/src/main.sql` was a drop-and-recreate reset script. The script was frozen into `V1__schema.sql` and Flyway took over. The freeze was the moment to apply everything that is free now and expensive later (Goal of PR #77):
-
-- `TIMESTAMP` → `TIMESTAMPTZ` on every timestamp column (entities moved from `LocalDateTime` to `Instant`)
-- `ON DELETE CASCADE` on `session_exercise -> session_log` and `exercise_set -> session_exercise`
-- Per-owner exercise name uniqueness, and a partial unique index for one active session per user.
-- `userdata.date_of_birth` is nullable: nothing reads it, and less personal data stored is less to protect. Removed from `V1` again, see below.
-
-The seed was split at the same time. Reference data (roles, muscle groups, the global catalog) runs everywhere; the test users live in a separate Flyway location that only the `dev` profile activates. They all share the password `password` in a public repository, so a production database must never see them.
-
-Rollbacks are the cost side of this: with one instance migrating on startup, an old image can only be redeployed if the migration in between was additive. That is a rule to keep from the first migration on, not after the first incident.
 
 ### No personal fields on the account (24.09.2026)
 
