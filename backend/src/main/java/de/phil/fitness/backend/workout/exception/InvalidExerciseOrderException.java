@@ -11,6 +11,6 @@ import java.util.Map;
 public class InvalidExerciseOrderException extends ApiException {
     public InvalidExerciseOrderException(String message) {
         super(HttpStatus.BAD_REQUEST, "VALIDATION_FAILED", "Request body contains invalid fields", message,
-                Map.of("entryIds", "must contain every exercise of the workout exactly once"));
+                Map.of("entryIds", "Incomplete"));
     }
 }

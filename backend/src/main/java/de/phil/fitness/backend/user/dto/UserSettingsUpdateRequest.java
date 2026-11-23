@@ -16,13 +16,8 @@ import jakarta.validation.constraints.NotNull;
  * @param language Language of the UI and of the translated catalog
  */
 public record UserSettingsUpdateRequest(
-        @NotNull(message = "Weight unit is required")
-        WeightUnit weightUnit,
-        @NotNull(message = "Distance unit is required")
-        DistanceUnit distanceUnit,
-        @NotBlank(message = "Time zone is required")
-        @ValidTimeZone
-        String timeZone,
-        @NotNull(message = "Language is required")
-        Language language
+        @NotNull WeightUnit weightUnit,
+        @NotNull DistanceUnit distanceUnit,
+        @NotBlank @ValidTimeZone String timeZone,
+        @NotNull Language language
 ) {}

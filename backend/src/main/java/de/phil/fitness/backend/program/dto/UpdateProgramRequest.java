@@ -15,12 +15,12 @@ public record UpdateProgramRequest(
     @Size(max = 1000) String description,
     @NotNull @Size(min = 1, max = 14) List<@NotNull @Valid UpdateProgramDayRequest> days
 ) {
-    @AssertTrue(message = "program needs minimum one training day")
+    @AssertTrue
     public boolean isTrainingDayPresent() {
         return days == null || days.stream().anyMatch(day -> day != null && day.routineId() != null);
     }
 
-    @AssertTrue(message = "a day id may appear only once")
+    @AssertTrue
     public boolean isDayIdsUnique() {
         if (days == null) return true;
         List<Long> ids = days.stream()

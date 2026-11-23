@@ -50,7 +50,7 @@ public class SignUpService {
                     "Username already taken!");
         }
         User userEntity = signUpMapper.mapRequestToUserEntity(dto);
-        User savedUser = userService.createUser(userEntity, dto.password());
+        User savedUser = userService.createUser(userEntity, dto.password(), dto.language());
         log.info("User creation successful. userId={}", savedUser.getId());
         return signUpMapper.mapUserEntityToResponse(savedUser);
     }

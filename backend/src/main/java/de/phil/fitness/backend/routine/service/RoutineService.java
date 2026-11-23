@@ -137,7 +137,7 @@ public class RoutineService {
         for (RoutineExercise re : routine.getExercises()) {
             TrackingType type = exercises.get(re.getExerciseId()).trackingType();
             String path = "exercises[" + re.getOrderIndex() + "].";
-            String message = "not used by tracking type " + type;
+            String message = "Null";
             if (re.getTargetRepsMin() != null && !type.holdsReps()) fieldErrors.put(path + "targetRepsMin", message);
             if (re.getTargetRepsMax() != null && !type.holdsReps()) fieldErrors.put(path + "targetRepsMax", message);
             if (re.getTargetDurationSeconds() != null && !type.holdsDuration()) fieldErrors.put(path + "targetDurationSeconds", message);
@@ -255,7 +255,7 @@ public class RoutineService {
         for (RoutineExercise re : routine.getExercises()) {
             TrackingType type = exercises.get(re.getExerciseId()).trackingType();
             String path = "exercises[" + re.getOrderIndex() + "].";
-            String message = "not used by tracking type " + type;
+            String message = "Null";
             if (re.getTargetRepsMin() != null && !type.holdsReps()) fieldErrors.put(path + "targetRepsMin", message);
             if (re.getTargetRepsMax() != null && !type.holdsReps()) fieldErrors.put(path + "targetRepsMax", message);
             if (re.getTargetDurationSeconds() != null && !type.holdsDuration()) fieldErrors.put(path + "targetDurationSeconds", message);

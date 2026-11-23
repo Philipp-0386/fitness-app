@@ -129,7 +129,7 @@ class UserSettingsTests {
                                 """))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
-                .andExpect(jsonPath("$.fieldErrors.timeZone").value("Unknown time zone"));
+                .andExpect(jsonPath("$.fieldErrors.timeZone").value("ValidTimeZone"));
     }
 
     @Test
@@ -143,7 +143,7 @@ class UserSettingsTests {
                                 {"weightUnit": "KG", "distanceUnit": "KM", "timeZone": "+01:00", "language": "EN"}
                                 """))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.fieldErrors.timeZone").value("Unknown time zone"));
+                .andExpect(jsonPath("$.fieldErrors.timeZone").value("ValidTimeZone"));
     }
 
     @Test
@@ -158,7 +158,7 @@ class UserSettingsTests {
                                 """))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
-                .andExpect(jsonPath("$.fieldErrors.weightUnit").value("must be one of: KG, LB"));
+                .andExpect(jsonPath("$.fieldErrors.weightUnit").value("OneOf"));
     }
 
     @Test
@@ -171,10 +171,10 @@ class UserSettingsTests {
                         .content("{}"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
-                .andExpect(jsonPath("$.fieldErrors.weightUnit").value("Weight unit is required"))
-                .andExpect(jsonPath("$.fieldErrors.distanceUnit").value("Distance unit is required"))
-                .andExpect(jsonPath("$.fieldErrors.timeZone").value("Time zone is required"))
-                .andExpect(jsonPath("$.fieldErrors.language").value("Language is required"));
+                .andExpect(jsonPath("$.fieldErrors.weightUnit").value("NotNull"))
+                .andExpect(jsonPath("$.fieldErrors.distanceUnit").value("NotNull"))
+                .andExpect(jsonPath("$.fieldErrors.timeZone").value("NotBlank"))
+                .andExpect(jsonPath("$.fieldErrors.language").value("NotNull"));
     }
 
     // -----------------------------------------------------------------------

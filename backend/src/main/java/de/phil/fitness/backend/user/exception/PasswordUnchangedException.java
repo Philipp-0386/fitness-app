@@ -12,6 +12,6 @@ import de.phil.fitness.backend.common.ApiException;
 public class PasswordUnchangedException extends ApiException {
     public PasswordUnchangedException(String msg) {
         super(HttpStatus.BAD_REQUEST, "VALIDATION_FAILED", "Request body contains invalid fields", msg,
-                Map.of("newPassword", "New password must differ from the current one"));
+                Map.of("newPassword", "Unchanged"));
     }
 }

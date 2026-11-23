@@ -8,6 +8,7 @@ import java.util.UUID;
 import de.phil.fitness.backend.auth.JwtService;
 
 import de.phil.fitness.backend.user.dto.*;
+import de.phil.fitness.backend.user.model.Language;
 import de.phil.fitness.backend.user.model.UserSettings;
 import de.phil.fitness.backend.user.repository.UserSettingsRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -102,16 +103,21 @@ public class UserService {
      * Persists a new user with the default role and a hashed password.
      * @param user the user entity to persist, must not be {@code null}
      * @param rawPassword the plain text password, which gets hashed before saving
+     * @param language the language of the new account, {@code null} for the default {@code EN}
      * @return the saved {@link User}
      * @throws DefaultRoleNotFoundException if the default role does not exist
      */
-    public User createUser(User user, String rawPassword) {
+    public User createUser(User user, String rawPassword, Language language) {
         Role defaultRole = roleRepository.findById(DEFAULT_ROLE_ID)
                 .orElseThrow(() -> new DefaultRoleNotFoundException("Default role not found during user creation!"));
         user.setRole(defaultRole);
         user.setPasswordHashed(passwordEncoder.encode(rawPassword));
         User saved = userRepository.save(user);
-        userSettingsRepository.save(new UserSettings(saved.getId()));
+        UserSettings settings = new UserSettings(saved.getId());
+        if (language != null) {
+            settings.setLanguage(language);
+        }
+        userSettingsRepository.save(settings);
         return saved;
     }
 

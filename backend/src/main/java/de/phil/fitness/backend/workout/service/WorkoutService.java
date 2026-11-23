@@ -265,7 +265,7 @@ public class WorkoutService {
             }
             if (!entry.getId().equals(req.workoutExerciseId())) {
                 throw new InvalidSetException("The set " + clientId + " cannot move to workout exercise " + req.workoutExerciseId(),
-                        Map.of("workoutExerciseId", "cannot change on an existing set"));
+                        Map.of("workoutExerciseId", "Immutable"));
             }
         } else {
             entry = workout.getExercises().stream()
@@ -285,8 +285,8 @@ public class WorkoutService {
         boolean weightRequired = type == TrackingType.WEIGHT_REPS || type == TrackingType.WEIGHT_DISTANCE;
         boolean weightForbidden = type == TrackingType.DISTANCE_DURATION;
 
-        String required = "required for tracking type " + type;
-        String notUsed = "not used by tracking type " + type;
+        String required = "NotNull";
+        String notUsed = "Null";
         Map<String, String> fieldErrors = new LinkedHashMap<>();
         if (type.holdsReps() && req.reps() == null) fieldErrors.put("reps", required);
         if (!type.holdsReps() && req.reps() != null) fieldErrors.put("reps", notUsed);

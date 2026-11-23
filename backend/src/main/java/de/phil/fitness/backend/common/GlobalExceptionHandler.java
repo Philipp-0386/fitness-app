@@ -1,9 +1,7 @@
 package de.phil.fitness.backend.common;
 
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -123,9 +121,6 @@ public class GlobalExceptionHandler {
             String field = cause.getPath().isEmpty()
                     ? "unknown"
                     : cause.getPath().get(cause.getPath().size() - 1).getPropertyName();
-            String allowed = Arrays.stream(cause.getTargetType().getEnumConstants())
-                    .map(Object::toString)
-                    .collect(Collectors.joining(", "));
             log.warn("Rejected unknown enum value. path={} field={}", req.getRequestURI(), field);
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
@@ -133,7 +128,7 @@ public class GlobalExceptionHandler {
                             "VALIDATION_FAILED",
                             "Request body contains invalid fields",
                             req.getRequestURI(),
-                            Map.of(field, "must be one of: " + allowed)
+                            Map.of(field, "OneOf")
                     ));
         }
         log.warn("Rejected unreadable request body. path={} {}", req.getRequestURI(), ex.getMessage());
@@ -150,14 +145,14 @@ public class GlobalExceptionHandler {
      * Handles request bodies that violate bean validation constraints.
      * @param ex The exception object thrown
      * @return Returns a {@link ResponseEntity} containing key information regarding the exception,
-     *         with one message per rejected field
+     *         with the violated constraint's name (e.g. {@code NotBlank}, {@code Size}) per rejected field
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationFailed(MethodArgumentNotValidException ex, HttpServletRequest req) {
         Map<String, String> fieldErrors = new LinkedHashMap<>();
         for (FieldError error : ex.getBindingResult().getFieldErrors()) {
             // A field can violate several constraints; reporting the first one is enough for the client.
-            fieldErrors.putIfAbsent(error.getField(), error.getDefaultMessage());
+            fieldErrors.putIfAbsent(error.getField(), error.getCode());
         }
         log.warn("Rejected invalid request body. path={} fields={}", req.getRequestURI(), fieldErrors.keySet());
         return ResponseEntity
@@ -216,9 +211,13 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HandlerMethodValidationException.class)
     public ResponseEntity<ErrorResponse> handleMethodValidation(HandlerMethodValidationException ex, HttpServletRequest req) {
         Map<String, String> fieldErrors = new LinkedHashMap<>();
-        ex.getParameterValidationResults().forEach(result -> fieldErrors.put(
-                result.getMethodParameter().getParameterName(),
-                result.getResolvableErrors().getFirst().getDefaultMessage()));
+        // The last resolvable code is the bare constraint name ("Max"), the others are qualified with the method.
+        ex.getParameterValidationResults().forEach(result -> {
+            String[] codes = result.getResolvableErrors().getFirst().getCodes();
+            fieldErrors.put(
+                    result.getMethodParameter().getParameterName(),
+                    codes != null && codes.length > 0 ? codes[codes.length - 1] : "Invalid");
+        });
 
         log.warn("Rejected invalid parameter. path={} fields={}", req.getRequestURI(), fieldErrors.keySet());
         return ResponseEntity
