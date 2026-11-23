@@ -1,5 +1,7 @@
 {
-  "metadata": {
-    "description": "Workouts planen, Trainings protokollieren und Fortschritte verfolgen."
+  "layout": {
+    "title": "Fitness App",
+    "appTitle": "Avren",
+    "description": "Workouts planen, Trainings festhalten und Fortschritte verfolgen."
   }
 }
