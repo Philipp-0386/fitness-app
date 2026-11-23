@@ -10,6 +10,8 @@ import { SuccessfulSignUpResponse } from '../types/api.types';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { CircleAlert, Eye, EyeOff } from 'lucide-react';
+import { useLocale } from 'next-intl';
+
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { Label } from '@/shared/ui/label';
@@ -32,6 +34,7 @@ export default function UserForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const router = useRouter();
+  const locale = useLocale();
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const { name, value } = e.target;
@@ -134,7 +137,7 @@ export default function UserForm() {
     }
 
     setIsSubmitting(true);
-    const request = mapFormToPayload(form);
+    const request = mapFormToPayload(form, locale);
     let result: SuccessfulSignUpResponse | null = null;
     try {
       result = await signUp(request);

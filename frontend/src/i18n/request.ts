@@ -3,7 +3,9 @@ import { getRequestConfig } from 'next-intl/server';
 
 import { fetchSettings } from '@/features/user';
 import { getSession } from '@/shared/auth/session';
+
 import type { AppLocale } from './locales';
+import { LOCALE_COOKIE } from '@/shared/auth/cookies';
 
 async function resolveLocale(): Promise<AppLocale> {
   if (await getSession()) {
@@ -15,7 +17,7 @@ async function resolveLocale(): Promise<AppLocale> {
     }
   }
 
-  const cookieLocale = (await cookies()).get('locale')?.value;
+  const cookieLocale = (await cookies()).get(LOCALE_COOKIE)?.value;
   if (cookieLocale === 'en' || cookieLocale === 'de') return cookieLocale;
 
   const acceptLanguage = (await headers()).get('accept-language') ?? '';
