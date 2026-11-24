@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useState, useSyncExternalStore } from 'react';
 import { toast } from 'sonner';
 
@@ -20,6 +21,11 @@ const distanceOptions = [
   { value: 'MI', label: 'mi' },
 ] as const;
 
+const languageOptions = [
+  { value: 'EN', label: 'English' },
+  { value: 'DE', label: 'Deutsch' },
+] as const;
+
 const noSubscription = () => () => {};
 const readDeviceTimeZone = () => Intl.DateTimeFormat().resolvedOptions().timeZone;
 const noDeviceTimeZoneOnServer = () => null;
@@ -31,6 +37,7 @@ type Props = {
 export default function UnitSettings({ initialSettings }: Props) {
   const [settings, setSettings] = useState(initialSettings);
   const [isSaving, setIsSaving] = useState(false);
+  const router = useRouter();
   const deviceTimeZone = useSyncExternalStore(
     noSubscription,
     readDeviceTimeZone,
@@ -44,6 +51,7 @@ export default function UnitSettings({ initialSettings }: Props) {
     setIsSaving(true);
     try {
       setSettings(await updateSettings(next));
+      if (next.language !== previous.language) router.refresh();
     } catch (err) {
       setSettings(previous);
       toast.error(fallbackErrorMessage(err));
@@ -103,6 +111,33 @@ export default function UnitSettings({ initialSettings }: Props) {
                 className={cn(
                   'min-h-9 rounded-field px-3.5 text-meta font-semibold',
                   settings.distanceUnit === value
+                    ? 'bg-surface-raised text-text-primary'
+                    : 'text-text-tertiary hover:text-text-secondary',
+                )}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </li>
+        <li className="flex min-h-14 items-center gap-3 px-4 py-2.5">
+          <span className="min-w-0 flex-1 font-semibold">Language</span>
+          <div
+            role="radiogroup"
+            aria-label="Language"
+            className="inline-grid grid-flow-col gap-1 rounded-card bg-bg p-1"
+          >
+            {languageOptions.map(({ value, label }) => (
+              <button
+                key={value}
+                type="button"
+                role="radio"
+                aria-checked={settings.language === value}
+                disabled={isSaving}
+                onClick={() => handleChange({ ...settings, language: value })}
+                className={cn(
+                  'min-h-9 rounded-field px-3.5 text-meta font-semibold',
+                  settings.language === value
                     ? 'bg-surface-raised text-text-primary'
                     : 'text-text-tertiary hover:text-text-secondary',
                 )}

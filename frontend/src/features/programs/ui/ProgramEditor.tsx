@@ -25,8 +25,11 @@ import { toast } from 'sonner';
 
 import type { Routine, RoutineDetail } from '@/features/routines';
 import { createRoutine } from '@/features/routines/client/create-routine.client';
+
 import { ApiError } from '@/shared/api/errors/api-error';
 import { fallbackErrorMessage } from '@/shared/api/errors/fallback-error-message';
+import { useFieldErrorMessage } from '@/shared/api/errors/use-error-message';
+
 import { cn } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
@@ -98,6 +101,8 @@ export default function ProgramEditor({
 
   const sheetIndex = sheet?.dayKey ? days.findIndex((d) => d.key === sheet.dayKey) : -1;
   const sheetDay = sheetIndex >= 0 ? days[sheetIndex] : null;
+
+  const fieldErrorMessage = useFieldErrorMessage();
 
   // An undo offered after leaving the editor would do nothing.
   useEffect(() => () => void toast.dismiss(REMOVED_TOAST_ID), []);
@@ -223,7 +228,7 @@ export default function ProgramEditor({
     } catch (err) {
       setIsSaving(false);
       if (err instanceof ApiError && err.fieldErrors?.name) {
-        setNameError(err.fieldErrors.name);
+        setNameError(fieldErrorMessage('name', err.fieldErrors.name));
         return;
       }
       if (err instanceof ApiError && err.code === 'USER_ROUTINE_NOT_FOUND') {

@@ -3,5 +3,49 @@
     "title": "Fitness App",
     "appTitle": "Avren",
     "description": "Workouts planen, Trainings festhalten und Fortschritte verfolgen."
+  },
+  "errors": {
+    "unexpected": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuche es später erneut.",
+    "badRequest": "Bitte überprüfe deine Eingaben.",
+    "sessionExpired": "Deine Sitzung ist abgelaufen. Bitte melde dich erneut an.",
+    "forbidden": "Dazu bist du nicht berechtigt.",
+    "notFound": "Das wurde nicht gefunden.",
+    "conflict": "Das steht im Konflikt mit vorhandenen Daten.",
+    "unreachable": "Der Server ist gerade nicht erreichbar. Bitte versuche es später erneut.",
+    "server": "Bei uns ist etwas schiefgelaufen. Bitte versuche es später erneut."
+  },
+  "validation": {
+    "fallback": "Dieser Wert ist ungültig.",
+    "NotBlank": "Bitte fülle dieses Feld aus.",
+    "NotNull": "Bitte fülle dieses Feld aus.",
+    "Size": "Dieser Wert ist zu lang oder zu kurz.",
+    "Email": "Gib eine gültige E-Mail-Adresse ein.",
+    "Pattern": "Dieser Wert hat ein ungültiges Format.",
+    "username": {
+      "NotBlank": "Gib einen Benutzernamen ein.",
+      "Size": "Der Benutzername muss 5 bis 32 Zeichen lang sein."
+    },
+    "email": {
+      "NotBlank": "Gib deine E-Mail-Adresse ein.",
+      "Size": "Die E-Mail-Adresse darf höchstens 64 Zeichen lang sein."
+    },
+    "password": {
+      "NotBlank": "Gib ein Passwort ein.",
+      "Size": "Das Passwort muss 8 bis 72 Zeichen lang sein.",
+      "Pattern": "Verwende einen Großbuchstaben, einen Kleinbuchstaben und eine Ziffer."
+    },
+    "currentPassword": {
+      "NotBlank": "Gib dein aktuelles Passwort ein."
+    },
+    "newPassword": {
+      "NotBlank": "Gib ein neues Passwort ein.",
+      "Size": "Das neue Passwort muss 8 bis 72 Zeichen lang sein.",
+      "Pattern": "Das neue Passwort braucht einen Großbuchstaben, einen Kleinbuchstaben und eine Ziffer.",
+      "Unchanged": "Das neue Passwort muss sich vom aktuellen unterscheiden."
+    },
+    "name": {
+      "NotBlank": "Gib einen Namen ein.",
+      "Size": "Der Name darf höchstens 128 Zeichen lang sein."
+    }
   }
 }

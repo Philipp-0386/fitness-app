@@ -8,6 +8,8 @@ import { toast } from 'sonner';
 
 import { ApiError } from '@/shared/api/errors/api-error';
 import { fallbackErrorMessage } from '@/shared/api/errors/fallback-error-message';
+import { useFieldErrorMessage } from '@/shared/api/errors/use-error-message';
+
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { Label } from '@/shared/ui/label';
@@ -65,6 +67,8 @@ export default function ExerciseEditor({ exercise, muscleGroups }: ExerciseEdito
 
   const tracking = trackingOptions.find((o) => o.value === trackingType)!;
 
+  const fieldErrorMessage = useFieldErrorMessage();
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (isSaving) return;
@@ -100,7 +104,7 @@ export default function ExerciseEditor({ exercise, muscleGroups }: ExerciseEdito
         return;
       }
       if (err instanceof ApiError && err.fieldErrors?.name) {
-        setNameError(err.fieldErrors.name);
+        setNameError(fieldErrorMessage('name', err.fieldErrors.name));
         return;
       }
       if (err instanceof ApiError && err.code === 'TRACKING_TYPE_LOCKED') {

@@ -6,6 +6,7 @@ import { signUp } from '../client/sign-up.client';
 import { mapFormToPayload } from '../mapper/form-to-request.mapper';
 import { ApiError } from '@/shared/api/errors/api-error';
 import { evaluateApiError } from './api-error-evaluate';
+import { useFieldErrorMessage } from '@/shared/api/errors/use-error-message';
 import { SuccessfulSignUpResponse } from '../types/api.types';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -35,6 +36,8 @@ export default function UserForm() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const router = useRouter();
   const locale = useLocale();
+
+  const fieldErrorMessage = useFieldErrorMessage();
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const { name, value } = e.target;
@@ -159,7 +162,14 @@ export default function UserForm() {
       if (error instanceof ApiError) {
         const uiError = evaluateApiError(error);
         setGeneralErrors(uiError.generalError);
-        setFieldErrors(uiError.fieldErrors);
+        setFieldErrors(
+          Object.fromEntries(
+            Object.entries(uiError.fieldErrors).map(([field, code]) => [
+              field,
+              fieldErrorMessage(field, code),
+            ]),
+          ),
+        );
         return;
       }
 

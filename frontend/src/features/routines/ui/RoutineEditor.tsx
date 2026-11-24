@@ -26,8 +26,11 @@ import { toast } from 'sonner';
 import ExercisePicker from '@/features/exercises/ui/ExercisePicker';
 import { trackingFields } from '@/features/exercises/lib/tracking-fields';
 import type { Exercise, MuscleGroup } from '@/features/exercises';
+
 import { ApiError } from '@/shared/api/errors/api-error';
 import { fallbackErrorMessage } from '@/shared/api/errors/fallback-error-message';
+import { useFieldErrorMessage } from '@/shared/api/errors/use-error-message';
+
 import { cn } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
@@ -96,6 +99,8 @@ export default function RoutineEditor({
 
   const sheetIndex = sheet ? slots.findIndex((s) => s.key === sheet.slotKey) : -1;
   const sheetSlot = sheetIndex >= 0 ? slots[sheetIndex] : null;
+
+  const fieldErrorMessage = useFieldErrorMessage();
 
   // An undo offered after leaving the editor would do nothing.
   useEffect(() => () => void toast.dismiss(REMOVED_TOAST_ID), []);
@@ -231,7 +236,7 @@ export default function RoutineEditor({
     } catch (err) {
       setIsSaving(false);
       if (err instanceof ApiError && err.fieldErrors?.name) {
-        setNameError(err.fieldErrors.name);
+        setNameError(fieldErrorMessage('name', err.fieldErrors.name));
         return;
       }
       if (err instanceof ApiError && err.code === 'EXERCISE_NOT_FOUND') {

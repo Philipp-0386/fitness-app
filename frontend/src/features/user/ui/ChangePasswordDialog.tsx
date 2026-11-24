@@ -6,6 +6,8 @@ import { toast } from 'sonner';
 
 import { ApiError } from '@/shared/api/errors/api-error';
 import { fallbackErrorMessage } from '@/shared/api/errors/fallback-error-message';
+import { useFieldErrorMessage } from '@/shared/api/errors/use-error-message';
+
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { Label } from '@/shared/ui/label';
@@ -20,6 +22,7 @@ export default function ChangePasswordDialog() {
   const [repeatPassword, setRepeatPassword] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const fieldErrorMessage = useFieldErrorMessage();
 
   function open() {
     dialogRef.current?.showModal();
@@ -79,7 +82,11 @@ export default function ChangePasswordDialog() {
         err.code === 'VALIDATION_FAILED' &&
         err.fieldErrors
       ) {
-        setError(Object.values(err.fieldErrors).join(' '));
+        setError(
+          Object.entries(err.fieldErrors)
+            .map(([field, code]) => fieldErrorMessage(field, code))
+            .join(' '),
+        );
         return;
       }
       setError(fallbackErrorMessage(err));

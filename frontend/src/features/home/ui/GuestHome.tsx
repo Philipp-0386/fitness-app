@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 import { Button } from '@/shared/ui/button';
+import { LanguageSwitch } from '@/shared/ui/language-switch';
 
 const features = [
   {
@@ -23,8 +24,9 @@ const features = [
 export default function GuestHome() {
   return (
     <main className="mx-auto flex w-full max-w-app flex-1 flex-col px-4">
-      <header className="flex h-14 items-center">
+      <header className="flex h-14 items-center justify-between">
         <p className="text-title">Fitness App</p>
+        <LanguageSwitch />
       </header>
 
       <section className="pt-4">

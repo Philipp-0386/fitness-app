@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { ChevronRight, CircleAlert } from 'lucide-react';
 import { ApiError } from '@/shared/api/errors/api-error';
 import { fallbackErrorMessage } from '@/shared/api/errors/fallback-error-message';
+import { useFieldErrorMessage } from '@/shared/api/errors/use-error-message';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { Label } from '@/shared/ui/label';
@@ -26,6 +27,7 @@ export default function UpdateAccountDialog({ username, email }: Props) {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const fieldErrorMessage = useFieldErrorMessage();
 
   function open() {
     setNewEmail(email);
@@ -69,7 +71,7 @@ export default function UpdateAccountDialog({ username, email }: Props) {
       toast.success(`Account updated: ${user.username}`);
       router.refresh();
     } catch (err) {
-      setError(evaluateError(err));
+      setError(evaluateError(err, fieldErrorMessage));
     } finally {
       setIsSaving(false);
     }
@@ -150,7 +152,10 @@ export default function UpdateAccountDialog({ username, email }: Props) {
   );
 }
 
-function evaluateError(error: unknown): string {
+function evaluateError(
+  error: unknown,
+  fieldErrorMessage: (field: string, code: string) => string,
+): string {
   if (error instanceof ApiError) {
     switch (error.code) {
       case 'INVALID_PASSWORD':
@@ -160,7 +165,11 @@ function evaluateError(error: unknown): string {
       case 'EMAIL_ALREADY_EXISTS':
         return 'An account with this email already exists. Please use another one.';
       case 'VALIDATION_FAILED':
-        if (error.fieldErrors) return Object.values(error.fieldErrors).join(' ');
+        if (error.fieldErrors) {
+          return Object.entries(error.fieldErrors)
+            .map(([field, code]) => fieldErrorMessage(field, code))
+            .join(' ');
+        }
         break;
     }
   }

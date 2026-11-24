@@ -3,5 +3,49 @@
     "title": "Fitness App",
     "appTitle": "Avren",
     "description": "Plan your workouts, log your sessions and track your progress."
+  },
+  "errors": {
+    "unexpected": "An unexpected error occurred. Please try again later.",
+    "badRequest": "Please check your input.",
+    "sessionExpired": "Your session has expired. Please log in again.",
+    "forbidden": "You are not allowed to do this.",
+    "notFound": "This could not be found.",
+    "conflict": "This conflicts with existing data.",
+    "unreachable": "The server is currently unreachable. Please try again later.",
+    "server": "Something went wrong on our side. Please try again later."
+  },
+  "validation": {
+    "fallback": "This value is invalid.",
+    "NotBlank": "This field is required.",
+    "NotNull": "This field is required.",
+    "Size": "This value is too long or too short.",
+    "Email": "Enter a valid email address.",
+    "Pattern": "This value has an invalid format.",
+    "username": {
+      "NotBlank": "Enter a username.",
+      "Size": "The username must be 5 to 32 characters long."
+    },
+    "email": {
+      "NotBlank": "Enter your email address.",
+      "Size": "The email address can be at most 64 characters long."
+    },
+    "password": {
+      "NotBlank": "Enter a password.",
+      "Size": "The password must be 8 to 72 characters long.",
+      "Pattern": "Include an uppercase letter, a lowercase letter and a number."
+    },
+    "currentPassword": {
+      "NotBlank": "Enter your current password."
+    },
+    "newPassword": {
+      "NotBlank": "Enter a new password.",
+      "Size": "The new password must be 8 to 72 characters long.",
+      "Pattern": "The new password needs an uppercase letter, a lowercase letter and a number.",
+      "Unchanged": "The new password must be different from the current one."
+    },
+    "name": {
+      "NotBlank": "Enter a name.",
+      "Size": "The name can be at most 128 characters long."
+    }
   }
 }
