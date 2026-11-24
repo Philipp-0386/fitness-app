@@ -1,4 +1,4 @@
-fit.ringelkamp.dev {
+avren.fit {
     encode zstd gzip
     header {
         Strict-Transport-Security "max-age=31536000"
@@ -8,4 +8,8 @@ fit.ringelkamp.dev {
         -X-Powered-By
     }
     reverse_proxy frontend:3000
+}
+
+fit.ringelkamp.dev, www.avren.fit {
+    redir https://avren.fit{uri}
 }
