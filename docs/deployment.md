@@ -1,6 +1,6 @@
 # Deployment
 
-How the production instance at **https://fit.ringelkamp.dev** is set up and deployed.
+How the production instance at **https://avren.fit** is set up and deployed. The former address https://fit.ringelkamp.dev redirects there.
 
 Status: live since 2026-09-24. Deployment is currently manual (`git pull` + rebuild on the server). CD via GitHub Actions is planned.
 
@@ -38,18 +38,31 @@ Only Caddy publishes ports on the host. Frontend, backend and database are reach
 | OS                  | Ubuntu 24.04 LTS                                      | Standard support until 2029               |
 | Container runtime   | Docker Engine + Compose plugin                        | Installed from Docker's official apt repo |
 | Reverse proxy / TLS | Caddy 2                                               | Automatic HTTPS via Let's Encrypt         |
-| Domain / DNS        | `ringelkamp.dev`, registered and hosted at Cloudflare | App lives on the subdomain `fit.`         |
+| Domain / DNS        | `avren.fit` and `ringelkamp.dev`, DNS at Cloudflare   | App on `avren.fit`; `fit.ringelkamp.dev` redirects |
 
 ### DNS
+
+Zone `avren.fit`:
+
+| Type | Name  | Target                                  | Proxy                 |
+| ---- | ----- | --------------------------------------- | --------------------- |
+| A    | `@`   | server IPv4                             | DNS only (grey cloud) |
+| AAAA | `@`   | server IPv6 (`::1` of the assigned /64) | DNS only (grey cloud) |
+| A    | `www` | server IPv4                             | DNS only (grey cloud) |
+| AAAA | `www` | server IPv6                             | DNS only (grey cloud) |
+
+Zone `ringelkamp.dev` (only the records relevant to the app; MX/SPF/DKIM belong to the contact address):
 
 | Type | Name  | Target                                  | Proxy                 |
 | ---- | ----- | --------------------------------------- | --------------------- |
 | A    | `fit` | server IPv4                             | DNS only (grey cloud) |
-| AAAA | `fit` | server IPv6 (`::1` of the assigned /64) | DNS only (grey cloud) |
+| AAAA | `fit` | server IPv6                             | DNS only (grey cloud) |
+
+`fit.ringelkamp.dev` and `www.avren.fit` must keep pointing at the server, because Caddy answers the redirect there.
 
 The Cloudflare proxy is deliberately **off**: TLS is terminated by Caddy on the server.
 
-`.dev` is on the browser HSTS preload list, so the domain only works over HTTPS.
+`.dev` is on the browser HSTS preload list, so `fit.ringelkamp.dev` only works over HTTPS.
 
 ### Firewall (Hetzner Cloud Firewall)
 
@@ -150,13 +163,20 @@ journalctl CONTAINER_NAME=fitness-app-backend-1 --since "3 days ago"
 `Caddyfile` (repo root, mounted read-only into the container):
 
 ```
-fit.ringelkamp.dev {
+avren.fit {
     encode zstd gzip
+    header { ... }
     reverse_proxy frontend:3000
+}
+
+fit.ringelkamp.dev, www.avren.fit {
+    redir https://avren.fit{uri}
 }
 ```
 
 - A real domain as site address enables Automatic HTTPS: certificate issuance via ACME HTTP-01, renewal (ARI-guided, well before the 90-day expiry) and HTTP→HTTPS redirect.
+- The second block redirects the former address and `www` to `avren.fit`, keeping path and query. It is a temporary `302` for now; switch to `redir ... permanent` (`301`) once the new domain is settled, since browsers cache `301` aggressively.
+- Cookies and installed PWAs are bound to the origin. After the move to `avren.fit` (2026-11-24), users had to log in again and re-add the iOS home-screen app from the new address.
 - Caddy adds `X-Forwarded-For` and `X-Forwarded-Proto: https`.
 - Caddy → frontend traffic is plain HTTP, but never leaves the host's Docker network.
 - The admin API (`:2019`) is not published.
@@ -244,9 +264,9 @@ Changes are always made locally, committed and pushed. The server only pulls; no
 1. Create the VM with SSH key, attach the firewall above.
 2. Harden SSH, create the sudo user, add swap, install Docker (official repo).
 3. `git clone` the repo, `cp .env.example .env`, fill in secrets and the `COMPOSE_*` lines, `chmod 600 .env`.
-4. Point the `A` / `AAAA` records of `fit` to the new IPs (DNS only).
+4. Point the `A` / `AAAA` records of `@` and `www` (zone `avren.fit`) and of `fit` (zone `ringelkamp.dev`) to the new IPs (DNS only).
 5. `docker compose config | grep -A1 published` → only 80 and 443.
-6. `docker compose up -d --build`, then `docker compose logs caddy` until `certificate obtained successfully`.
+6. `docker compose up -d --build`, then `docker compose logs caddy` until `certificate obtained successfully` for all three names.
 
 ### Rollback
 

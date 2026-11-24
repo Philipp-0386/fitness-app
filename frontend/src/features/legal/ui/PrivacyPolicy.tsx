@@ -58,7 +58,8 @@ export default async function PrivacyPolicy() {
           Arten Ihrer personenbezogenen Daten (nachfolgend auch kurz als „Daten“
           bezeichnet) ich zu welchen Zwecken und in welchem Umfang im Rahmen der
           Bereitstellung meiner Web-Applikation unter{' '}
-          <a href="https://fit.ringelkamp.dev">https://fit.ringelkamp.dev</a> verarbeite.
+          <a href="https://avren.fit">https://avren.fit</a> verarbeite. Die frühere
+          Adresse https://fit.ringelkamp.dev leitet dorthin weiter.
         </p>
         <p>
           Bei dieser Web-Applikation handelt es sich um ein privates, nicht-kommerzielles
@@ -66,7 +67,7 @@ export default async function PrivacyPolicy() {
           keine Einnahmen.
         </p>
         <p>Die verwendeten Begriffe sind nicht geschlechtsspezifisch.</p>
-        <p>Stand: 20. Oktober 2026</p>
+        <p>Stand: 24. November 2026</p>
 
         <h2>Inhaltsübersicht</h2>
         <ul className={cardListClass}>
@@ -437,7 +438,7 @@ export default async function PrivacyPolicy() {
 
         <h2 id="mCloudflare">Domainverwaltung und E-Mail-Weiterleitung</h2>
         <p>
-          Für die Verwaltung der Domain (DNS) und die Weiterleitung von E-Mails an die
+          Für die Verwaltung der Domains (DNS) und die Weiterleitung von E-Mails an die
           Kontaktadresse kontakt@ringelkamp.dev nutze ich Dienste der Cloudflare, Inc. Der
           Datenverkehr der Web-Applikation selbst wird nicht über Cloudflare geleitet,
           sondern direkt an den Server bei Hetzner ausgeliefert.
