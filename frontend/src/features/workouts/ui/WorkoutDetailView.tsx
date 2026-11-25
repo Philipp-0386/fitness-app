@@ -121,7 +121,8 @@ export default function WorkoutDetailView({ workout }: { workout: Workout }) {
                       </span>
                       <span>{formatSetValues(type, set)}</span>
                       <span className="text-meta text-text-secondary">
-                        {set.rpe !== null && t('detail.rpe', { rpe: set.rpe })}
+                        {set.rpe !== null &&
+                          t('detail.rpe', { rpe: format.number(set.rpe) })}
                       </span>
                     </li>
                   );

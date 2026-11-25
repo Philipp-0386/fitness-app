@@ -199,7 +199,7 @@ export default function ProgramEditor({
         const source = presetRoutines?.find((r) => r.id === presetId);
         if (!source) continue;
         const copy = await createRoutine({
-          name: `${source.name} (Preset)`,
+          name: tPresets('copyName', { name: source.name }),
           description: source.description,
           exercises: source.exercises.map((re) => ({
             exerciseId: re.exercise.id,
