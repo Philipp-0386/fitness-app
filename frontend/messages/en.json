@@ -522,6 +522,7 @@
       "notDoneLastTime": "Not done last time",
       "saving": "Saving",
       "saved": "Saved",
+      "log": "Log {title}",
       "retry": "Retry",
       "remove": "Remove",
       "addSet": "Add Set"

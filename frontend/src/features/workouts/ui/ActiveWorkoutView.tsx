@@ -226,6 +226,7 @@ export default function ActiveWorkoutView({
               onAdd={() =>
                 setRows({ ...rows, [entry.id]: addRow(entry, rows[entry.id]) })
               }
+              onLog={(row) => save(entry.id, row)}
               onRetry={(row) => save(entry.id, row)}
               onRemove={(row) => remove(entry.id, row)}
             />

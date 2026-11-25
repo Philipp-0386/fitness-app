@@ -522,6 +522,7 @@
       "notDoneLastTime": "Letztes Mal nicht gemacht",
       "saving": "Wird gespeichert",
       "saved": "Gespeichert",
+      "log": "{title} erfassen",
       "retry": "Erneut",
       "remove": "Entfernen",
       "addSet": "Satz hinzufügen"
