@@ -1,9 +1,11 @@
 import Link from 'next/link';
 import { ChevronRight, UserRound } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import { ProgramDayList, type ProgramDetail } from '@/features/programs';
 import type { Workout } from '@/features/workouts/types/api.types';
 import ResumeCard from '@/features/workouts/ui/ResumeCard';
+import { useErrorMessage } from '@/shared/api/errors/use-error-message';
 
 type UserHomeProps = {
   username: string | null;
@@ -13,20 +15,24 @@ type UserHomeProps = {
 };
 
 export default function UserHome({ username, program, activeWorkout }: UserHomeProps) {
+  const t = useTranslations('userHome');
+  const tNav = useTranslations('nav');
+  const errorMessage = useErrorMessage();
+
   const links = [
     {
-      title: 'Plans',
-      text: 'Your programs, routines and the exercise catalog',
+      title: t('plans.title'),
+      text: t('plans.text'),
       href: '/plans',
     },
     {
-      title: 'Exercises',
-      text: 'Browse the exercise catalog',
+      title: t('exercises.title'),
+      text: t('exercises.text'),
       href: '/exercises',
     },
     {
-      title: 'Account',
-      text: username ? `Signed in as ${username}` : 'Profile, password and log out',
+      title: t('account.title'),
+      text: username ? t('account.signedInAs', { username }) : t('account.text'),
       href: '/me',
     },
   ];
@@ -34,10 +40,10 @@ export default function UserHome({ username, program, activeWorkout }: UserHomeP
   return (
     <main className="mx-auto flex w-full max-w-app flex-1 flex-col px-4 pb-8">
       <header className="flex items-center justify-between pt-4">
-        <h1 className="text-display">Today</h1>
+        <h1 className="text-display">{t('title')}</h1>
         <Link
           href="/me"
-          aria-label="Account"
+          aria-label={tNav('account')}
           className="grid size-tap place-items-center rounded-full bg-surface-raised font-semibold lg:hidden"
         >
           {username ? (
@@ -53,12 +59,10 @@ export default function UserHome({ username, program, activeWorkout }: UserHomeP
       {program instanceof Error ? (
         <section role="alert" className="mt-8" aria-labelledby="program-title">
           <h2 id="program-title" className="text-title">
-            Your program could not be loaded
+            {t('programError')}
           </h2>
-          <p className="mt-1 text-text-secondary">{program.message}</p>
-          <p className="mt-1 text-meta text-text-tertiary">
-            Reload the page to try again.
-          </p>
+          <p className="mt-1 text-text-secondary">{errorMessage(program)}</p>
+          <p className="mt-1 text-meta text-text-tertiary">{t('reload')}</p>
         </section>
       ) : (
         program && (
@@ -71,10 +75,10 @@ export default function UserHome({ username, program, activeWorkout }: UserHomeP
         )
       )}
 
-      <nav aria-label="Sections" className="mt-8">
+      <nav aria-label={t('sections')} className="mt-8">
         <ul className="divide-y divide-border-subtle overflow-hidden rounded-card bg-surface">
           {links.map(({ title, text, href }) => (
-            <li key={title}>
+            <li key={href}>
               <Link
                 href={href}
                 className="flex min-h-14 items-center gap-3 px-4 py-2.5 hover:bg-surface-raised focus-visible:-outline-offset-2 active:bg-surface-raised"

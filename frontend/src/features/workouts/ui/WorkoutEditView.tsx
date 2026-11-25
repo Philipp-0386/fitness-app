@@ -5,7 +5,7 @@ import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-import { formatTarget } from '@/features/routines/lib/format-target';
+import { useFormatTarget } from '@/features/routines/lib/format-target';
 import { fallbackErrorMessage } from '@/shared/api/errors/fallback-error-message';
 import { Button } from '@/shared/ui/button';
 import { reorderExercises } from '../client/reorder-exercises.client';
@@ -17,6 +17,7 @@ import SetTable from './SetTable';
 //a finished workout opened for corrections: every change is saved at once, like logging
 export default function WorkoutEditView({ workout }: { workout: Workout }) {
   const router = useRouter();
+  const formatTarget = useFormatTarget();
   const [exercises, setExercises] = useState(workout.exercises);
   const [reordering, setReordering] = useState(false);
   const [reorderError, setReorderError] = useState<string | null>(null);

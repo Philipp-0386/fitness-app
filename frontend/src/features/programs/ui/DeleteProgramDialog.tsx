@@ -3,9 +3,10 @@
 import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { CircleAlert, Trash2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 
-import { fallbackErrorMessage } from '@/shared/api/errors/fallback-error-message';
+import { useErrorMessage } from '@/shared/api/errors/use-error-message';
 import { Button } from '@/shared/ui/button';
 import { Sheet } from '@/shared/ui/sheet';
 import { deleteProgram } from '../client/delete-program.client';
@@ -23,6 +24,9 @@ export default function DeleteProgramDialog({
   const [error, setError] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const router = useRouter();
+  const t = useTranslations('programs.delete');
+  const tCommon = useTranslations('common');
+  const errorMessage = useErrorMessage();
 
   function close() {
     dialogRef.current?.close();
@@ -39,12 +43,12 @@ export default function DeleteProgramDialog({
     try {
       await deleteProgram(String(programId));
       close();
-      toast.success('Program deleted.');
+      toast.success(t('deleted'));
       router.replace('/plans');
       router.refresh();
     } catch (err) {
       setIsDeleting(false);
-      setError(fallbackErrorMessage(err));
+      setError(errorMessage(err));
     }
   }
 
@@ -57,7 +61,7 @@ export default function DeleteProgramDialog({
         onClick={() => dialogRef.current?.showModal()}
       >
         <Trash2 aria-hidden="true" />
-        Delete Program
+        {t('button')}
       </Button>
 
       <Sheet
@@ -67,12 +71,10 @@ export default function DeleteProgramDialog({
         aria-labelledby="delete-program-title"
       >
         <h2 id="delete-program-title" className="text-title">
-          Delete this program?
+          {t('title')}
         </h2>
         <p className="mt-1 mb-4 text-text-secondary">
-          Your logged workouts stay complete.
-          {active &&
-            ' This is your active program, Today shows no program until you activate another one.'}
+          {t('text', { active: active ? 'yes' : 'no' })}
         </p>
         {error && (
           <div
@@ -91,10 +93,10 @@ export default function DeleteProgramDialog({
             onClick={handleDelete}
             disabled={isDeleting}
           >
-            {isDeleting ? 'Deleting...' : 'Delete Program'}
+            {isDeleting ? tCommon('deleting') : t('button')}
           </Button>
           <Button type="button" className="w-full" onClick={close} disabled={isDeleting}>
-            Cancel
+            {tCommon('cancel')}
           </Button>
         </div>
       </Sheet>

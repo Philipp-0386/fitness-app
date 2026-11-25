@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-import { formatTarget } from '@/features/routines/lib/format-target';
+import { useFormatTarget } from '@/features/routines/lib/format-target';
 import { TopBar } from '@/shared/layout';
 import { Button } from '@/shared/ui/button';
 import { formatDuration } from '../lib/format-duration';
@@ -23,6 +23,7 @@ const timeFormat = new Intl.DateTimeFormat('en-GB', {
 
 //a past workout read only: when, how long, and every exercise with its logged sets
 export default function WorkoutDetailView({ workout }: { workout: Workout }) {
+  const formatTarget = useFormatTarget();
   const started = new Date(workout.startedAt);
   const setCount = workout.exercises.reduce((sum, entry) => sum + entry.sets.length, 0);
 

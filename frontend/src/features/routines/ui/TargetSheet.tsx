@@ -1,6 +1,7 @@
 'use client';
 
 import { CircleAlert, Trash2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 
 import { trackingFields } from '@/features/exercises/lib/tracking-fields';
@@ -54,6 +55,8 @@ export default function TargetSheet({
   onClose,
 }: TargetSheetProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const t = useTranslations('routines.target');
+  const tCommon = useTranslations('common');
   const inKm = exercise.trackingType === 'DISTANCE_DURATION';
   const fields = trackingFields(exercise.trackingType);
   const [draft, setDraft] = useState<Draft>(() => {
@@ -77,7 +80,7 @@ export default function TargetSheet({
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const found: Partial<Record<keyof Draft, string>> = {};
-    const wholeError = 'Enter a whole number of at least 1.';
+    const wholeError = t('wholeMin1');
 
     const sets = parseWhole(draft.sets);
     if (sets !== null && !(sets >= 1)) found.sets = wholeError;
@@ -93,16 +96,16 @@ export default function TargetSheet({
       repsMax !== null &&
       repsMin > repsMax
     ) {
-      found.repsMax = 'Must not be below the minimum.';
+      found.repsMax = t('belowMin');
     }
 
     let duration: number | null = null;
     if (fields.duration) {
       const minutes = parseWhole(draft.minutes);
       const seconds = parseWhole(draft.seconds);
-      if (minutes !== null && !(minutes >= 0)) found.minutes = 'Enter a whole number.';
+      if (minutes !== null && !(minutes >= 0)) found.minutes = t('whole');
       if (seconds !== null && !(seconds >= 0 && seconds <= 59))
-        found.seconds = 'Enter 0 to 59.';
+        found.seconds = t('secondsRange');
       if (!found.minutes && !found.seconds) {
         const total = (minutes ?? 0) * 60 + (seconds ?? 0);
         duration = total > 0 ? total : null;
@@ -115,8 +118,8 @@ export default function TargetSheet({
       const meters = /^\d+(\.\d+)?$/.test(distanceText)
         ? Math.round(Number(distanceText) * (inKm ? 1000 : 1) * 100) / 100
         : NaN;
-      if (!(meters > 0)) found.distance = 'Enter a distance above 0.';
-      else if (meters > 999999.99) found.distance = 'This distance is too long.';
+      if (!(meters > 0)) found.distance = t('distancePositive');
+      else if (meters > 999999.99) found.distance = t('distanceTooLong');
       else distance = meters;
     }
 
@@ -177,39 +180,37 @@ export default function TargetSheet({
             size="sm"
             onClick={() => dialogRef.current?.close()}
           >
-            Cancel
+            {tCommon('cancel')}
           </Button>
         </div>
         <p className="mt-1 mb-4 text-text-secondary">
-          {exercise.deleted
-            ? 'No longer in the catalog, replace or remove it.'
-            : 'Targets are optional.'}
+          {exercise.deleted ? t('deleted') : t('optional')}
         </p>
 
         <div className="grid grid-cols-3 items-start gap-3">
-          {field('sets', 'Sets')}
-          {fields.reps && field('repsMin', 'Reps min')}
-          {fields.reps && field('repsMax', 'Reps max')}
+          {field('sets', t('sets'))}
+          {fields.reps && field('repsMin', t('repsMin'))}
+          {fields.reps && field('repsMax', t('repsMax'))}
           {fields.distance &&
-            field('distance', inKm ? 'Distance (km)' : 'Distance (m)', 'decimal')}
-          {fields.duration && field('minutes', 'Minutes')}
-          {fields.duration && field('seconds', 'Seconds')}
+            field('distance', inKm ? t('distanceKm') : t('distanceM'), 'decimal')}
+          {fields.duration && field('minutes', t('minutes'))}
+          {fields.duration && field('seconds', t('seconds'))}
         </div>
 
         <div className="mt-5 flex flex-col gap-2">
           <Button type="button" className="w-full" onClick={onChangeExercise}>
-            Change exercise
+            {t('changeExercise')}
           </Button>
           <div className="grid grid-cols-2 gap-2">
             <Button type="button" onClick={onMoveUp} disabled={!canMoveUp}>
-              Move Up
+              {tCommon('moveUp')}
             </Button>
             <Button type="button" onClick={onMoveDown} disabled={!canMoveDown}>
-              Move Down
+              {tCommon('moveDown')}
             </Button>
           </div>
           <Button type="submit" variant="primary" size="lg">
-            Done
+            {tCommon('done')}
           </Button>
         </div>
 
@@ -221,7 +222,7 @@ export default function TargetSheet({
             onClick={onRemove}
           >
             <Trash2 aria-hidden="true" />
-            Remove from routine
+            {t('remove')}
           </Button>
         </div>
       </form>

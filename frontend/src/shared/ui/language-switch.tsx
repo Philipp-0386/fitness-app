@@ -1,12 +1,12 @@
 'use client';
 
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { fallbackErrorMessage } from '@/shared/api/errors/fallback-error-message';
 import { toApiError } from '@/shared/api/errors/to-api-error';
+import { useErrorMessage } from '@/shared/api/errors/use-error-message';
 import { cn } from '@/shared/lib/utils';
 
 const options = [
@@ -17,6 +17,8 @@ const options = [
 export function LanguageSwitch() {
   const locale = useLocale();
   const router = useRouter();
+  const t = useTranslations('common');
+  const errorMessage = useErrorMessage();
   const [isSaving, setIsSaving] = useState(false);
 
   async function handleChange(next: 'en' | 'de') {
@@ -31,7 +33,7 @@ export function LanguageSwitch() {
       if (!response.ok) throw await toApiError(response);
       router.refresh();
     } catch (err) {
-      toast.error(fallbackErrorMessage(err));
+      toast.error(errorMessage(err));
     } finally {
       setIsSaving(false);
     }
@@ -40,7 +42,7 @@ export function LanguageSwitch() {
   return (
     <div
       role="radiogroup"
-      aria-label="Language"
+      aria-label={t('language')}
       className="inline-grid grid-flow-col gap-1 rounded-card bg-surface p-1"
     >
       {options.map(({ value, label }) => (

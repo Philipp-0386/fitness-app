@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ChevronRight } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import { cn } from '@/shared/lib/utils';
 import { listClass, listRowClass } from '@/shared/ui/list';
@@ -16,6 +17,7 @@ type RoutineListProps = {
 
 export default function RoutineList({ routines, hrefBase }: RoutineListProps) {
   const pathname = usePathname();
+  const tCommon = useTranslations('common');
 
   return (
     <ul className={listClass}>
@@ -32,8 +34,7 @@ export default function RoutineList({ routines, hrefBase }: RoutineListProps) {
               <span className="min-w-0 flex-1">
                 <span className="block truncate font-semibold">{routine.name}</span>
                 <span className="block text-meta text-text-tertiary tabular-nums">
-                  {routine.exerciseCount}{' '}
-                  {routine.exerciseCount === 1 ? 'exercise' : 'exercises'}
+                  {tCommon('exerciseCount', { count: routine.exerciseCount })}
                 </span>
               </span>
               <ChevronRight

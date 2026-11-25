@@ -3,9 +3,10 @@
 import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { CircleAlert, Trash2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 
-import { fallbackErrorMessage } from '@/shared/api/errors/fallback-error-message';
+import { useErrorMessage } from '@/shared/api/errors/use-error-message';
 import { Button } from '@/shared/ui/button';
 import { Sheet } from '@/shared/ui/sheet';
 import { deleteExercise } from '../client/delete-exercise.client';
@@ -19,6 +20,9 @@ export default function DeleteExerciseDialog({ exerciseId }: DeleteExerciseDialo
   const [error, setError] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const router = useRouter();
+  const t = useTranslations('exercises.delete');
+  const tCommon = useTranslations('common');
+  const errorMessage = useErrorMessage();
 
   function close() {
     dialogRef.current?.close();
@@ -35,12 +39,12 @@ export default function DeleteExerciseDialog({ exerciseId }: DeleteExerciseDialo
     try {
       await deleteExercise(String(exerciseId));
       close();
-      toast.success('Exercise deleted.');
+      toast.success(t('deleted'));
       router.replace('/exercises');
       router.refresh();
     } catch (err) {
       setIsDeleting(false);
-      setError(fallbackErrorMessage(err));
+      setError(errorMessage(err));
     }
   }
 
@@ -53,7 +57,7 @@ export default function DeleteExerciseDialog({ exerciseId }: DeleteExerciseDialo
         onClick={() => dialogRef.current?.showModal()}
       >
         <Trash2 aria-hidden="true" />
-        Delete exercise
+        {t('button')}
       </Button>
 
       <Sheet
@@ -63,11 +67,9 @@ export default function DeleteExerciseDialog({ exerciseId }: DeleteExerciseDialo
         aria-labelledby="delete-exercise-title"
       >
         <h2 id="delete-exercise-title" className="text-title">
-          Delete this exercise?
+          {t('title')}
         </h2>
-        <p className="mt-1 mb-4 text-text-secondary">
-          It is removed from your routines. Workouts you logged with it stay complete.
-        </p>
+        <p className="mt-1 mb-4 text-text-secondary">{t('text')}</p>
         {error && (
           <div
             role="alert"
@@ -85,10 +87,10 @@ export default function DeleteExerciseDialog({ exerciseId }: DeleteExerciseDialo
             onClick={handleDelete}
             disabled={isDeleting}
           >
-            {isDeleting ? 'Deleting...' : 'Delete exercise'}
+            {isDeleting ? tCommon('deleting') : t('button')}
           </Button>
           <Button type="button" className="w-full" onClick={close} disabled={isDeleting}>
-            Cancel
+            {tCommon('cancel')}
           </Button>
         </div>
       </Sheet>

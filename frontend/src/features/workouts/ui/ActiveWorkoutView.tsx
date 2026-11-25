@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 
 import type { Exercise, MuscleGroup } from '@/features/exercises';
 import ExercisePicker from '@/features/exercises/ui/ExercisePicker';
-import { formatTarget } from '@/features/routines/lib/format-target';
+import { useFormatTarget } from '@/features/routines/lib/format-target';
 import { fallbackErrorMessage } from '@/shared/api/errors/fallback-error-message';
 import { Button } from '@/shared/ui/button';
 import { addExercise } from '../client/add-exercise.client';
@@ -46,6 +46,7 @@ export default function ActiveWorkoutView({
   catalog,
   muscleGroups,
 }: ActiveWorkoutViewProps) {
+  const formatTarget = useFormatTarget();
   const [exercises, setExercises] = useState(workout.exercises);
   const [current, setCurrent] = useState(0);
   const [overviewOpen, setOverviewOpen] = useState(false);

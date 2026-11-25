@@ -2,6 +2,7 @@
 
 import { ChevronRight } from 'lucide-react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import ExerciseSheet from '@/features/exercises/ui/ExerciseSheet';
@@ -10,15 +11,8 @@ import { TopBar } from '@/shared/layout';
 import { cn } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui/button';
 import { listClass, listRowClass } from '@/shared/ui/list';
-import { formatTarget } from '../lib/format-target';
-import { RoutineDetail, RoutineExercise } from '../types/api.types';
-
-const trackingHints: Partial<
-  Record<RoutineExercise['exercise']['trackingType'], string>
-> = {
-  BODYWEIGHT_REPS: '+kg is added weight',
-  ASSISTED_REPS: '-kg is the assistance',
-};
+import { useFormatTarget } from '../lib/format-target';
+import { RoutineDetail } from '../types/api.types';
 
 type RoutineDetailViewProps = {
   routine: RoutineDetail;
@@ -34,18 +28,22 @@ export default function RoutineDetailView({
   startAction,
 }: RoutineDetailViewProps) {
   const [openExercise, setOpenExercise] = useState<Exercise | null>(null);
+  const t = useTranslations('routines');
+  const tCommon = useTranslations('common');
+  const tNav = useTranslations('nav');
+  const formatTarget = useFormatTarget();
 
   return (
     <div className="mx-auto flex w-full max-w-app flex-1 flex-col pb-8 lg:max-w-[560px]">
       <TopBar
         backHref="/plans"
-        backLabel="Plans"
+        backLabel={tNav('plans')}
         title={routine.name}
         inSplitView
         action={
           <Button asChild size="sm">
             <Link href={`/plans/routines/${routine.id}/edit`} replace>
-              Edit
+              {tCommon('edit')}
             </Link>
           </Button>
         }
@@ -56,13 +54,16 @@ export default function RoutineDetailView({
       )}
 
       {routine.exercises.length === 0 ? (
-        <p className="mt-5 px-4 text-text-secondary">No exercises in this routine yet.</p>
+        <p className="mt-5 px-4 text-text-secondary">{t('empty')}</p>
       ) : (
         <ul className={cn(listClass, 'mx-4 mt-5')}>
           {routine.exercises.map((re) => {
+            const type = re.exercise.trackingType;
             const sub = re.exercise.deleted
-              ? 'No longer in the catalog'
-              : trackingHints[re.exercise.trackingType];
+              ? t('deletedExercise')
+              : type === 'BODYWEIGHT_REPS' || type === 'ASSISTED_REPS'
+                ? t(`trackingHint.${type}`)
+                : undefined;
             const exercise = re.exercise.deleted
               ? undefined
               : exercises.find((e) => e.id === re.exercise.id);

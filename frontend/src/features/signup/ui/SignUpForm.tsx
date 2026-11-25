@@ -6,12 +6,15 @@ import { signUp } from '../client/sign-up.client';
 import { mapFormToPayload } from '../mapper/form-to-request.mapper';
 import { ApiError } from '@/shared/api/errors/api-error';
 import { evaluateApiError } from './api-error-evaluate';
-import { useFieldErrorMessage } from '@/shared/api/errors/use-error-message';
+import {
+  useErrorMessage,
+  useFieldErrorMessage,
+} from '@/shared/api/errors/use-error-message';
 import { SuccessfulSignUpResponse } from '../types/api.types';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { CircleAlert, Eye, EyeOff } from 'lucide-react';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
@@ -36,7 +39,9 @@ export default function UserForm() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const router = useRouter();
   const locale = useLocale();
-
+  const t = useTranslations('signup');
+  const tCommon = useTranslations('common');
+  const errorMessage = useErrorMessage();
   const fieldErrorMessage = useFieldErrorMessage();
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -67,23 +72,23 @@ export default function UserForm() {
   ): string | undefined {
     switch (name) {
       case 'username':
-        if (!value.trim()) return 'Enter a username';
-        if (value.length < 5 || value.length > 32) return 'Use 5 to 32 characters';
+        if (!value.trim()) return t('check.usernameRequired');
+        if (value.length < 5 || value.length > 32) return t('check.usernameLength');
         return undefined;
       case 'email':
-        if (!value.trim()) return 'Enter your email address';
+        if (!value.trim()) return t('check.emailRequired');
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(value)) return 'Enter a valid email address';
+        if (!emailRegex.test(value)) return t('check.emailInvalid');
         return undefined;
       case 'password':
-        if (!value.trim()) return 'Enter a password';
-        if (value.trim().length < 8) return 'Use at least 8 characters';
+        if (!value.trim()) return t('check.passwordRequired');
+        if (value.trim().length < 8) return t('check.passwordLength');
         if (!/[A-Z]/.test(value) || !/[a-z]/.test(value) || !/\d/.test(value))
-          return 'Include an uppercase letter, a lowercase letter and a number';
+          return t('check.passwordPattern');
         return undefined;
       case 'confirmPassword':
-        if (!value.trim()) return 'Repeat your password';
-        if (value !== currentForm.password) return "Passwords don't match";
+        if (!value.trim()) return t('check.confirmRequired');
+        if (value !== currentForm.password) return t('check.confirmMismatch');
         return undefined;
     }
     return undefined;
@@ -148,9 +153,7 @@ export default function UserForm() {
       setFieldErrors({});
       setGeneralErrors(null);
 
-      toast.success(
-        `User ${result.username} with email ${result.email} created successfully!`,
-      );
+      toast.success(t('created', { username: result.username, email: result.email }));
 
       setTimeout(() => {
         router.push('/');
@@ -161,7 +164,11 @@ export default function UserForm() {
 
       if (error instanceof ApiError) {
         const uiError = evaluateApiError(error);
-        setGeneralErrors(uiError.generalError);
+        setGeneralErrors(
+          uiError.generalError
+            ? t(`errors.${uiError.generalError}`)
+            : errorMessage(error),
+        );
         setFieldErrors(
           Object.fromEntries(
             Object.entries(uiError.fieldErrors).map(([field, code]) => [
@@ -173,7 +180,7 @@ export default function UserForm() {
         return;
       }
 
-      setGeneralErrors('An unexpected error occurred. Please try again later.');
+      setGeneralErrors(errorMessage(error));
     }
   }
 
@@ -181,7 +188,7 @@ export default function UserForm() {
     <form onSubmit={handleSubmit} noValidate>
       <div className="mb-4">
         <Label className="mb-1.5" htmlFor="username">
-          Username
+          {t('username')}
         </Label>
         <Input
           name="username"
@@ -207,7 +214,7 @@ export default function UserForm() {
       </div>
       <div className="mb-4">
         <Label className="mb-1.5" htmlFor="email">
-          Email
+          {t('email')}
         </Label>
         <Input
           type="email"
@@ -234,7 +241,7 @@ export default function UserForm() {
       </div>
       <div className="mb-4">
         <Label className="mb-1.5" htmlFor="password">
-          Password
+          {t('password')}
         </Label>
         <div className="relative">
           <Input
@@ -256,7 +263,7 @@ export default function UserForm() {
             type="button"
             size="icon"
             variant="text"
-            aria-label={showPassword ? 'Hide password' : 'Show password'}
+            aria-label={showPassword ? tCommon('hidePassword') : tCommon('showPassword')}
             aria-pressed={showPassword}
             onClick={() => setShowPassword(!showPassword)}
           >
@@ -275,7 +282,7 @@ export default function UserForm() {
       </div>
       <div className="mb-4">
         <Label className="mb-1.5" htmlFor="confirmPassword">
-          Confirm password
+          {t('confirmPassword')}
         </Label>
         <div className="relative">
           <Input
@@ -299,7 +306,9 @@ export default function UserForm() {
             type="button"
             size="icon"
             variant="text"
-            aria-label={showConfirmPassword ? 'Hide confirmation' : 'Show confirmation'}
+            aria-label={
+              showConfirmPassword ? t('hideConfirmation') : t('showConfirmation')
+            }
             aria-pressed={showConfirmPassword}
             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
           >
@@ -332,7 +341,7 @@ export default function UserForm() {
         size="lg"
         disabled={isSubmitting}
       >
-        {isSubmitting ? 'Creating account...' : 'Create account'}
+        {isSubmitting ? t('submitting') : t('submit')}
       </Button>
     </form>
   );

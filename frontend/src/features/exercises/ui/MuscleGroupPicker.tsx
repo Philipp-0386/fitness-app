@@ -1,17 +1,14 @@
 'use client';
 
 import { Check, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useId, useRef, useState } from 'react';
 
 import { Button } from '@/shared/ui/button';
 import { Sheet } from '@/shared/ui/sheet';
 import { BodyRegion, MuscleGroup } from '../types/api.types';
 
-const regions: { value: BodyRegion; label: string }[] = [
-  { value: 'UPPER', label: 'Upper body' },
-  { value: 'CORE', label: 'Core' },
-  { value: 'LOWER', label: 'Lower body' },
-];
+const regions: BodyRegion[] = ['UPPER', 'CORE', 'LOWER'];
 
 const optionClass =
   'flex min-h-12 flex-1 items-center gap-2.5 px-1 text-left font-semibold text-text-secondary disabled:text-text-tertiary';
@@ -33,6 +30,8 @@ export default function MuscleGroupPicker({
   onPick,
 }: MuscleGroupPickerProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const t = useTranslations('exercises');
+  const tCommon = useTranslations('common');
   const id = useId();
   const [openGroupId, setOpenGroupId] = useState<number | null>(null);
 
@@ -48,7 +47,7 @@ export default function MuscleGroupPicker({
       <button
         type="button"
         aria-haspopup="dialog"
-        aria-label={`Add ${title.toLowerCase()}`}
+        aria-label={t('musclePicker.addLabel', { title })}
         onClick={() => {
           setOpenGroupId(null);
           dialogRef.current?.showModal();
@@ -56,7 +55,7 @@ export default function MuscleGroupPicker({
         className="relative inline-flex h-8.5 items-center gap-1 rounded-full border border-dashed border-border-strong px-3 text-meta font-semibold text-text-secondary before:absolute before:inset-x-0 before:-inset-y-[5px] before:content-['']"
       >
         <Plus className="size-4" aria-hidden="true" />
-        Add
+        {tCommon('add')}
       </button>
 
       {/* React passes close and cancel on to parent handlers, which would also close a sheet this one sits in. */}
@@ -81,7 +80,10 @@ export default function MuscleGroupPicker({
             </h2>
             <ul className="mt-2 divide-y divide-field-on-overlay">
               {[
-                { id: openGroup.id, name: `All of ${openGroup.name}` },
+                {
+                  id: openGroup.id,
+                  name: t('muscleFilter.allOf', { name: openGroup.name }),
+                },
                 ...openGroup.areas,
               ].map((area) => {
                 const picked = pickedIds.includes(area.id);
@@ -122,26 +124,24 @@ export default function MuscleGroupPicker({
                 size="sm"
                 onClick={() => dialogRef.current?.close()}
               >
-                Cancel
+                {tCommon('cancel')}
               </Button>
             </div>
 
             {regions.map((region) => {
-              const groups = muscleGroups.filter(
-                (group) => group.bodyRegion === region.value,
-              );
+              const groups = muscleGroups.filter((group) => group.bodyRegion === region);
               if (groups.length === 0) return null;
               return (
                 <section
-                  key={region.value}
+                  key={region}
                   className="mt-4"
-                  aria-labelledby={`${id}-region-${region.value}`}
+                  aria-labelledby={`${id}-region-${region}`}
                 >
                   <h3
-                    id={`${id}-region-${region.value}`}
+                    id={`${id}-region-${region}`}
                     className="mb-1 text-meta font-semibold text-text-tertiary"
                   >
-                    {region.label}
+                    {t(`region.${region}`)}
                   </h3>
                   <ul className="divide-y divide-field-on-overlay">
                     {groups.map((group) => {
@@ -164,7 +164,7 @@ export default function MuscleGroupPicker({
                           {group.areas.length > 0 && (
                             <button
                               type="button"
-                              aria-label={`Areas of ${group.name}`}
+                              aria-label={t('muscleFilter.areasOf', { name: group.name })}
                               onClick={() => setOpenGroupId(group.id)}
                               className="grid size-tap shrink-0 place-items-center rounded-card text-text-secondary active:bg-surface-raised"
                             >

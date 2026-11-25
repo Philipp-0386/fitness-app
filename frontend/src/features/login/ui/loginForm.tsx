@@ -3,9 +3,10 @@
 import { useState } from 'react';
 import { login } from '../client/login.client';
 import { ApiError } from '@/shared/api/errors/api-error';
-import { fallbackErrorMessage } from '@/shared/api/errors/fallback-error-message';
+import { useErrorMessage } from '@/shared/api/errors/use-error-message';
 import { useRouter } from 'next/navigation';
 import { CircleAlert, Eye, EyeOff } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { Label } from '@/shared/ui/label';
@@ -24,6 +25,9 @@ export default function LoginForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
+  const t = useTranslations('login');
+  const tCommon = useTranslations('common');
+  const errorMessage = useErrorMessage();
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const { name, value } = e.target;
@@ -38,8 +42,8 @@ export default function LoginForm() {
     setFieldErrors({});
 
     const errors: FormError = {};
-    if (!form.username.trim()) errors.username = 'Enter your username';
-    if (!form.password.trim()) errors.password = 'Enter your password';
+    if (!form.username.trim()) errors.username = t('usernameRequired');
+    if (!form.password.trim()) errors.password = t('passwordRequired');
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
       return;
@@ -54,16 +58,14 @@ export default function LoginForm() {
     } catch (error) {
       //401 means wrong credentials, not an expired session
       if (error instanceof ApiError && error.code === 'INVALID_CREDENTIALS') {
-        setGeneralError('Wrong username or password. Check both and try again.');
+        setGeneralError(t('invalidCredentials'));
         return;
       }
       if (error instanceof ApiError && error.code === 'TOO_MANY_LOGIN_ATTEMPTS') {
-        setGeneralError(
-          'Too many failed attempts. Please wait 15 minutes and try again.',
-        );
+        setGeneralError(t('tooManyAttempts'));
         return;
       }
-      setGeneralError(fallbackErrorMessage(error));
+      setGeneralError(errorMessage(error));
     } finally {
       setIsSubmitting(false);
     }
@@ -73,7 +75,7 @@ export default function LoginForm() {
     <form onSubmit={handleSubmit} noValidate>
       <div className="mb-4">
         <Label className="mb-1.5" htmlFor="username">
-          Username
+          {t('username')}
         </Label>
         <Input
           type="text"
@@ -97,7 +99,7 @@ export default function LoginForm() {
       </div>
       <div className="mb-4">
         <Label className="mb-1.5" htmlFor="password">
-          Password
+          {t('password')}
         </Label>
         <div className="relative">
           <Input
@@ -116,7 +118,7 @@ export default function LoginForm() {
             type="button"
             size="icon"
             variant="text"
-            aria-label={showPassword ? 'Hide password' : 'Show password'}
+            aria-label={showPassword ? tCommon('hidePassword') : tCommon('showPassword')}
             aria-pressed={showPassword}
             onClick={() => setShowPassword(!showPassword)}
           >
@@ -149,7 +151,7 @@ export default function LoginForm() {
         size="lg"
         disabled={isSubmitting}
       >
-        {isSubmitting ? 'Logging in...' : 'Log in'}
+        {isSubmitting ? t('submitting') : t('submit')}
       </Button>
     </form>
   );

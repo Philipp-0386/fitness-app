@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ChevronRight } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import { cn } from '@/shared/lib/utils';
 import { listClass, listRowClass } from '@/shared/ui/list';
@@ -14,6 +15,7 @@ type ProgramListProps = {
 
 export default function ProgramList({ programs }: ProgramListProps) {
   const pathname = usePathname();
+  const t = useTranslations('programs');
 
   return (
     <ul className={listClass}>
@@ -31,7 +33,7 @@ export default function ProgramList({ programs }: ProgramListProps) {
                 {program.name}
               </span>
               {program.active && (
-                <span className="shrink-0 text-meta font-semibold">Active</span>
+                <span className="shrink-0 text-meta font-semibold">{t('active')}</span>
               )}
               <ChevronRight
                 className="size-5 shrink-0 text-text-tertiary"

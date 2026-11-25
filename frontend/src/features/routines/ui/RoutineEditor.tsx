@@ -20,6 +20,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { CircleAlert, GripVertical, Plus, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -28,8 +29,10 @@ import { trackingFields } from '@/features/exercises/lib/tracking-fields';
 import type { Exercise, MuscleGroup } from '@/features/exercises';
 
 import { ApiError } from '@/shared/api/errors/api-error';
-import { fallbackErrorMessage } from '@/shared/api/errors/fallback-error-message';
-import { useFieldErrorMessage } from '@/shared/api/errors/use-error-message';
+import {
+  useErrorMessage,
+  useFieldErrorMessage,
+} from '@/shared/api/errors/use-error-message';
 
 import { cn } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui/button';
@@ -38,7 +41,7 @@ import { Label } from '@/shared/ui/label';
 import { listClass, listRowClass } from '@/shared/ui/list';
 import { createRoutine } from '../client/create-routine.client';
 import { updateRoutine } from '../client/update-routine.client';
-import { formatTarget } from '../lib/format-target';
+import { useFormatTarget } from '../lib/format-target';
 import { RoutineDetail } from '../types/api.types';
 import { Slot } from '../types/editor.types';
 import DeleteRoutineDialog from './DeleteRoutineDialog';
@@ -100,6 +103,10 @@ export default function RoutineEditor({
   const sheetIndex = sheet ? slots.findIndex((s) => s.key === sheet.slotKey) : -1;
   const sheetSlot = sheetIndex >= 0 ? slots[sheetIndex] : null;
 
+  const t = useTranslations('routines');
+  const tCommon = useTranslations('common');
+  const tPresets = useTranslations('presets');
+  const errorMessage = useErrorMessage();
   const fieldErrorMessage = useFieldErrorMessage();
 
   // An undo offered after leaving the editor would do nothing.
@@ -108,11 +115,11 @@ export default function RoutineEditor({
   function removeSlot(slot: Slot) {
     const index = slots.findIndex((s) => s.key === slot.key);
     setSlots(slots.filter((s) => s.key !== slot.key));
-    toast('Exercise removed.', {
+    toast(t('editor.removed'), {
       id: REMOVED_TOAST_ID,
       duration: 5000,
       action: {
-        label: 'Undo',
+        label: tCommon('undo'),
         onClick: () =>
           setSlots((current) => [
             ...current.slice(0, index),
@@ -124,7 +131,7 @@ export default function RoutineEditor({
   }
 
   function handleUsePreset(preset: RoutineDetail) {
-    setName(`${preset.name} (Preset)`);
+    setName(tPresets('copyName', { name: preset.name }));
     setDescription(preset.description ?? '');
     setSlots(
       preset.exercises.map((re) => ({
@@ -204,11 +211,11 @@ export default function RoutineEditor({
     setError(null);
 
     if (!name.trim()) {
-      setNameError('Please enter a name.');
+      setNameError(t('editor.nameRequired'));
       return;
     }
     if (slots.some((s) => s.exercise.deleted)) {
-      setError('Replace or remove the exercises that are no longer in the catalog.');
+      setError(t('editor.deletedSlots'));
       return;
     }
 
@@ -230,7 +237,7 @@ export default function RoutineEditor({
       const saved = routine
         ? await updateRoutine(String(routine.id), payload)
         : await createRoutine(payload);
-      toast.success('Routine saved.');
+      toast.success(t('editor.saved'));
       router.replace(`/plans/routines/${saved.id}`);
       router.refresh();
     } catch (err) {
@@ -240,18 +247,14 @@ export default function RoutineEditor({
         return;
       }
       if (err instanceof ApiError && err.code === 'EXERCISE_NOT_FOUND') {
-        setError(
-          'An exercise is no longer available. Reload the page and check your routine.',
-        );
+        setError(t('editor.exerciseGone'));
         return;
       }
       if (err instanceof ApiError && err.code === 'USER_ROUTINE_NOT_FOUND') {
-        setError(
-          'This routine no longer exists. It may have been deleted in another tab.',
-        );
+        setError(t('editor.routineGone'));
         return;
       }
-      setError(fallbackErrorMessage(err));
+      setError(errorMessage(err));
     }
   }
 
@@ -261,16 +264,16 @@ export default function RoutineEditor({
         <header className="sticky top-(--app-top-inset) z-10 grid h-14 grid-cols-[1fr_minmax(0,2fr)_1fr] items-center border-b border-border-subtle bg-bg px-4">
           {routine ? (
             <Link href={`/plans/routines/${routine.id}`} replace className={cancelClass}>
-              Cancel
+              {tCommon('cancel')}
             </Link>
           ) : (
             // A new routine is only reached from the list, so going back avoids a second list entry.
             <button type="button" onClick={() => router.back()} className={cancelClass}>
-              Cancel
+              {tCommon('cancel')}
             </button>
           )}
           <h1 className="truncate text-center text-[1.0625rem] font-semibold">
-            {routine ? routine.name : 'New Routine'}
+            {routine ? routine.name : t('editor.new')}
           </h1>
           <Button
             type="submit"
@@ -279,13 +282,13 @@ export default function RoutineEditor({
             className="justify-self-end"
             disabled={isSaving}
           >
-            {isSaving ? 'Saving...' : 'Save'}
+            {isSaving ? tCommon('saving') : tCommon('save')}
           </Button>
         </header>
 
         <div className="px-4 pt-4">
           <Label className="mb-1.5" htmlFor="routine-name">
-            Name
+            {t('editor.name')}
           </Label>
           <Input
             id="routine-name"
@@ -310,7 +313,7 @@ export default function RoutineEditor({
           )}
 
           <Label className="mt-4 mb-1.5" htmlFor="routine-description">
-            Description (optional)
+            {t('editor.description')}
           </Label>
           <textarea
             id="routine-description"
@@ -322,10 +325,10 @@ export default function RoutineEditor({
           />
 
           <div className="mt-6 mb-3 flex items-center justify-between gap-3">
-            <h2 className="text-title">Exercises</h2>
+            <h2 className="text-title">{t('editor.exercises')}</h2>
             {presets && presets.length > 0 && (
               <Button type="button" size="sm" onClick={() => setPresetsOpen(true)}>
-                Use Preset
+                {tPresets('use')}
               </Button>
             )}
           </div>
@@ -371,7 +374,7 @@ export default function RoutineEditor({
               onClick={() => setSheet({ kind: 'picker', slotKey: null })}
             >
               <Plus aria-hidden="true" />
-              Add Exercise
+              {t('editor.addExercise')}
             </Button>
           )}
         </div>
@@ -445,6 +448,8 @@ function SlotRow({ slot, onOpen, onRemove }: SlotRowProps) {
     transition,
     isDragging,
   } = useSortable({ id: slot.key });
+  const t = useTranslations('routines.editor');
+  const formatTarget = useFormatTarget();
 
   return (
     <li
@@ -457,7 +462,7 @@ function SlotRow({ slot, onOpen, onRemove }: SlotRowProps) {
         ref={setActivatorNodeRef}
         {...attributes}
         {...listeners}
-        aria-label={`Reorder ${slot.exercise.name}`}
+        aria-label={t('reorder', { name: slot.exercise.name })}
         className="grid size-tap shrink-0 cursor-grab touch-none place-items-center text-text-tertiary hover:text-text-secondary"
       >
         <GripVertical className="size-5" aria-hidden="true" />
@@ -470,9 +475,7 @@ function SlotRow({ slot, onOpen, onRemove }: SlotRowProps) {
         <span className="min-w-0 flex-1">
           <span className="block truncate font-semibold">{slot.exercise.name}</span>
           {slot.exercise.deleted && (
-            <span className="block text-meta text-warning">
-              No longer in the catalog, replace or remove it
-            </span>
+            <span className="block text-meta text-warning">{t('deletedHint')}</span>
           )}
         </span>
         {!slot.exercise.deleted && (
@@ -484,7 +487,7 @@ function SlotRow({ slot, onOpen, onRemove }: SlotRowProps) {
       <button
         type="button"
         onClick={onRemove}
-        aria-label={`Remove ${slot.exercise.name}`}
+        aria-label={t('remove', { name: slot.exercise.name })}
         className="mr-1 grid size-tap shrink-0 place-items-center text-text-tertiary hover:text-danger"
       >
         <Trash2 className="size-5" aria-hidden="true" />

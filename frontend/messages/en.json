@@ -1,8 +1,402 @@
 {
   "layout": {
-    "title": "Fitness App",
-    "appTitle": "Avren",
+    "title": "Avren",
     "description": "Plan your workouts, log your sessions and track your progress."
+  },
+  "common": {
+    "language": "Language",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saving": "Saving...",
+    "done": "Done",
+    "edit": "Edit",
+    "add": "Add",
+    "all": "All",
+    "yours": "Yours",
+    "tryAgain": "Try again",
+    "reload": "Reload the page to try again.",
+    "reference": "Reference: {digest}",
+    "deleting": "Deleting...",
+    "undo": "Undo",
+    "moveUp": "Move Up",
+    "moveDown": "Move Down",
+    "exerciseCount": "{count, plural, one {# exercise} other {# exercises}}"
+  },
+  "nav": {
+    "main": "Main",
+    "site": "Site",
+    "home": "Home",
+    "today": "Today",
+    "history": "History",
+    "plans": "Plans",
+    "progress": "Progress",
+    "account": "Account",
+    "about": "About",
+    "privacy": "Privacy Policy",
+    "opensInNewTab": "(opens in a new tab)"
+  },
+  "wipBanner": {
+    "label": "Project status",
+    "text": "Work in progress. Data may reset any day.",
+    "hide": "Hide for 48 hours"
+  },
+  "guestHome": {
+    "title": "Train with a plan.",
+    "intro": "Create your training plans, log your sessions and keep track of your progress in one place.",
+    "featuresTitle": "What it does",
+    "available": "Available",
+    "inDevelopment": "In development",
+    "features": {
+      "plan": {
+        "title": "Plan your workouts",
+        "text": "Build routines from an exercise catalog and reuse them week after week."
+      },
+      "log": {
+        "title": "Log every session",
+        "text": "Track sets, reps and weights while you train."
+      },
+      "progress": {
+        "title": "See your progress",
+        "text": "Watch your volume and personal records develop over time."
+      }
+    },
+    "logIn": "Log in",
+    "noAccount": "No account yet?",
+    "signUp": "Sign up"
+  },
+  "userHome": {
+    "title": "Today",
+    "programError": "Your program could not be loaded",
+    "reload": "Reload the page to try again.",
+    "sections": "Sections",
+    "plans": {
+      "title": "Plans",
+      "text": "Your programs, routines and the exercise catalog"
+    },
+    "exercises": {
+      "title": "Exercises",
+      "text": "Browse the exercise catalog"
+    },
+    "account": {
+      "title": "Account",
+      "text": "Profile, password and log out",
+      "signedInAs": "Signed in as {username}"
+    }
+  },
+  "login": {
+    "title": "Log in",
+    "username": "Username",
+    "password": "Password",
+    "usernameRequired": "Enter your username",
+    "passwordRequired": "Enter your password",
+    "invalidCredentials": "Wrong username or password. Check both and try again.",
+    "tooManyAttempts": "Too many failed attempts. Please wait 15 minutes and try again.",
+    "submit": "Log in",
+    "submitting": "Logging in...",
+    "noAccount": "No account yet?",
+    "signUp": "Sign up"
+  },
+  "signup": {
+    "title": "Sign up",
+    "closedLabel": "Sign-up status",
+    "closedTitle": "Sign-ups are closed.",
+    "closedText": "Accounts are created on invitation.",
+    "username": "Username",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm password",
+    "showConfirmation": "Show confirmation",
+    "hideConfirmation": "Hide confirmation",
+    "submit": "Create account",
+    "submitting": "Creating account...",
+    "created": "User {username} with email {email} created successfully!",
+    "haveAccount": "Already have an account?",
+    "logIn": "Log in",
+    "check": {
+      "usernameRequired": "Enter a username",
+      "usernameLength": "Use 5 to 32 characters",
+      "emailRequired": "Enter your email address",
+      "emailInvalid": "Enter a valid email address",
+      "passwordRequired": "Enter a password",
+      "passwordLength": "Use at least 8 characters",
+      "passwordPattern": "Include an uppercase letter, a lowercase letter and a number",
+      "confirmRequired": "Repeat your password",
+      "confirmMismatch": "Passwords don't match"
+    },
+    "errors": {
+      "signupDisabled": "Sign-ups are currently closed. No account was created.",
+      "usernameTaken": "This username is already taken. Please choose another one.",
+      "emailTaken": "An account with this email already exists. Please use another one."
+    }
+  },
+  "logout": {
+    "submit": "Log out",
+    "submitting": "Logging out...",
+    "failed": "Logout failed. Please try again."
+  },
+  "about": {
+    "metaTitle": "About | Avren",
+    "title": "About this app",
+    "intro": "This app is a personal project. It is still in early development, so expect rough edges, missing features and the occasional bug.",
+    "noteTitle": "Please note",
+    "noteReset": "Your data may be reset while the app is still evolving. Do not rely on it as your only training log for now.",
+    "noteFree": "The app is free and non-commercial. There are no ads and no tracking.",
+    "noteAdvice": "This is <strong>not medical or professional</strong> training advice.",
+    "feedback": "Found a bug or have an idea? I'd love to hear it: <link>open an issue on GitHub</link>.",
+    "source": "The source code is available on <link>GitHub</link>."
+  },
+  "exercises": {
+    "title": "Exercises",
+    "newExercise": "New Exercise",
+    "editExercise": "Edit Exercise",
+    "catalogError": "The exercise catalog could not be loaded",
+    "noneSelected": "No exercise selected",
+    "noneSelectedText": "Pick an exercise to see its details.",
+    "loading": "Loading exercise...",
+    "errorTitle": "Exercise",
+    "loadError": "This exercise could not be loaded",
+    "notFound": "Exercise not found",
+    "notFoundText": "This exercise does not exist (anymore). It may have been deleted, or the link is wrong.",
+    "type": {
+      "STRENGTH": "Strength",
+      "CARDIO": "Cardio",
+      "MOBILITY": "Mobility"
+    },
+    "tracking": {
+      "WEIGHT_REPS": {
+        "label": "Weight and reps",
+        "hint": "e.g. bench press"
+      },
+      "BODYWEIGHT_REPS": {
+        "label": "Bodyweight reps",
+        "hint": "Optional added weight, e.g. pull-up"
+      },
+      "ASSISTED_REPS": {
+        "label": "Assisted reps",
+        "hint": "Weight is the assistance, e.g. assisted dip"
+      },
+      "DURATION": {
+        "label": "Time",
+        "hint": "e.g. plank, stretch"
+      },
+      "WEIGHT_DISTANCE": {
+        "label": "Weight and distance",
+        "hint": "e.g. farmer's carry"
+      },
+      "DISTANCE_DURATION": {
+        "label": "Distance and time",
+        "hint": "e.g. running, rowing"
+      }
+    },
+    "role": {
+      "PRIMARY": "Primary",
+      "SECONDARY": "Secondary",
+      "EITHER": "Either"
+    },
+    "region": {
+      "UPPER": "Upper body",
+      "CORE": "Core",
+      "LOWER": "Lower body"
+    },
+    "catalog": {
+      "search": "Search exercises",
+      "show": "Show",
+      "count": "{count, plural, one {# exercise} other {# exercises}}",
+      "muscles": "{count, plural, one {Muscle} other {Muscles}}",
+      "noMatch": "No matching exercises",
+      "noMatchText": "Nothing matches{hasSearch, select, yes { \"{query}\"} other {}}{yours, select, yes { among your exercises} other {}}{hasType, select, yes { in {type}} other {}}{hasMuscle, select, yes { targeting {muscle}} other {}}.",
+      "clear": "Clear search and filters"
+    },
+    "picker": {
+      "title": "Choose an exercise",
+      "noMatch": "No matching exercises{hasSearch, select, yes { for \"{query}\"} other {}}{yours, select, yes { among your exercises} other {}}{hasType, select, yes { in {type}} other {}}{hasMuscle, select, yes { targeting {muscle}} other {}}."
+    },
+    "typeFilter": {
+      "label": "Type",
+      "all": "All types"
+    },
+    "muscleFilter": {
+      "label": "Muscle Group",
+      "chip": "{name}{role, select, SECONDARY {, secondary} EITHER {, either} other {}}",
+      "change": "Muscle group: {name}. Change",
+      "clear": "Clear muscle group",
+      "trainedAs": "Trained as",
+      "areaOf": "Area of {name}",
+      "allOf": "All of {name}",
+      "areasOf": "Areas of {name}"
+    },
+    "musclePicker": {
+      "addLabel": "Add {title}"
+    },
+    "details": {
+      "type": "Type",
+      "loggedPerSet": "Logged per set",
+      "muscles": "Muscles",
+      "noMuscles": "No muscles assigned yet.",
+      "instructions": "Instructions",
+      "noInstructions": "No instructions yet."
+    },
+    "editor": {
+      "new": "New Exercise",
+      "name": "Name",
+      "nameRequired": "Please enter a name.",
+      "nameTaken": "You already have an exercise with this name.",
+      "trackingLocked": "What you log per set can not change anymore, because this exercise is already in use.",
+      "saved": "Exercise saved.",
+      "created": "Exercise created.",
+      "description": "Description (optional)",
+      "logging": "Logging",
+      "loggingText": "What you enter for every set.",
+      "type": "Type",
+      "muscles": "Muscles",
+      "musclesText": "Optional. The muscle filter finds the exercise by them.",
+      "pickerTitle": {
+        "PRIMARY": "Primary Muscle",
+        "SECONDARY": "Secondary Muscle"
+      },
+      "remove": "Remove {name}",
+      "instructions": "Instructions (optional)",
+      "instructionsPlaceholder": "How to perform it, step by step"
+    },
+    "delete": {
+      "button": "Delete exercise",
+      "title": "Delete this exercise?",
+      "text": "It is removed from your routines. Workouts you logged with it stay complete.",
+      "deleted": "Exercise deleted."
+    }
+  },
+  "presets": {
+    "title": "Presets",
+    "use": "Use Preset",
+    "intro": "Start from a preset and adjust it to your training.",
+    "copyName": "{name} (Preset)"
+  },
+  "plans": {
+    "title": "Plans",
+    "loadError": "Your plans could not be loaded",
+    "noneSelected": "Nothing selected",
+    "noneSelectedText": "Pick a program to see its days, or a routine to see its exercises.",
+    "programs": "Programs",
+    "newProgram": "New Program",
+    "programsText": "Create your own training plan.",
+    "programsLimit": "You have reached the maximum of {max} programs. Delete one to create a new one.",
+    "noPrograms": "No programs yet",
+    "noProgramsText": "Once you have a program, the active one shows its days on Today.",
+    "routines": "Routines",
+    "newRoutine": "New Routine",
+    "routinesText": "Exercises and targets for a single training day.",
+    "noRoutines": "No routines yet",
+    "noRoutinesText": "Create your first routine, from scratch or from a preset.",
+    "exercises": "Exercises",
+    "newExercise": "New Exercise",
+    "exercisesText": "Add your own when the catalog is missing one.",
+    "catalog": "Exercise catalog",
+    "catalogCount": "{count, plural, one {# exercise} other {# exercises}}, {custom} of them yours"
+  },
+  "routines": {
+    "errorTitle": "Routine",
+    "loadError": "This routine could not be loaded",
+    "notFound": "Routine not found",
+    "notFoundText": "This routine does not exist (anymore). It may have been deleted, or the link is wrong.",
+    "empty": "No exercises in this routine yet.",
+    "deletedExercise": "No longer in the catalog",
+    "trackingHint": {
+      "BODYWEIGHT_REPS": "+kg is added weight",
+      "ASSISTED_REPS": "-kg is the assistance"
+    },
+    "sets": "{count, plural, one {# set} other {# sets}}",
+    "presetReplaces": "Replaces the name and exercises you entered.",
+    "editor": {
+      "new": "New Routine",
+      "name": "Name",
+      "nameRequired": "Please enter a name.",
+      "description": "Description (optional)",
+      "exercises": "Exercises",
+      "addExercise": "Add Exercise",
+      "deletedSlots": "Replace or remove the exercises that are no longer in the catalog.",
+      "saved": "Routine saved.",
+      "exerciseGone": "An exercise is no longer available. Reload the page and check your routine.",
+      "routineGone": "This routine no longer exists. It may have been deleted in another tab.",
+      "removed": "Exercise removed.",
+      "reorder": "Reorder {name}",
+      "remove": "Remove {name}",
+      "deletedHint": "No longer in the catalog, replace or remove it"
+    },
+    "target": {
+      "optional": "Targets are optional.",
+      "deleted": "No longer in the catalog, replace or remove it.",
+      "sets": "Sets",
+      "repsMin": "Reps min",
+      "repsMax": "Reps max",
+      "distanceKm": "Distance (km)",
+      "distanceM": "Distance (m)",
+      "minutes": "Minutes",
+      "seconds": "Seconds",
+      "changeExercise": "Change exercise",
+      "remove": "Remove from routine",
+      "wholeMin1": "Enter a whole number of at least 1.",
+      "belowMin": "Must not be below the minimum.",
+      "whole": "Enter a whole number.",
+      "secondsRange": "Enter 0 to 59.",
+      "distancePositive": "Enter a distance above 0.",
+      "distanceTooLong": "This distance is too long."
+    },
+    "delete": {
+      "button": "Delete routine",
+      "title": "Delete this routine?",
+      "text": "Workouts you logged with this routine stay complete.",
+      "deleted": "Routine deleted."
+    }
+  },
+  "programs": {
+    "notFound": "Program not found",
+    "notFoundText": "This program does not exist (anymore). It may have been deleted, or the link is wrong.",
+    "active": "Active",
+    "summary": "{active, select, yes {Active program} other {Not active}}, {count, plural, one {# day} other {# days}}, repeats",
+    "daysOf": "Days of {name}",
+    "restDay": "Rest day",
+    "noExercises": "No exercises yet",
+    "activate": "Activate",
+    "activating": "Activating...",
+    "activated": "Program activated.",
+    "dayCount": "{count, plural, one {# day} other {# days}}",
+    "presetCopied": "Its routines are copied into your own when you save.",
+    "presetReplaces": "Replaces the name and days you entered.",
+    "daySheet": {
+      "day": "Day {number}",
+      "add": "Add Day",
+      "noTraining": "No training",
+      "noRoutines": "You have no routines yet. Create one under Plans first.",
+      "pick": "Pick a routine or a rest day.",
+      "remove": "Remove Day"
+    },
+    "editor": {
+      "new": "New Program",
+      "name": "Name",
+      "nameRequired": "Please enter a name.",
+      "description": "Description (optional)",
+      "days": "Days",
+      "daysText": "In the order you train them. After the last day the program starts over.",
+      "addDay": "Add Day",
+      "noTrainingDay": "Add at least one day with a routine.",
+      "saved": "Program saved.",
+      "routineGone": "A routine is no longer available. Reload the page and check your program.",
+      "programGone": "This program no longer exists. It may have been deleted in another tab.",
+      "changed": "This program was changed in another tab. Reload the page and try again.",
+      "limit": "You already have the maximum number of programs. Delete one to create a new one.",
+      "removed": "Day removed.",
+      "dayMeta": "{count, plural, one {# exercise} other {# exercises}}{fromPreset, select, yes {, copied on save} other {}}",
+      "reorder": "Reorder day {number}, {label}",
+      "remove": "Remove day {number}, {label}"
+    },
+    "delete": {
+      "button": "Delete Program",
+      "title": "Delete this program?",
+      "text": "Your logged workouts stay complete.{active, select, yes { This is your active program, Today shows no program until you activate another one.} other {}}",
+      "deleted": "Program deleted."
+    }
   },
   "errors": {
     "unexpected": "An unexpected error occurred. Please try again later.",

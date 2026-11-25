@@ -1,6 +1,7 @@
 'use client';
 
 import { Check, ChevronDown, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useRef, useState } from 'react';
 
 import { cn } from '@/shared/lib/utils';
@@ -9,17 +10,9 @@ import { Sheet } from '@/shared/ui/sheet';
 import { MuscleFilter } from '../lib/muscle-filter';
 import { BodyRegion, MuscleGroup } from '../types/api.types';
 
-const regions: { value: BodyRegion; label: string }[] = [
-  { value: 'UPPER', label: 'Upper body' },
-  { value: 'CORE', label: 'Core' },
-  { value: 'LOWER', label: 'Lower body' },
-];
+const regions: BodyRegion[] = ['UPPER', 'CORE', 'LOWER'];
 
-const roleOptions = [
-  { value: 'PRIMARY', label: 'Primary' },
-  { value: 'SECONDARY', label: 'Secondary' },
-  { value: 'EITHER', label: 'Either' },
-] as const;
+const roleOptions = ['PRIMARY', 'SECONDARY', 'EITHER'] as const;
 
 const chipClass =
   'relative inline-flex h-8.5 min-w-0 flex-1 items-center gap-1.5 rounded-full border text-meta font-semibold whitespace-nowrap';
@@ -44,6 +37,8 @@ export default function MuscleGroupFilter({
   onChange,
 }: MuscleGroupFilterProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const t = useTranslations('exercises');
+  const tCommon = useTranslations('common');
   const [role, setRole] = useState<MuscleFilter['role']>('PRIMARY');
   const [openGroupId, setOpenGroupId] = useState<number | null>(null);
 
@@ -77,7 +72,7 @@ export default function MuscleGroupFilter({
           <button
             type="button"
             aria-haspopup="dialog"
-            aria-label={`Muscle group: ${value.label}. Change`}
+            aria-label={t('muscleFilter.change', { name: value.label })}
             onClick={open}
             className={cn(
               'relative inline-flex h-full min-w-0 flex-1 items-center gap-1.5 rounded-l-full pr-1 pl-3',
@@ -85,14 +80,12 @@ export default function MuscleGroupFilter({
             )}
           >
             <span className="truncate">
-              {value.label}
-              {value.role === 'SECONDARY' && ', secondary'}
-              {value.role === 'EITHER' && ', either'}
+              {t('muscleFilter.chip', { name: value.label, role: value.role })}
             </span>
           </button>
           <button
             type="button"
-            aria-label="Clear muscle group"
+            aria-label={t('muscleFilter.clear')}
             onClick={() => onChange(null)}
             className={cn(
               'relative inline-flex h-full items-center rounded-r-full pr-2.5 pl-1',
@@ -113,7 +106,7 @@ export default function MuscleGroupFilter({
             hitAreaClass,
           )}
         >
-          Muscle Group
+          {t('muscleFilter.label')}
           <ChevronDown className="size-4" aria-hidden="true" />
         </button>
       )}
@@ -133,53 +126,50 @@ export default function MuscleGroupFilter({
               className="-ml-2 flex min-h-tap items-center gap-0.5 pr-2 font-semibold text-text-secondary hover:text-text-primary"
             >
               <ChevronLeft className="size-5" aria-hidden="true" />
-              Muscle Group
+              {t('muscleFilter.label')}
             </button>
             <h2 id="muscle-group-title" className="text-title">
               {openGroup.name}
             </h2>
             <ul
               role="radiogroup"
-              aria-label={`Area of ${openGroup.name}`}
+              aria-label={t('muscleFilter.areaOf', { name: openGroup.name })}
               className="mt-2 divide-y divide-field-on-overlay"
             >
-              {[{ id: null, name: `All of ${openGroup.name}` }, ...openGroup.areas].map(
-                (area) => {
-                  const checked =
-                    value?.groupId === openGroup.id && value.areaId === area.id;
-                  return (
-                    <li key={area.id ?? 'all'} role="none" className="flex">
-                      <button
-                        type="button"
-                        role="radio"
-                        aria-checked={checked}
-                        onClick={() =>
-                          pick(
-                            openGroup.id,
-                            area.id,
-                            area.id ? area.name : openGroup.name,
-                          )
-                        }
-                        className={cn(optionClass, 'text-text-secondary')}
-                      >
-                        {checked ? (
-                          <Check className="size-5 shrink-0" aria-hidden="true" />
-                        ) : (
-                          <span className="w-5 shrink-0" />
-                        )}
-                        {area.name}
-                      </button>
-                    </li>
-                  );
-                },
-              )}
+              {[
+                { id: null, name: t('muscleFilter.allOf', { name: openGroup.name }) },
+                ...openGroup.areas,
+              ].map((area) => {
+                const checked =
+                  value?.groupId === openGroup.id && value.areaId === area.id;
+                return (
+                  <li key={area.id ?? 'all'} role="none" className="flex">
+                    <button
+                      type="button"
+                      role="radio"
+                      aria-checked={checked}
+                      onClick={() =>
+                        pick(openGroup.id, area.id, area.id ? area.name : openGroup.name)
+                      }
+                      className={cn(optionClass, 'text-text-secondary')}
+                    >
+                      {checked ? (
+                        <Check className="size-5 shrink-0" aria-hidden="true" />
+                      ) : (
+                        <span className="w-5 shrink-0" />
+                      )}
+                      {area.name}
+                    </button>
+                  </li>
+                );
+              })}
             </ul>
           </>
         ) : (
           <>
             <div className="flex items-start justify-between gap-3">
               <h2 id="muscle-group-title" className="text-title">
-                Muscle Group
+                {t('muscleFilter.label')}
               </h2>
               <Button
                 type="button"
@@ -187,7 +177,7 @@ export default function MuscleGroupFilter({
                 size="sm"
                 onClick={() => dialogRef.current?.close()}
               >
-                Done
+                {tCommon('done')}
               </Button>
             </div>
 
@@ -195,7 +185,7 @@ export default function MuscleGroupFilter({
               id="muscle-role-label"
               className="mt-3 mb-1.5 text-meta font-semibold text-text-secondary"
             >
-              Trained as
+              {t('muscleFilter.trainedAs')}
             </p>
             <div
               role="radiogroup"
@@ -204,43 +194,41 @@ export default function MuscleGroupFilter({
             >
               {roleOptions.map((option) => (
                 <button
-                  key={option.value}
+                  key={option}
                   type="button"
                   role="radio"
-                  aria-checked={role === option.value}
-                  onClick={() => changeRole(option.value)}
+                  aria-checked={role === option}
+                  onClick={() => changeRole(option)}
                   className={cn(
                     'min-h-9 rounded-field px-3.5 text-meta font-semibold',
-                    role === option.value
+                    role === option
                       ? 'bg-field-on-overlay text-text-primary'
                       : 'text-text-tertiary hover:text-text-secondary',
                   )}
                 >
-                  {option.label}
+                  {t(`role.${option}`)}
                 </button>
               ))}
             </div>
 
             {regions.map((region) => {
-              const groups = muscleGroups.filter(
-                (group) => group.bodyRegion === region.value,
-              );
+              const groups = muscleGroups.filter((group) => group.bodyRegion === region);
               if (groups.length === 0) return null;
               return (
                 <section
-                  key={region.value}
+                  key={region}
                   className="mt-4"
-                  aria-labelledby={`region-${region.value}`}
+                  aria-labelledby={`region-${region}`}
                 >
                   <h3
-                    id={`region-${region.value}`}
+                    id={`region-${region}`}
                     className="mb-1 text-meta font-semibold text-text-tertiary"
                   >
-                    {region.label}
+                    {t(`region.${region}`)}
                   </h3>
                   <ul
                     role="radiogroup"
-                    aria-labelledby={`region-${region.value}`}
+                    aria-labelledby={`region-${region}`}
                     className="divide-y divide-field-on-overlay"
                   >
                     {groups.map((group) => {
@@ -277,7 +265,7 @@ export default function MuscleGroupFilter({
                           {group.areas.length > 0 && (
                             <button
                               type="button"
-                              aria-label={`Areas of ${group.name}`}
+                              aria-label={t('muscleFilter.areasOf', { name: group.name })}
                               onClick={() => setOpenGroupId(group.id)}
                               className="grid size-tap shrink-0 place-items-center rounded-card text-text-secondary active:bg-surface-raised"
                             >

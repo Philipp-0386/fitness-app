@@ -3,20 +3,21 @@
 import { ChevronDown, CircleAlert, X } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
 import { ApiError } from '@/shared/api/errors/api-error';
-import { fallbackErrorMessage } from '@/shared/api/errors/fallback-error-message';
-import { useFieldErrorMessage } from '@/shared/api/errors/use-error-message';
-
+import {
+  useErrorMessage,
+  useFieldErrorMessage,
+} from '@/shared/api/errors/use-error-message';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { Label } from '@/shared/ui/label';
 import { createExercise } from '../client/create-exercise.client';
 import { updateExercise } from '../client/update-exercise.client';
 import { trackingOptions } from '../lib/tracking-options';
-import { typeLabels } from '../lib/type-labels';
 import {
   Exercise,
   ExerciseType,
@@ -36,10 +37,7 @@ const cancelClass =
 const textareaClass =
   'w-full min-w-0 rounded-field border border-border-strong bg-surface-raised px-3 py-2.5 text-field text-text-primary placeholder:text-text-tertiary';
 
-const muscleRows: { role: MuscleRole; label: string; pickerTitle: string }[] = [
-  { role: 'PRIMARY', label: 'Primary', pickerTitle: 'Primary Muscle' },
-  { role: 'SECONDARY', label: 'Secondary', pickerTitle: 'Secondary Muscle' },
-];
+const muscleRoles: MuscleRole[] = ['PRIMARY', 'SECONDARY'];
 
 type ExerciseEditorProps = {
   /** null for a new exercise. */
@@ -67,6 +65,9 @@ export default function ExerciseEditor({ exercise, muscleGroups }: ExerciseEdito
 
   const tracking = trackingOptions.find((o) => o.value === trackingType)!;
 
+  const t = useTranslations('exercises');
+  const tCommon = useTranslations('common');
+  const errorMessage = useErrorMessage();
   const fieldErrorMessage = useFieldErrorMessage();
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -76,7 +77,7 @@ export default function ExerciseEditor({ exercise, muscleGroups }: ExerciseEdito
     setError(null);
 
     if (!name.trim()) {
-      setNameError('Please enter a name.');
+      setNameError(t('editor.nameRequired'));
       return;
     }
 
@@ -94,13 +95,13 @@ export default function ExerciseEditor({ exercise, muscleGroups }: ExerciseEdito
       const saved = exercise
         ? await updateExercise(String(exercise.id), payload)
         : await createExercise(payload);
-      toast.success(exercise ? 'Exercise saved.' : 'Exercise created.');
+      toast.success(exercise ? t('editor.saved') : t('editor.created'));
       router.replace(`/exercises/${saved.id}`);
       router.refresh();
     } catch (err) {
       setIsSaving(false);
       if (err instanceof ApiError && err.code === 'DATA_CONFLICT') {
-        setNameError('You already have an exercise with this name.');
+        setNameError(t('editor.nameTaken'));
         return;
       }
       if (err instanceof ApiError && err.fieldErrors?.name) {
@@ -108,12 +109,10 @@ export default function ExerciseEditor({ exercise, muscleGroups }: ExerciseEdito
         return;
       }
       if (err instanceof ApiError && err.code === 'TRACKING_TYPE_LOCKED') {
-        setError(
-          'What you log per set can not change anymore, because this exercise is already in use.',
-        );
+        setError(t('editor.trackingLocked'));
         return;
       }
-      setError(fallbackErrorMessage(err));
+      setError(errorMessage(err));
     }
   }
 
@@ -123,16 +122,16 @@ export default function ExerciseEditor({ exercise, muscleGroups }: ExerciseEdito
         <header className="sticky top-(--app-top-inset) z-10 grid h-14 grid-cols-[1fr_minmax(0,2fr)_1fr] items-center border-b border-border-subtle bg-bg px-4">
           {exercise ? (
             <Link href={`/exercises/${exercise.id}`} replace className={cancelClass}>
-              Cancel
+              {tCommon('cancel')}
             </Link>
           ) : (
             // A new exercise is only reached from a list, so going back avoids a second list entry.
             <button type="button" onClick={() => router.back()} className={cancelClass}>
-              Cancel
+              {tCommon('cancel')}
             </button>
           )}
           <h1 className="truncate text-center text-[1.0625rem] font-semibold">
-            {exercise ? exercise.name : 'New Exercise'}
+            {exercise ? exercise.name : t('editor.new')}
           </h1>
           <Button
             type="submit"
@@ -141,7 +140,7 @@ export default function ExerciseEditor({ exercise, muscleGroups }: ExerciseEdito
             className="justify-self-end"
             disabled={isSaving}
           >
-            {isSaving ? 'Saving...' : 'Save'}
+            {isSaving ? tCommon('saving') : tCommon('save')}
           </Button>
         </header>
 
@@ -157,7 +156,7 @@ export default function ExerciseEditor({ exercise, muscleGroups }: ExerciseEdito
           )}
 
           <Label className="mb-1.5" htmlFor="exercise-name">
-            Name
+            {t('editor.name')}
           </Label>
           <Input
             id="exercise-name"
@@ -182,7 +181,7 @@ export default function ExerciseEditor({ exercise, muscleGroups }: ExerciseEdito
           )}
 
           <Label className="mt-4 mb-1.5" htmlFor="exercise-description">
-            Description (optional)
+            {t('editor.description')}
           </Label>
           <textarea
             id="exercise-description"
@@ -194,10 +193,10 @@ export default function ExerciseEditor({ exercise, muscleGroups }: ExerciseEdito
           />
 
           <h2 id="logging-title" className="mt-6 text-title">
-            Logging
+            {t('editor.logging')}
           </h2>
           <p className="mt-0.5 mb-3 text-meta text-text-secondary">
-            What you enter for every set.
+            {t('editor.loggingText')}
           </p>
           <span className="relative block">
             <select
@@ -215,7 +214,7 @@ export default function ExerciseEditor({ exercise, muscleGroups }: ExerciseEdito
             >
               {trackingOptions.map((option) => (
                 <option key={option.value} value={option.value}>
-                  {option.label}
+                  {t(`tracking.${option.value}.label`)}
                 </option>
               ))}
             </select>
@@ -225,13 +224,13 @@ export default function ExerciseEditor({ exercise, muscleGroups }: ExerciseEdito
             />
           </span>
           <p id="logging-hint" className="mt-1.5 text-meta text-text-tertiary">
-            {tracking.hint}
+            {t(`tracking.${tracking.value}.hint`)}
           </p>
 
           {tracking.exerciseTypes.length > 1 && (
             <fieldset className="mt-4">
               <legend className="mb-1.5 text-meta font-semibold text-text-secondary">
-                Type
+                {t('editor.type')}
               </legend>
               <div className="inline-grid grid-flow-col gap-1 rounded-card bg-surface p-1">
                 {tracking.exerciseTypes.map((type) => (
@@ -247,25 +246,25 @@ export default function ExerciseEditor({ exercise, muscleGroups }: ExerciseEdito
                       onChange={() => setExerciseType(type)}
                       className="sr-only"
                     />
-                    {typeLabels[type]}
+                    {t(`type.${type}`)}
                   </label>
                 ))}
               </div>
             </fieldset>
           )}
 
-          <h2 className="mt-6 text-title">Muscles</h2>
+          <h2 className="mt-6 text-title">{t('editor.muscles')}</h2>
           <p className="mt-0.5 text-meta text-text-secondary">
-            Optional. The muscle filter finds the exercise by them.
+            {t('editor.musclesText')}
           </p>
-          {muscleRows.map((row) => (
-            <fieldset key={row.role} className="mt-3">
+          {muscleRoles.map((role) => (
+            <fieldset key={role} className="mt-3">
               <legend className="mb-1.5 text-meta font-semibold text-text-secondary">
-                {row.label}
+                {t(`role.${role}`)}
               </legend>
               <ul className="flex flex-wrap gap-2">
                 {muscles
-                  .filter((muscle) => muscle.role === row.role)
+                  .filter((muscle) => muscle.role === role)
                   .map((muscle) => (
                     <li
                       key={muscle.id}
@@ -274,7 +273,7 @@ export default function ExerciseEditor({ exercise, muscleGroups }: ExerciseEdito
                       {muscle.name}
                       <button
                         type="button"
-                        aria-label={`Remove ${muscle.name}`}
+                        aria-label={t('editor.remove', { name: muscle.name })}
                         onClick={() =>
                           setMuscles(muscles.filter((m) => m.id !== muscle.id))
                         }
@@ -288,11 +287,9 @@ export default function ExerciseEditor({ exercise, muscleGroups }: ExerciseEdito
                   <li>
                     <MuscleGroupPicker
                       muscleGroups={muscleGroups}
-                      title={row.pickerTitle}
+                      title={t(`editor.pickerTitle.${role}`)}
                       pickedIds={muscles.map((muscle) => muscle.id)}
-                      onPick={(muscle) =>
-                        setMuscles([...muscles, { ...muscle, role: row.role }])
-                      }
+                      onPick={(muscle) => setMuscles([...muscles, { ...muscle, role }])}
                     />
                   </li>
                 )}
@@ -301,7 +298,7 @@ export default function ExerciseEditor({ exercise, muscleGroups }: ExerciseEdito
           ))}
 
           <Label className="mt-6 mb-1.5" htmlFor="exercise-instructions">
-            Instructions (optional)
+            {t('editor.instructions')}
           </Label>
           <textarea
             id="exercise-instructions"
@@ -309,7 +306,7 @@ export default function ExerciseEditor({ exercise, muscleGroups }: ExerciseEdito
             onChange={(e) => setInstructions(e.target.value)}
             maxLength={4000}
             rows={4}
-            placeholder="How to perform it, step by step"
+            placeholder={t('editor.instructionsPlaceholder')}
             className={textareaClass}
           />
         </div>

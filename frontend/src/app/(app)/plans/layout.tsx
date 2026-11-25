@@ -1,10 +1,12 @@
 import Link from 'next/link';
 import { ChevronRight, UserRound } from 'lucide-react';
+import { getTranslations } from 'next-intl/server';
 
 import { fetchExercises } from '@/features/exercises';
 import { ProgramList, fetchUserPrograms } from '@/features/programs';
 import { RoutineList, fetchUserRoutines } from '@/features/routines';
 import { fetchMe } from '@/features/user';
+import { getErrorMessage } from '@/shared/api/errors/get-error-message';
 import { requireSession } from '@/shared/auth/session';
 import { ListPane } from '@/shared/layout';
 import { Button } from '@/shared/ui/button';
@@ -19,6 +21,9 @@ export default async function PlansLayout({
   children: React.ReactNode;
 }>) {
   await requireSession();
+  const t = await getTranslations('plans');
+  const tCommon = await getTranslations('common');
+  const tNav = await getTranslations('nav');
 
   const [plans, username] = await Promise.all([
     Promise.all([fetchUserPrograms(), fetchUserRoutines(), fetchExercises()])
@@ -38,10 +43,10 @@ export default async function PlansLayout({
       <ListPane>
         <div className="mx-auto w-full max-w-app px-4 pb-8">
           <header className="flex items-center justify-between pt-4 lg:pt-8">
-            <h1 className="text-display">Plans</h1>
+            <h1 className="text-display">{t('title')}</h1>
             <Link
               href="/me"
-              aria-label="Account"
+              aria-label={tNav('account')}
               className="grid size-tap place-items-center rounded-full bg-surface-raised font-semibold lg:hidden"
             >
               {username ? (
@@ -54,49 +59,46 @@ export default async function PlansLayout({
 
           {plans instanceof Error ? (
             <section role="alert" className="mt-4 rounded-card bg-surface px-4 pt-5 pb-4">
-              <h2 className="text-title">Your plans could not be loaded</h2>
-              <p className="mt-1 text-text-secondary">{plans.message}</p>
-              <p className="mt-1 text-meta text-text-tertiary">
-                Reload the page to try again.
-              </p>
+              <h2 className="text-title">{t('loadError')}</h2>
+              <p className="mt-1 text-text-secondary">{await getErrorMessage(plans)}</p>
+              <p className="mt-1 text-meta text-text-tertiary">{tCommon('reload')}</p>
             </section>
           ) : (
             <>
               <section className="mt-4" aria-labelledby="programs-title">
                 <div className="flex items-center justify-between gap-3">
                   <h2 id="programs-title" className="text-title">
-                    Programs
+                    {t('programs')}
                   </h2>
                   {plans.programs.length < MAX_PROGRAMS ? (
                     <Button asChild size="sm">
-                      <Link href="/plans/programs/new">New Program</Link>
+                      <Link href="/plans/programs/new">{t('newProgram')}</Link>
                     </Button>
                   ) : (
                     <Button size="sm" disabled aria-describedby="programs-limit">
-                      New Program
+                      {t('newProgram')}
                     </Button>
                   )}
                 </div>
                 {plans.programs.length < MAX_PROGRAMS ? (
                   <p className="mt-0.5 mb-3 text-meta text-text-secondary">
-                    Create your own training plan.
+                    {t('programsText')}
                   </p>
                 ) : (
                   <p
                     id="programs-limit"
                     className="mt-0.5 mb-3 text-meta text-text-secondary"
                   >
-                    You have reached the maximum of {MAX_PROGRAMS} programs. Delete one to
-                    create a new one.
+                    {t('programsLimit', { max: MAX_PROGRAMS })}
                   </p>
                 )}
                 {plans.programs.length > 0 ? (
                   <ProgramList programs={plans.programs} />
                 ) : (
                   <div className="rounded-card bg-surface px-4 pt-5 pb-4">
-                    <h3 className="font-semibold">No programs yet</h3>
+                    <h3 className="font-semibold">{t('noPrograms')}</h3>
                     <p className="mt-1 text-meta text-text-secondary">
-                      Once you have a program, the active one shows its days on Today.
+                      {t('noProgramsText')}
                     </p>
                   </div>
                 )}
@@ -105,22 +107,22 @@ export default async function PlansLayout({
               <section className="mt-8" aria-labelledby="routines-title">
                 <div className="flex items-center justify-between gap-3">
                   <h2 id="routines-title" className="text-title">
-                    Routines
+                    {t('routines')}
                   </h2>
                   <Button asChild size="sm">
-                    <Link href="/plans/routines/new">New Routine</Link>
+                    <Link href="/plans/routines/new">{t('newRoutine')}</Link>
                   </Button>
                 </div>
                 <p className="mt-0.5 mb-3 text-meta text-text-secondary">
-                  Exercises and targets for a single training day.
+                  {t('routinesText')}
                 </p>
                 {plans.routines.length > 0 ? (
                   <RoutineList routines={plans.routines} hrefBase="/plans/routines" />
                 ) : (
                   <div className="rounded-card bg-surface px-4 pt-5 pb-4">
-                    <h3 className="font-semibold">No routines yet</h3>
+                    <h3 className="font-semibold">{t('noRoutines')}</h3>
                     <p className="mt-1 text-meta text-text-secondary">
-                      Create your first routine, from scratch or from a preset.
+                      {t('noRoutinesText')}
                     </p>
                   </div>
                 )}
@@ -129,24 +131,26 @@ export default async function PlansLayout({
               <section className="mt-8" aria-labelledby="exercises-title">
                 <div className="flex items-center justify-between gap-3">
                   <h2 id="exercises-title" className="text-title">
-                    Exercises
+                    {t('exercises')}
                   </h2>
                   <Button asChild size="sm">
-                    <Link href="/exercises/new">New Exercise</Link>
+                    <Link href="/exercises/new">{t('newExercise')}</Link>
                   </Button>
                 </div>
                 <p className="mt-0.5 mb-3 text-meta text-text-secondary">
-                  Add your own when the catalog is missing one.
+                  {t('exercisesText')}
                 </p>
                 <ul className={listClass}>
                   <li>
                     <Link href="/exercises" className={listRowClass}>
                       <span className="min-w-0 flex-1">
-                        <span className="block font-semibold">Exercise catalog</span>
+                        <span className="block font-semibold">{t('catalog')}</span>
                         <span className="block text-meta text-text-tertiary tabular-nums">
-                          {plans.exercises.length} exercises,{' '}
-                          {plans.exercises.filter((exercise) => exercise.custom).length}{' '}
-                          of them yours
+                          {t('catalogCount', {
+                            count: plans.exercises.length,
+                            custom: plans.exercises.filter((exercise) => exercise.custom)
+                              .length,
+                          })}
                         </span>
                       </span>
                       <ChevronRight
