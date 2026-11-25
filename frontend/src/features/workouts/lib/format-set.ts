@@ -1,4 +1,4 @@
-import { useTranslations } from 'next-intl';
+import { useFormatter, useTranslations } from 'next-intl';
 
 import type { TrackingType } from '@/features/exercises';
 import type { WorkoutSet } from '../types/api.types';
@@ -16,6 +16,7 @@ export function weightHead(trackingType: TrackingType): string {
  */
 export function useFormatSetValues() {
   const t = useTranslations('workouts');
+  const format = useFormatter();
 
   return (
     trackingType: TrackingType,
@@ -30,7 +31,7 @@ export function useFormatSetValues() {
           : set.weightKg > 0 && trackingType === 'ASSISTED_REPS'
             ? '-'
             : '';
-      weight = `${sign}${Number(set.weightKg.toFixed(2))}${withUnit ? ' kg' : ''}`;
+      weight = `${sign}${format.number(set.weightKg, { maximumFractionDigits: 2 })}${withUnit ? ' kg' : ''}`;
     }
     const duration =
       set.durationSeconds !== null
@@ -39,8 +40,8 @@ export function useFormatSetValues() {
     const distance =
       set.distanceMeters !== null
         ? set.distanceMeters >= 1000
-          ? `${Number((set.distanceMeters / 1000).toFixed(2))} km`
-          : `${set.distanceMeters} m`
+          ? `${format.number(set.distanceMeters / 1000, { maximumFractionDigits: 2 })} km`
+          : `${format.number(set.distanceMeters)} m`
         : null;
 
     switch (trackingType) {

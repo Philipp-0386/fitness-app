@@ -1,7 +1,7 @@
 'use client';
 
 import { CircleAlert, Trash2 } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useFormatter, useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 
 import { trackingFields } from '@/features/exercises/lib/tracking-fields';
@@ -57,6 +57,7 @@ export default function TargetSheet({
   const dialogRef = useRef<HTMLDialogElement>(null);
   const t = useTranslations('routines.target');
   const tCommon = useTranslations('common');
+  const format = useFormatter();
   const inKm = exercise.trackingType === 'DISTANCE_DURATION';
   const fields = trackingFields(exercise.trackingType);
   const [draft, setDraft] = useState<Draft>(() => {
@@ -68,7 +69,13 @@ export default function TargetSheet({
       repsMax: slot.targetRepsMax?.toString() ?? '',
       minutes: seconds === null ? '' : Math.floor(seconds / 60).toString(),
       seconds: seconds === null ? '' : (seconds % 60).toString(),
-      distance: meters === null ? '' : (inKm ? meters / 1000 : meters).toString(),
+      distance:
+        meters === null
+          ? ''
+          : format.number(inKm ? meters / 1000 : meters, {
+              maximumFractionDigits: inKm ? 5 : 2,
+              useGrouping: false,
+            }),
     };
   });
   const [errors, setErrors] = useState<Partial<Record<keyof Draft, string>>>({});

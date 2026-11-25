@@ -1,7 +1,7 @@
 'use client';
 
 import { Check, LoaderCircle, Plus } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useFormatter, useTranslations } from 'next-intl';
 import { useRef, useState } from 'react';
 
 import type { TrackingType } from '@/features/exercises';
@@ -52,6 +52,7 @@ export default function SetTable({
   const cancelled = useRef(false);
   const t = useTranslations('workouts');
   const formatSetValues = useFormatSetValues();
+  const format = useFormatter();
 
   const type = entry.exercise.trackingType;
   const heads: Record<SetField, string> = {
@@ -143,7 +144,7 @@ export default function SetTable({
                 {short}
                 {row.rpe !== null && (
                   <span className="text-caption font-normal text-text-secondary">
-                    @{row.rpe}
+                    @{format.number(row.rpe)}
                   </span>
                 )}
               </button>
@@ -166,7 +167,10 @@ export default function SetTable({
                     ? ''
                     : field === 'durationSeconds'
                       ? `${Math.floor(value / 60)}:${String(value % 60).padStart(2, '0')}`
-                      : String(Number(value.toFixed(2)));
+                      : format.number(value, {
+                          maximumFractionDigits: 2,
+                          useGrouping: false,
+                        });
 
                 if (editing?.index === index && editing.field === field) {
                   return (

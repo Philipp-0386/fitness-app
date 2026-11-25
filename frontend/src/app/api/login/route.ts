@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
       const settings: { language?: string } = await settingsResponse.json();
       cookieStore.set(
         LOCALE_COOKIE,
-        settings.language === 'DE' ? 'de' : 'en',
+        settings.language === 'DE' ? 'de' : 'en-GB',
         localeCookieOptions,
       );
     }

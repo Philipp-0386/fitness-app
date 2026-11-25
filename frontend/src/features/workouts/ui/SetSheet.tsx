@@ -1,7 +1,7 @@
 'use client';
 
 import { Trash2 } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useFormatter, useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 
 import { cn } from '@/shared/lib/utils';
@@ -34,7 +34,8 @@ export default function SetSheet({
 }: SetSheetProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const t = useTranslations('workouts');
-  const [draft, setDraft] = useState(rpe === null ? '' : String(rpe));
+  const format = useFormatter();
+  const [draft, setDraft] = useState(rpe === null ? '' : format.number(rpe));
   const [rpeError, setRpeError] = useState<string | null>(null);
 
   useEffect(() => {

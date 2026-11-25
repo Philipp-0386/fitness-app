@@ -1,6 +1,6 @@
 'use client';
 
-import { useLocale, useTranslations } from 'next-intl';
+import { type Locale, useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -10,7 +10,7 @@ import { useErrorMessage } from '@/shared/api/errors/use-error-message';
 import { cn } from '@/shared/lib/utils';
 
 const options = [
-  { value: 'en', label: 'EN' },
+  { value: 'en-GB', label: 'EN' },
   { value: 'de', label: 'DE' },
 ] as const;
 
@@ -21,7 +21,7 @@ export function LanguageSwitch() {
   const errorMessage = useErrorMessage();
   const [isSaving, setIsSaving] = useState(false);
 
-  async function handleChange(next: 'en' | 'de') {
+  async function handleChange(next: Locale) {
     if (next === locale) return;
     setIsSaving(true);
     try {

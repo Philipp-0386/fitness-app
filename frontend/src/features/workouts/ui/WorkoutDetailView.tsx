@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { useTranslations } from 'next-intl';
+import { useFormatter, useTranslations } from 'next-intl';
 
 import { useFormatTarget } from '@/features/routines/lib/format-target';
 import { TopBar } from '@/shared/layout';
@@ -9,18 +9,14 @@ import { useFormatSetValues } from '../lib/format-set';
 import { TIME_ZONE } from '../lib/group-by-week';
 import type { Workout } from '../types/api.types';
 
-const dateFormat = new Intl.DateTimeFormat('en-GB', {
+const dateOptions = {
   timeZone: TIME_ZONE,
   weekday: 'short',
   day: 'numeric',
   month: 'short',
   year: 'numeric',
-});
-const timeFormat = new Intl.DateTimeFormat('en-GB', {
-  timeZone: TIME_ZONE,
-  hour: '2-digit',
-  minute: '2-digit',
-});
+} as const;
+const timeOptions = { timeZone: TIME_ZONE, hour: '2-digit', minute: '2-digit' } as const;
 
 //a past workout read only: when, how long, and every exercise with its logged sets
 export default function WorkoutDetailView({ workout }: { workout: Workout }) {
@@ -28,6 +24,7 @@ export default function WorkoutDetailView({ workout }: { workout: Workout }) {
   const formatSetValues = useFormatSetValues();
   const t = useTranslations('workouts');
   const tCommon = useTranslations('common');
+  const format = useFormatter();
   const started = new Date(workout.startedAt);
   const setCount = workout.exercises.reduce((sum, entry) => sum + entry.sets.length, 0);
 
@@ -48,8 +45,10 @@ export default function WorkoutDetailView({ workout }: { workout: Workout }) {
       />
 
       <p className="mt-1 px-4 text-text-secondary tabular-nums">
-        {dateFormat.format(started)}, {timeFormat.format(started)}
-        {workout.endedAt ? `-${timeFormat.format(new Date(workout.endedAt))}` : ''}
+        {format.dateTime(started, dateOptions)}, {format.dateTime(started, timeOptions)}
+        {workout.endedAt
+          ? `-${format.dateTime(new Date(workout.endedAt), timeOptions)}`
+          : ''}
       </p>
 
       <dl className="mx-4 mt-4 grid grid-cols-3 gap-2">

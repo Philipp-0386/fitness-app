@@ -2,7 +2,7 @@
 
 import { ChevronRight } from 'lucide-react';
 import Link from 'next/link';
-import { useTranslations } from 'next-intl';
+import { useFormatter, useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { useErrorMessage } from '@/shared/api/errors/use-error-message';
@@ -13,19 +13,6 @@ import { formatDuration } from '../lib/format-duration';
 import { TIME_ZONE, groupByWeek } from '../lib/group-by-week';
 import type { WorkoutHistory } from '../types/api.types';
 
-const dayFormat = new Intl.DateTimeFormat('en-GB', {
-  timeZone: TIME_ZONE,
-  weekday: 'short',
-  day: 'numeric',
-  month: 'short',
-});
-
-const weekStart = new Intl.DateTimeFormat('en-GB', {
-  timeZone: 'UTC',
-  day: 'numeric',
-  month: 'short',
-});
-
 //finished workouts grouped by week; the first page comes from the server, "Load More" appends the next ones
 export default function HistoryList({ initial }: { initial: WorkoutHistory }) {
   const [workouts, setWorkouts] = useState(initial.workouts);
@@ -35,6 +22,7 @@ export default function HistoryList({ initial }: { initial: WorkoutHistory }) {
   const [error, setError] = useState<string | null>(null);
   const t = useTranslations('workouts.history');
   const errorMessage = useErrorMessage();
+  const format = useFormatter();
 
   async function loadMore() {
     setLoading(true);
@@ -71,7 +59,13 @@ export default function HistoryList({ initial }: { initial: WorkoutHistory }) {
           ? t('thisWeek')
           : weeksAgo === 1
             ? t('lastWeek')
-            : t('weekOf', { date: weekStart.format(monday) }),
+            : t('weekOf', {
+                date: format.dateTime(monday, {
+                  timeZone: 'UTC',
+                  day: 'numeric',
+                  month: 'short',
+                }),
+              }),
       ).map((group) => (
         <section key={group.key} className="mt-6" aria-labelledby={`week-${group.key}`}>
           <h2
@@ -87,8 +81,13 @@ export default function HistoryList({ initial }: { initial: WorkoutHistory }) {
                   <span className="min-w-0 flex-1">
                     <span className="block truncate font-semibold">{workout.name}</span>
                     <span className="block text-meta text-text-secondary tabular-nums">
-                      {dayFormat.format(new Date(workout.startedAt))},{' '}
-                      {formatDuration(workout.startedAt, workout.endedAt)},{' '}
+                      {format.dateTime(new Date(workout.startedAt), {
+                        timeZone: TIME_ZONE,
+                        weekday: 'short',
+                        day: 'numeric',
+                        month: 'short',
+                      })}
+                      , {formatDuration(workout.startedAt, workout.endedAt)},{' '}
                       {t('sets', { count: workout.setCount })}
                     </span>
                     <span className="block truncate text-meta text-text-tertiary">

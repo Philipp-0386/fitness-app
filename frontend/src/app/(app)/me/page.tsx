@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { ChevronRight, ExternalLink } from 'lucide-react';
-import { getLocale, getTranslations } from 'next-intl/server';
+import { getFormatter, getLocale, getTranslations } from 'next-intl/server';
 
 import { LogoutButton } from '@/features/home';
 import {
@@ -24,7 +24,8 @@ export default async function MePage() {
   const t = await getTranslations('me');
   const tNav = await getTranslations('nav');
   const locale = await getLocale();
-  const memberSince = new Date(user.createdAt).toLocaleDateString('en-GB', {
+  const format = await getFormatter();
+  const memberSince = format.dateTime(new Date(user.createdAt), {
     month: 'short',
     year: 'numeric',
   });

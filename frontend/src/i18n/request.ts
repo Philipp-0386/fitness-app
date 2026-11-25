@@ -11,17 +11,17 @@ async function resolveLocale(): Promise<AppLocale> {
   if (await getSession()) {
     try {
       const settings = await fetchSettings();
-      return settings.language === 'DE' ? 'de' : 'en';
+      return settings.language === 'DE' ? 'de' : 'en-GB';
     } catch {
       // Settings unreachable: fall back to the guest resolution instead of failing the page.
     }
   }
 
   const cookieLocale = (await cookies()).get(LOCALE_COOKIE)?.value;
-  if (cookieLocale === 'en' || cookieLocale === 'de') return cookieLocale;
+  if (cookieLocale === 'en-GB' || cookieLocale === 'de') return cookieLocale;
 
   const acceptLanguage = (await headers()).get('accept-language') ?? '';
-  return acceptLanguage.toLowerCase().startsWith('de') ? 'de' : 'en';
+  return acceptLanguage.toLowerCase().startsWith('de') ? 'de' : 'en-GB';
 }
 
 export default getRequestConfig(async () => {
@@ -30,6 +30,7 @@ export default getRequestConfig(async () => {
   return {
     locale,
     timeZone: 'Europe/Berlin',
-    messages: (await import(`../../messages/${locale}.json`)).default,
+    messages: (await import(`../../messages/${locale === 'de' ? 'de' : 'en'}.json`))
+      .default,
   };
 });

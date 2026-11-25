@@ -11,11 +11,11 @@ export async function POST(request: NextRequest) {
   const body: { locale?: unknown } | null = await request.json().catch(() => null);
   const locale = body?.locale;
 
-  if (locale !== 'en' && locale !== 'de') {
+  if (locale !== 'en-GB' && locale !== 'de') {
     return errorResponse(
       400,
       'VALIDATION_FAILED',
-      'Locale must be en or de',
+      'Locale must be en-GB or de',
       request.nextUrl.pathname,
     );
   }
