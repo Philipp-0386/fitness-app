@@ -5,7 +5,7 @@ A backend-focused fitness tracking application, with the idea to go beyond a sim
 Status:
 The app runs permanently in production, the schema is managed by Flyway (not frozen yet) and token based authentication works including token refresh (revocation is still open). The first domain slices, `exercise` and `routine`, are fully accessible through the backend. The frontend has been reworked with a mobile-first design, but exercises and routines can only be viewed there so far. Editing them and the actual workout tracking come next. For more insights on the domain,[ here](/docs/domain_notes.md).
 
-The application is deployed under [avren.fit](https://avren.fit/) (the former address fit.ringelkamp.dev redirects there), but signups are currently fully closed. (Prod-Version: merge commit of PR#243 af2bea3bcd20e6d4b1f978ddbc69a80f010034d6)
+The application is deployed under [avren.fit](https://avren.fit/) (the former address fit.ringelkamp.dev redirects there), but signups are currently fully closed. (Prod-Version: merge commit of PR#248 26b9fe9)
 
 Current focus:
 
