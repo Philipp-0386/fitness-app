@@ -25,10 +25,12 @@ export type UserSettings = {
   weightUnit: 'KG' | 'LB';
   distanceUnit: 'KM' | 'MI';
   timeZone: string;
+  language: 'EN' | 'DE';
 };
 
 export type UpdateUserSettingsPayload = {
   weightUnit: 'KG' | 'LB';
   distanceUnit: 'KM' | 'MI';
   timeZone: string;
+  language: 'EN' | 'DE';
 };

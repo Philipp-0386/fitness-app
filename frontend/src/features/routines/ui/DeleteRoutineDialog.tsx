@@ -3,9 +3,10 @@
 import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { CircleAlert, Trash2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 
-import { fallbackErrorMessage } from '@/shared/api/errors/fallback-error-message';
+import { useErrorMessage } from '@/shared/api/errors/use-error-message';
 import { Button } from '@/shared/ui/button';
 import { Sheet } from '@/shared/ui/sheet';
 import { deleteRoutine } from '../client/delete-routine.client';
@@ -19,6 +20,9 @@ export default function DeleteRoutineDialog({ routineId }: DeleteRoutineDialogPr
   const [error, setError] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const router = useRouter();
+  const t = useTranslations('routines.delete');
+  const tCommon = useTranslations('common');
+  const errorMessage = useErrorMessage();
 
   function close() {
     dialogRef.current?.close();
@@ -35,12 +39,12 @@ export default function DeleteRoutineDialog({ routineId }: DeleteRoutineDialogPr
     try {
       await deleteRoutine(String(routineId));
       close();
-      toast.success('Routine deleted.');
+      toast.success(t('deleted'));
       router.replace('/plans');
       router.refresh();
     } catch (err) {
       setIsDeleting(false);
-      setError(fallbackErrorMessage(err));
+      setError(errorMessage(err));
     }
   }
 
@@ -53,7 +57,7 @@ export default function DeleteRoutineDialog({ routineId }: DeleteRoutineDialogPr
         onClick={() => dialogRef.current?.showModal()}
       >
         <Trash2 aria-hidden="true" />
-        Delete routine
+        {t('button')}
       </Button>
 
       <Sheet
@@ -63,11 +67,9 @@ export default function DeleteRoutineDialog({ routineId }: DeleteRoutineDialogPr
         aria-labelledby="delete-routine-title"
       >
         <h2 id="delete-routine-title" className="text-title">
-          Delete this routine?
+          {t('title')}
         </h2>
-        <p className="mt-1 mb-4 text-text-secondary">
-          Workouts you logged with this routine stay complete.
-        </p>
+        <p className="mt-1 mb-4 text-text-secondary">{t('text')}</p>
         {error && (
           <div
             role="alert"
@@ -85,10 +87,10 @@ export default function DeleteRoutineDialog({ routineId }: DeleteRoutineDialogPr
             onClick={handleDelete}
             disabled={isDeleting}
           >
-            {isDeleting ? 'Deleting...' : 'Delete routine'}
+            {isDeleting ? tCommon('deleting') : t('button')}
           </Button>
           <Button type="button" className="w-full" onClick={close} disabled={isDeleting}>
-            Cancel
+            {tCommon('cancel')}
           </Button>
         </div>
       </Sheet>

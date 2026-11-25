@@ -1,6 +1,8 @@
 package de.phil.fitness.backend.exercise.service;
 
+import java.text.Collator;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -9,6 +11,7 @@ import java.util.stream.Collectors;
 
 import de.phil.fitness.backend.exercise.event.ExerciseDeletedEvent;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -60,6 +63,7 @@ public class ExerciseService {
         return exerciseRepository.findAllAvailableToUser(userId)
                 .stream()
                 .map(exerciseMapper::toResponse)
+                .sorted(Comparator.comparing(ExerciseResponse::name, Collator.getInstance(LocaleContextHolder.getLocale())))
                 .toList();
     }
 

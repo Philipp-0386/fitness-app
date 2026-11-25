@@ -3,13 +3,14 @@
 import { arrayMove } from '@dnd-kit/sortable';
 import { ChevronLeft, ChevronRight, Ellipsis, Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
 import type { Exercise, MuscleGroup } from '@/features/exercises';
 import ExercisePicker from '@/features/exercises/ui/ExercisePicker';
-import { formatTarget } from '@/features/routines/lib/format-target';
-import { fallbackErrorMessage } from '@/shared/api/errors/fallback-error-message';
+import { useFormatTarget } from '@/features/routines/lib/format-target';
+import { useErrorMessage } from '@/shared/api/errors/use-error-message';
 import { Button } from '@/shared/ui/button';
 import { addExercise } from '../client/add-exercise.client';
 import { discardWorkout } from '../client/discard-workout.client';
@@ -30,7 +31,7 @@ import {
   type SetField,
   type SetRow,
 } from '../lib/set-rows';
-import { formatDaysAgo } from '../lib/format-days-ago';
+import { useFormatDaysAgo } from '../lib/format-days-ago';
 import { useSetRows } from '../lib/use-set-rows';
 import SetTable from './SetTable';
 
@@ -46,6 +47,10 @@ export default function ActiveWorkoutView({
   catalog,
   muscleGroups,
 }: ActiveWorkoutViewProps) {
+  const formatTarget = useFormatTarget();
+  const formatDaysAgo = useFormatDaysAgo();
+  const t = useTranslations('workouts');
+  const errorMessage = useErrorMessage();
   const [exercises, setExercises] = useState(workout.exercises);
   const [current, setCurrent] = useState(0);
   const [overviewOpen, setOverviewOpen] = useState(false);
@@ -102,7 +107,7 @@ export default function ActiveWorkoutView({
       .catch((error) => {
         setExercises(before);
         setCurrent(beforeCurrent);
-        setReorderError(fallbackErrorMessage(error));
+        setReorderError(errorMessage(error));
       })
       .finally(() => setReordering(false));
   }
@@ -122,7 +127,7 @@ export default function ActiveWorkoutView({
         setCurrent(exercises.length);
       }
     } catch (error) {
-      toast.error(fallbackErrorMessage(error));
+      toast.error(errorMessage(error));
     }
   }
 
@@ -133,7 +138,7 @@ export default function ActiveWorkoutView({
       setExercises((prev) => prev.filter((e) => e.id !== entry.id));
       setCurrent(Math.max(0, Math.min(current, exercises.length - 2)));
     } catch (error) {
-      toast.error(fallbackErrorMessage(error));
+      toast.error(errorMessage(error));
     }
   }
 
@@ -176,10 +181,8 @@ export default function ActiveWorkoutView({
 
       {exercises.length === 0 ? (
         <main className="flex-1 px-4 pt-6">
-          <h1 className="text-title">No exercises yet</h1>
-          <p className="mt-1 text-text-secondary">
-            Add the exercises you want to train. Sets are saved as you log them.
-          </p>
+          <h1 className="text-title">{t('empty')}</h1>
+          <p className="mt-1 text-text-secondary">{t('emptyText')}</p>
           <Button
             type="button"
             variant="primary"
@@ -188,7 +191,7 @@ export default function ActiveWorkoutView({
             onClick={() => setPicker('add')}
           >
             <Plus aria-hidden="true" />
-            Add Exercise
+            {t('addExercise')}
           </Button>
         </main>
       ) : (
@@ -200,7 +203,7 @@ export default function ActiveWorkoutView({
                 type="button"
                 variant="text"
                 size="icon"
-                aria-label="Exercise options"
+                aria-label={t('exerciseOptions')}
                 aria-haspopup="dialog"
                 onClick={() => setExerciseSheetOpen(true)}
               >
@@ -211,7 +214,7 @@ export default function ActiveWorkoutView({
               <span>{formatTarget(entry)}</span>
               {entry.lastTime && (
                 <span suppressHydrationWarning className="text-meta text-text-tertiary">
-                  Last time {formatDaysAgo(entry.lastTime.startedAt)}
+                  {t('lastTime', { when: formatDaysAgo(entry.lastTime.startedAt) })}
                 </span>
               )}
             </p>
@@ -236,7 +239,7 @@ export default function ActiveWorkoutView({
                 disabled={current === 0}
               >
                 <ChevronLeft aria-hidden="true" />
-                Previous
+                {t('previous')}
               </Button>
               {hasOpenRow && (
                 <Button
@@ -244,7 +247,7 @@ export default function ActiveWorkoutView({
                   onClick={() => setCurrent(current + 1)}
                   disabled={current === last}
                 >
-                  Next
+                  {t('next')}
                   <ChevronRight aria-hidden="true" />
                 </Button>
               )}

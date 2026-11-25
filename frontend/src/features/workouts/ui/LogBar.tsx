@@ -1,5 +1,7 @@
+import { useTranslations } from 'next-intl';
+
 import { Button } from '@/shared/ui/button';
-import { formatSetValues } from '../lib/format-set';
+import { useFormatSetValues } from '../lib/format-set';
 import { requiredFields, type SetRow } from '../lib/set-rows';
 import type { WorkoutExercise } from '../types/api.types';
 
@@ -21,6 +23,8 @@ export default function LogBar({
   onNext,
   onFinish,
 }: LogBarProps) {
+  const t = useTranslations('workouts.log');
+  const formatSetValues = useFormatSetValues();
   const type = entry.exercise.trackingType;
   const index = rows.findIndex((r) => r.status === 'open');
 
@@ -33,7 +37,7 @@ export default function LogBar({
         aria-haspopup={isLast ? 'dialog' : undefined}
         onClick={isLast ? onFinish : onNext}
       >
-        {isLast ? 'Finish Workout' : 'Next Exercise'}
+        {isLast ? t('finish') : t('nextExercise')}
       </Button>
     );
   }
@@ -53,12 +57,7 @@ export default function LogBar({
       onClick={() => onLog(row)}
       className="tabular-nums"
     >
-      {row.setType === 'WORKING'
-        ? `Log Set ${workingNumber}`
-        : row.setType === 'WARMUP'
-          ? 'Log Warm-Up'
-          : 'Log Drop Set'}
-      : {formatSetValues(type, row)}
+      {t(row.setType, { number: workingNumber, values: formatSetValues(type, row) })}
     </Button>
   );
 }

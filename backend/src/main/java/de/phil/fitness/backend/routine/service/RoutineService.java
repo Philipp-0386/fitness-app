@@ -1,6 +1,8 @@
 package de.phil.fitness.backend.routine.service;
 
+import java.text.Collator;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +25,7 @@ import de.phil.fitness.backend.routine.model.Routine;
 import de.phil.fitness.backend.routine.model.RoutineExercise;
 import de.phil.fitness.backend.routine.dto.UpdateRoutineRequest;
 import org.springframework.context.event.EventListener;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -134,7 +137,7 @@ public class RoutineService {
         for (RoutineExercise re : routine.getExercises()) {
             TrackingType type = exercises.get(re.getExerciseId()).trackingType();
             String path = "exercises[" + re.getOrderIndex() + "].";
-            String message = "not used by tracking type " + type;
+            String message = "Null";
             if (re.getTargetRepsMin() != null && !type.holdsReps()) fieldErrors.put(path + "targetRepsMin", message);
             if (re.getTargetRepsMax() != null && !type.holdsReps()) fieldErrors.put(path + "targetRepsMax", message);
             if (re.getTargetDurationSeconds() != null && !type.holdsDuration()) fieldErrors.put(path + "targetDurationSeconds", message);
@@ -156,6 +159,7 @@ public class RoutineService {
         return routineRepository.getAllPresetRoutines()
                 .stream()
                 .map(routineMapper::toRoutineResponse)
+                .sorted(Comparator.comparing(RoutineResponse::name, Collator.getInstance(LocaleContextHolder.getLocale())))
                 .toList();
     }
 
@@ -251,7 +255,7 @@ public class RoutineService {
         for (RoutineExercise re : routine.getExercises()) {
             TrackingType type = exercises.get(re.getExerciseId()).trackingType();
             String path = "exercises[" + re.getOrderIndex() + "].";
-            String message = "not used by tracking type " + type;
+            String message = "Null";
             if (re.getTargetRepsMin() != null && !type.holdsReps()) fieldErrors.put(path + "targetRepsMin", message);
             if (re.getTargetRepsMax() != null && !type.holdsReps()) fieldErrors.put(path + "targetRepsMax", message);
             if (re.getTargetDurationSeconds() != null && !type.holdsDuration()) fieldErrors.put(path + "targetDurationSeconds", message);

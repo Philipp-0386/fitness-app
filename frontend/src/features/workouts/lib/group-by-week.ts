@@ -9,17 +9,15 @@ const calendarDay = new Intl.DateTimeFormat('en-CA', {
   month: '2-digit',
   day: '2-digit',
 });
-const weekStart = new Intl.DateTimeFormat('en-GB', {
-  timeZone: 'UTC',
-  day: 'numeric',
-  month: 'short',
-});
 
 /**
- * Groups workouts that are sorted newest first into weeks from Monday to Sunday, labelled "This Week",
- * "Last Week" or "Week of 3 Nov".
+ * Groups workouts that are sorted newest first into weeks from Monday to Sunday. The label gets the Monday as
+ * UTC midnight and how many weeks it lies back, 0 for this week.
  */
-export function groupByWeek<T extends { startedAt: string }>(workouts: T[]) {
+export function groupByWeek<T extends { startedAt: string }>(
+  workouts: T[],
+  label: (monday: number, weeksAgo: number) => string,
+) {
   const today = Date.parse(calendarDay.format(new Date()));
   const thisMonday = today - ((new Date(today).getUTCDay() + 6) % 7) * DAY;
 
@@ -31,13 +29,11 @@ export function groupByWeek<T extends { startedAt: string }>(workouts: T[]) {
 
     let group = groups.at(-1);
     if (group?.key !== key) {
-      const label =
-        monday === thisMonday
-          ? 'This Week'
-          : monday === thisMonday - 7 * DAY
-            ? 'Last Week'
-            : `Week of ${weekStart.format(monday)}`;
-      group = { key, label, workouts: [] };
+      group = {
+        key,
+        label: label(monday, Math.round((thisMonday - monday) / (7 * DAY))),
+        workouts: [],
+      };
       groups.push(group);
     }
     group.workouts.push(workout);

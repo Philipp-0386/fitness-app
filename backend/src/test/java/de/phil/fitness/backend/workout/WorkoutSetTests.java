@@ -209,18 +209,18 @@ class WorkoutSetTests extends WorkoutTestBase {
     @ParameterizedTest(name = "{0}: {1} -> {2}")
     @Transactional
     @CsvSource(delimiter = '|', value = {
-            "barbell-bench-press | \"reps\": 8                                          | weightKg        | required for tracking type WEIGHT_REPS",
-            "barbell-bench-press | \"weightKg\": 80                                     | reps            | required for tracking type WEIGHT_REPS",
-            "barbell-bench-press | \"reps\": 8, \"weightKg\": 80, \"durationSeconds\": 9 | durationSeconds | not used by tracking type WEIGHT_REPS",
-            "barbell-bench-press | \"reps\": 8, \"weightKg\": 80, \"distanceMeters\": 9  | distanceMeters  | not used by tracking type WEIGHT_REPS",
-            "pull-up             | \"weightKg\": 10                                     | reps            | required for tracking type BODYWEIGHT_REPS",
-            "assisted-pull-up    | \"weightKg\": 30                                     | reps            | required for tracking type ASSISTED_REPS",
-            "plank               | \"weightKg\": 20                                     | durationSeconds | required for tracking type DURATION",
-            "plank               | \"durationSeconds\": 60, \"reps\": 10                | reps            | not used by tracking type DURATION",
-            "farmers-walk        | \"weightKg\": 32                                     | distanceMeters  | required for tracking type WEIGHT_DISTANCE",
-            "farmers-walk        | \"distanceMeters\": 40                               | weightKg        | required for tracking type WEIGHT_DISTANCE",
-            "treadmill           | \"distanceMeters\": 5000                             | durationSeconds | required for tracking type DISTANCE_DURATION",
-            "treadmill           | \"distanceMeters\": 5000, \"durationSeconds\": 9, \"weightKg\": 5 | weightKg | not used by tracking type DISTANCE_DURATION",
+            "barbell-bench-press | \"reps\": 8                                          | weightKg        | NotNull",
+            "barbell-bench-press | \"weightKg\": 80                                     | reps            | NotNull",
+            "barbell-bench-press | \"reps\": 8, \"weightKg\": 80, \"durationSeconds\": 9 | durationSeconds | Null",
+            "barbell-bench-press | \"reps\": 8, \"weightKg\": 80, \"distanceMeters\": 9  | distanceMeters  | Null",
+            "pull-up             | \"weightKg\": 10                                     | reps            | NotNull",
+            "assisted-pull-up    | \"weightKg\": 30                                     | reps            | NotNull",
+            "plank               | \"weightKg\": 20                                     | durationSeconds | NotNull",
+            "plank               | \"durationSeconds\": 60, \"reps\": 10                | reps            | Null",
+            "farmers-walk        | \"weightKg\": 32                                     | distanceMeters  | NotNull",
+            "farmers-walk        | \"distanceMeters\": 40                               | weightKg        | NotNull",
+            "treadmill           | \"distanceMeters\": 5000                             | durationSeconds | NotNull",
+            "treadmill           | \"distanceMeters\": 5000, \"durationSeconds\": 9, \"weightKg\": 5 | weightKg | Null",
     })
     @DisplayName("values that do not fit the tracking type are rejected with the field")
     void unfittingValuesAreRejected(String slug, String values, String field, String message) throws Exception {

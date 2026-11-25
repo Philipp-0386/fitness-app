@@ -1,6 +1,7 @@
 'use client';
 
 import { Trash2 } from 'lucide-react';
+import { useFormatter, useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 
 import { cn } from '@/shared/lib/utils';
@@ -10,11 +11,7 @@ import { Label } from '@/shared/ui/label';
 import { Sheet } from '@/shared/ui/sheet';
 import type { SetType } from '../types/api.types';
 
-const typeOptions: { value: SetType; label: string }[] = [
-  { value: 'WARMUP', label: 'Warm-Up' },
-  { value: 'WORKING', label: 'Working' },
-  { value: 'DROP', label: 'Drop' },
-];
+const typeOptions: SetType[] = ['WARMUP', 'WORKING', 'DROP'];
 
 type SetSheetProps = {
   /** "Set 2", "Warm-Up" or "Drop Set". */
@@ -36,7 +33,9 @@ export default function SetSheet({
   onClose,
 }: SetSheetProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
-  const [draft, setDraft] = useState(rpe === null ? '' : String(rpe));
+  const t = useTranslations('workouts');
+  const format = useFormatter();
+  const [draft, setDraft] = useState(rpe === null ? '' : format.number(rpe));
   const [rpeError, setRpeError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -48,7 +47,7 @@ export default function SetSheet({
     const cleaned = draft.trim().replace(',', '.');
     const value = cleaned === '' ? null : Math.round(Number(cleaned) * 10) / 10;
     if (value !== null && !(value >= 1 && value <= 10)) {
-      setRpeError('RPE goes from 1 to 10.');
+      setRpeError(t('setSheet.rpeRange'));
       return;
     }
     setRpeError(null);
@@ -74,38 +73,36 @@ export default function SetSheet({
           size="sm"
           onClick={() => dialogRef.current?.close()}
         >
-          Close
+          {t('exerciseSheet.close')}
         </Button>
       </div>
 
       <div
         role="radiogroup"
-        aria-label="Set type"
+        aria-label={t('setSheet.type')}
         className="mt-4 grid grid-cols-3 gap-1 rounded-card bg-surface p-1"
       >
         {typeOptions.map((option) => (
           <button
-            key={option.value}
+            key={option}
             type="button"
             role="radio"
-            aria-checked={setType === option.value}
-            onClick={() =>
-              setType !== option.value && onChange({ setType: option.value })
-            }
+            aria-checked={setType === option}
+            onClick={() => setType !== option && onChange({ setType: option })}
             className={cn(
               'min-h-10 rounded-field text-meta font-semibold',
-              setType === option.value
+              setType === option
                 ? 'bg-field-on-overlay text-text-primary'
                 : 'text-text-tertiary hover:text-text-secondary',
             )}
           >
-            {option.label}
+            {t(`setType.${option}`)}
           </button>
         ))}
       </div>
 
       <div className="mt-5 flex items-center justify-between gap-3">
-        <Label htmlFor="set-rpe">RPE (optional)</Label>
+        <Label htmlFor="set-rpe">{t('setSheet.rpe')}</Label>
         <Input
           id="set-rpe"
           inputMode="decimal"
@@ -135,7 +132,7 @@ export default function SetSheet({
           onClick={onRemove}
         >
           <Trash2 aria-hidden="true" />
-          Remove Set
+          {t('setSheet.remove')}
         </Button>
       </div>
     </Sheet>

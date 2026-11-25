@@ -1,6 +1,7 @@
 'use client';
 
 import { ChevronLeft, ChevronRight, TriangleAlert } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 
 import { cn } from '@/shared/lib/utils';
@@ -26,6 +27,9 @@ export default function ProgramPresetSheet({
 }: ProgramPresetSheetProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [selected, setSelected] = useState<ProgramDetail | null>(null);
+  const t = useTranslations('presets');
+  const tPrograms = useTranslations('programs');
+  const tCommon = useTranslations('common');
 
   useEffect(() => {
     dialogRef.current?.showModal();
@@ -41,11 +45,11 @@ export default function ProgramPresetSheet({
             className="-ml-2 flex min-h-tap items-center gap-0.5 pr-2 font-semibold text-text-secondary hover:text-text-primary"
           >
             <ChevronLeft className="size-6" aria-hidden="true" />
-            Presets
+            {t('title')}
           </button>
         ) : (
           <h2 id="program-preset-sheet-title" className="text-title">
-            Presets
+            {t('title')}
           </h2>
         )}
         <Button
@@ -54,7 +58,7 @@ export default function ProgramPresetSheet({
           size="sm"
           onClick={() => dialogRef.current?.close()}
         >
-          Cancel
+          {tCommon('cancel')}
         </Button>
       </div>
 
@@ -85,13 +89,15 @@ export default function ProgramPresetSheet({
                     </span>
                   </span>
                 ) : (
-                  <span className="font-semibold text-text-secondary">Rest day</span>
+                  <span className="font-semibold text-text-secondary">
+                    {tPrograms('restDay')}
+                  </span>
                 )}
               </li>
             ))}
           </ol>
           <p className="mt-4 text-meta text-text-secondary">
-            Its routines are copied into your own when you save.
+            {tPrograms('presetCopied')}
           </p>
           {replacesInput && (
             <div className="mt-4 flex items-start gap-2.5 rounded-field bg-warning-subtle p-3 text-meta">
@@ -99,7 +105,7 @@ export default function ProgramPresetSheet({
                 className="size-5 shrink-0 text-warning"
                 aria-hidden="true"
               />
-              <span>Replaces the name and days you entered.</span>
+              <span>{tPrograms('presetReplaces')}</span>
             </div>
           )}
           <Button
@@ -109,14 +115,12 @@ export default function ProgramPresetSheet({
             className="mt-4"
             onClick={() => onUse(selected)}
           >
-            Use Preset
+            {t('use')}
           </Button>
         </>
       ) : (
         <>
-          <p className="mt-1 mb-3 text-text-secondary">
-            Start from a preset and adjust it to your training.
-          </p>
+          <p className="mt-1 mb-3 text-text-secondary">{t('intro')}</p>
           <ul className="divide-y divide-field-on-overlay">
             {presets.map((preset) => (
               <li key={preset.id}>
@@ -131,7 +135,7 @@ export default function ProgramPresetSheet({
                   <span className="min-w-0 flex-1">
                     <span className="block truncate font-semibold">{preset.name}</span>
                     <span className="block text-meta text-text-secondary tabular-nums">
-                      {preset.days.length} {preset.days.length === 1 ? 'day' : 'days'}
+                      {tPrograms('dayCount', { count: preset.days.length })}
                     </span>
                   </span>
                   <ChevronRight

@@ -1,28 +1,23 @@
 import { ApiError } from '@/shared/api/errors/api-error';
-import { fallbackErrorMessage } from '@/shared/api/errors/fallback-error-message';
 
+/**
+ * Maps a sign-up error to the message key of its general error, null for the generic fallback.
+ */
 export function evaluateApiError(error: ApiError) {
   switch (error.code) {
     case 'SIGNUP_DISABLED':
-      return {
-        generalError: 'Sign-ups are currently closed. No account was created.',
-        fieldErrors: {},
-      };
+      return { generalError: 'signupDisabled', fieldErrors: {} } as const;
     case 'USERNAME_ALREADY_TAKEN':
       return {
-        generalError: 'This username is already taken. Please choose another one.',
+        generalError: 'usernameTaken',
         fieldErrors: error.fieldErrors ?? {},
-      };
+      } as const;
     case 'EMAIL_ALREADY_EXISTS':
       return {
-        generalError:
-          'An account with this email already exists. Please use another one.',
+        generalError: 'emailTaken',
         fieldErrors: error.fieldErrors ?? {},
-      };
+      } as const;
     default:
-      return {
-        generalError: fallbackErrorMessage(error),
-        fieldErrors: error.fieldErrors ?? {},
-      };
+      return { generalError: null, fieldErrors: error.fieldErrors ?? {} } as const;
   }
 }

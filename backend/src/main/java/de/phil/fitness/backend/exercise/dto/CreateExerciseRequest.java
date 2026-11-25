@@ -32,7 +32,7 @@ public record CreateExerciseRequest(
         @Size(max = 4000) String instructions,
         @Size(max = 10) List<@NotNull @Valid ExerciseMuscleRequest> muscles
 ) {
-    @AssertTrue(message = "a muscle may appear only once")
+    @AssertTrue
     public boolean isMuscleIdsUnique() {
         if (muscles == null) return true;
         List<Long> ids = muscles.stream()

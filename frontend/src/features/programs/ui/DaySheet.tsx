@@ -1,6 +1,7 @@
 'use client';
 
 import { Check, Trash2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useEffect, useRef } from 'react';
 
 import type { Routine } from '@/features/routines';
@@ -38,18 +39,20 @@ export default function DaySheet({
   onClose,
 }: DaySheetProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const t = useTranslations('programs');
+  const tCommon = useTranslations('common');
 
   useEffect(() => {
     dialogRef.current?.showModal();
   }, []);
 
   const options = [
-    { key: 'rest', routine: null, label: 'Rest day', meta: 'No training' },
+    { key: 'rest', routine: null, label: t('restDay'), meta: t('daySheet.noTraining') },
     ...routines.map((routine) => ({
       key: `routine-${routine.id}`,
       routine,
       label: routine.name,
-      meta: `${routine.exerciseCount} ${routine.exerciseCount === 1 ? 'exercise' : 'exercises'}`,
+      meta: tCommon('exerciseCount', { count: routine.exerciseCount }),
     })),
   ];
 
@@ -57,7 +60,7 @@ export default function DaySheet({
     <Sheet ref={dialogRef} onClose={onClose} aria-labelledby="day-sheet-title">
       <div className="flex items-center justify-between gap-3">
         <h2 id="day-sheet-title" className="text-title">
-          {day ? `Day ${dayNumber}` : 'Add Day'}
+          {day ? t('daySheet.day', { number: dayNumber }) : t('daySheet.add')}
         </h2>
         <Button
           type="button"
@@ -65,13 +68,11 @@ export default function DaySheet({
           size="sm"
           onClick={() => dialogRef.current?.close()}
         >
-          Cancel
+          {tCommon('cancel')}
         </Button>
       </div>
       <p className="mt-1 mb-4 text-text-secondary">
-        {routines.length === 0
-          ? 'You have no routines yet. Create one under Plans first.'
-          : 'Pick a routine or a rest day.'}
+        {routines.length === 0 ? t('daySheet.noRoutines') : t('daySheet.pick')}
       </p>
 
       <ul className="divide-y divide-field-on-overlay">
@@ -105,10 +106,10 @@ export default function DaySheet({
         <>
           <div className="mt-5 grid grid-cols-2 gap-2">
             <Button type="button" onClick={onMoveUp} disabled={!canMoveUp}>
-              Move Up
+              {tCommon('moveUp')}
             </Button>
             <Button type="button" onClick={onMoveDown} disabled={!canMoveDown}>
-              Move Down
+              {tCommon('moveDown')}
             </Button>
           </div>
 
@@ -120,7 +121,7 @@ export default function DaySheet({
               onClick={onRemove}
             >
               <Trash2 aria-hidden="true" />
-              Remove Day
+              {t('daySheet.remove')}
             </Button>
           </div>
         </>

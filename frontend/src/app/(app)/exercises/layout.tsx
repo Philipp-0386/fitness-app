@@ -1,6 +1,8 @@
 import Link from 'next/link';
+import { getTranslations } from 'next-intl/server';
 
 import { ExerciseCatalog, fetchExercises, fetchMuscleGroups } from '@/features/exercises';
+import { getErrorMessage } from '@/shared/api/errors/get-error-message';
 import { requireSession } from '@/shared/auth/session';
 import { ListPane, TopBar } from '@/shared/layout';
 import { Button } from '@/shared/ui/button';
@@ -11,6 +13,9 @@ export default async function ExercisesLayout({
   children: React.ReactNode;
 }>) {
   await requireSession();
+  const t = await getTranslations('exercises');
+  const tCommon = await getTranslations('common');
+  const tNav = await getTranslations('nav');
 
   const catalog = await Promise.all([fetchExercises(), fetchMuscleGroups()])
     .then(([exercises, muscleGroups]) => ({ exercises, muscleGroups }))
@@ -22,11 +27,11 @@ export default async function ExercisesLayout({
         <div className="mx-auto w-full max-w-app pb-8">
           <TopBar
             backHref="/plans"
-            backLabel="Plans"
-            title="Exercises"
+            backLabel={tNav('plans')}
+            title={t('title')}
             titleAction={
               <Button asChild size="sm">
-                <Link href="/exercises/new">New Exercise</Link>
+                <Link href="/exercises/new">{t('newExercise')}</Link>
               </Button>
             }
           />
@@ -35,11 +40,9 @@ export default async function ExercisesLayout({
               role="alert"
               className="mx-4 mt-4 rounded-card bg-surface px-4 pt-5 pb-4"
             >
-              <h2 className="text-title">The exercise catalog could not be loaded</h2>
-              <p className="mt-1 text-text-secondary">{catalog.message}</p>
-              <p className="mt-1 text-meta text-text-tertiary">
-                Reload the page to try again.
-              </p>
+              <h2 className="text-title">{t('catalogError')}</h2>
+              <p className="mt-1 text-text-secondary">{await getErrorMessage(catalog)}</p>
+              <p className="mt-1 text-meta text-text-tertiary">{tCommon('reload')}</p>
             </section>
           ) : (
             <ExerciseCatalog

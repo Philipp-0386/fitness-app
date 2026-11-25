@@ -3,6 +3,7 @@
 import { UserRound } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { TABS } from '@/shared/layout/tabs';
 
 import { cn } from '@/shared/lib/utils';
@@ -13,18 +14,19 @@ type SideBarProps = {
 
 export default function SideBar({ username }: SideBarProps) {
   const pathname = usePathname();
+  const t = useTranslations('nav');
   const isAccountActive = pathname.startsWith('/me');
 
   return (
     <nav
-      aria-label="Main"
+      aria-label={t('main')}
       className="sticky top-0 hidden h-dvh w-62 shrink-0 flex-col self-start border-r border-border-subtle px-3 pt-5 pb-4 lg:flex"
     >
       <p className="px-3 pt-1.5 pb-6 text-title">
-        <Link href="/">Fitness App</Link>
+        <Link href="/">Avren</Link>
       </p>
       <ul className="flex flex-col gap-0.5">
-        {TABS.map(({ label, href, icon: Icon, match }) => {
+        {TABS.map(({ labelKey, href, icon: Icon, match }) => {
           const isActive = match.some((prefix) => pathname.startsWith(prefix));
           return (
             <li key={href}>
@@ -39,7 +41,7 @@ export default function SideBar({ username }: SideBarProps) {
                 )}
               >
                 <Icon className="size-5 shrink-0" aria-hidden="true" />
-                {label}
+                {t(labelKey)}
               </Link>
             </li>
           );
@@ -61,7 +63,7 @@ export default function SideBar({ username }: SideBarProps) {
         </span>
         <span className="min-w-0">
           {username && <span className="block truncate font-semibold">{username}</span>}
-          <span className="block text-meta text-text-tertiary">Account</span>
+          <span className="block text-meta text-text-tertiary">{t('account')}</span>
         </span>
       </Link>
     </nav>

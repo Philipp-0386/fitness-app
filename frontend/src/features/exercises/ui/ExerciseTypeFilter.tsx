@@ -1,9 +1,10 @@
 'use client';
 
 import { ChevronDown } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import { cn } from '@/shared/lib/utils';
-import { typeLabels } from '../lib/type-labels';
+import { exerciseTypes } from '../lib/exercise-types';
 import { ExerciseType } from '../types/api.types';
 
 type ExerciseTypeFilterProps = {
@@ -13,6 +14,7 @@ type ExerciseTypeFilterProps = {
 
 //the chip is only the visible part, an invisible native select on top of it opens the system picker
 export default function ExerciseTypeFilter({ value, onChange }: ExerciseTypeFilterProps) {
+  const t = useTranslations('exercises');
   const selected = value !== 'all';
 
   return (
@@ -24,18 +26,18 @@ export default function ExerciseTypeFilter({ value, onChange }: ExerciseTypeFilt
           : 'border-border-strong text-text-secondary',
       )}
     >
-      {selected ? typeLabels[value] : 'Type'}
+      {selected ? t(`type.${value}`) : t('typeFilter.label')}
       <ChevronDown className="size-4" aria-hidden="true" />
       <select
-        aria-label="Type"
+        aria-label={t('typeFilter.label')}
         value={value}
         onChange={(e) => onChange(e.target.value as 'all' | ExerciseType)}
         className="absolute inset-x-0 -inset-y-[5px] cursor-pointer bg-surface-overlay text-base text-text-primary opacity-0"
       >
-        <option value="all">All types</option>
-        {Object.entries(typeLabels).map(([type, label]) => (
+        <option value="all">{t('typeFilter.all')}</option>
+        {exerciseTypes.map((type) => (
           <option key={type} value={type}>
-            {label}
+            {t(`type.${type}`)}
           </option>
         ))}
       </select>

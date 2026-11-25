@@ -1,28 +1,30 @@
 import Link from 'next/link';
+import { useFormatter, useTranslations } from 'next-intl';
 
-import { formatTarget } from '@/features/routines/lib/format-target';
+import { useFormatTarget } from '@/features/routines/lib/format-target';
 import { TopBar } from '@/shared/layout';
 import { Button } from '@/shared/ui/button';
 import { formatDuration } from '../lib/format-duration';
-import { formatSetValues } from '../lib/format-set';
+import { useFormatSetValues } from '../lib/format-set';
 import { TIME_ZONE } from '../lib/group-by-week';
 import type { Workout } from '../types/api.types';
 
-const dateFormat = new Intl.DateTimeFormat('en-GB', {
+const dateOptions = {
   timeZone: TIME_ZONE,
   weekday: 'short',
   day: 'numeric',
   month: 'short',
   year: 'numeric',
-});
-const timeFormat = new Intl.DateTimeFormat('en-GB', {
-  timeZone: TIME_ZONE,
-  hour: '2-digit',
-  minute: '2-digit',
-});
+} as const;
+const timeOptions = { timeZone: TIME_ZONE, hour: '2-digit', minute: '2-digit' } as const;
 
 //a past workout read only: when, how long, and every exercise with its logged sets
 export default function WorkoutDetailView({ workout }: { workout: Workout }) {
+  const formatTarget = useFormatTarget();
+  const formatSetValues = useFormatSetValues();
+  const t = useTranslations('workouts');
+  const tCommon = useTranslations('common');
+  const format = useFormatter();
   const started = new Date(workout.startedAt);
   const setCount = workout.exercises.reduce((sum, entry) => sum + entry.sets.length, 0);
 
@@ -30,33 +32,35 @@ export default function WorkoutDetailView({ workout }: { workout: Workout }) {
     <div className="mx-auto flex w-full max-w-app flex-1 flex-col pb-8 lg:max-w-[560px]">
       <TopBar
         backHref="/history"
-        backLabel="History"
+        backLabel={t('history.title')}
         title={workout.name}
         inSplitView
         action={
           workout.status === 'COMPLETED' && (
             <Button asChild size="sm">
-              <Link href={`/history/${workout.id}/edit`}>Edit</Link>
+              <Link href={`/history/${workout.id}/edit`}>{tCommon('edit')}</Link>
             </Button>
           )
         }
       />
 
       <p className="mt-1 px-4 text-text-secondary tabular-nums">
-        {dateFormat.format(started)}, {timeFormat.format(started)}
-        {workout.endedAt ? `-${timeFormat.format(new Date(workout.endedAt))}` : ''}
+        {format.dateTime(started, dateOptions)}, {format.dateTime(started, timeOptions)}
+        {workout.endedAt
+          ? `-${format.dateTime(new Date(workout.endedAt), timeOptions)}`
+          : ''}
       </p>
 
       <dl className="mx-4 mt-4 grid grid-cols-3 gap-2">
         {[
           {
-            label: 'Duration',
+            label: t('detail.duration'),
             value: workout.endedAt
               ? formatDuration(workout.startedAt, workout.endedAt)
-              : 'In progress',
+              : t('detail.inProgress'),
           },
-          { label: 'Sets', value: String(setCount) },
-          { label: 'Exercises', value: String(workout.exercises.length) },
+          { label: t('detail.sets'), value: String(setCount) },
+          { label: t('detail.exercises'), value: String(workout.exercises.length) },
         ].map((stat) => (
           <div key={stat.label}>
             <dt className="text-meta text-text-secondary">{stat.label}</dt>
@@ -66,7 +70,7 @@ export default function WorkoutDetailView({ workout }: { workout: Workout }) {
       </dl>
 
       {workout.exercises.length === 0 && (
-        <p className="mt-6 px-4 text-text-secondary">No exercises in this workout.</p>
+        <p className="mt-6 px-4 text-text-secondary">{t('detail.empty')}</p>
       )}
 
       {workout.exercises.map((entry) => {
@@ -84,8 +88,8 @@ export default function WorkoutDetailView({ workout }: { workout: Workout }) {
             {(target || entry.exercise.deleted) && (
               <p className="mt-0.5 text-meta text-text-tertiary tabular-nums">
                 {[
-                  target && `Target ${target}`,
-                  entry.exercise.deleted && 'No longer in the catalog',
+                  target && t('detail.target', { target }),
+                  entry.exercise.deleted && t('detail.deleted'),
                 ]
                   .filter(Boolean)
                   .join('. ')}
@@ -93,7 +97,7 @@ export default function WorkoutDetailView({ workout }: { workout: Workout }) {
             )}
 
             {entry.sets.length === 0 ? (
-              <p className="mt-2 text-meta text-text-secondary">No sets logged.</p>
+              <p className="mt-2 text-meta text-text-secondary">{t('detail.noSets')}</p>
             ) : (
               <ol className="mt-2 divide-y divide-border-subtle border-y border-border-subtle">
                 {entry.sets.map((set, index) => {
@@ -107,23 +111,18 @@ export default function WorkoutDetailView({ workout }: { workout: Workout }) {
                     >
                       <span
                         className="font-semibold"
-                        aria-label={
-                          set.setType === 'WORKING'
-                            ? `Set ${workingNumber}`
-                            : set.setType === 'WARMUP'
-                              ? 'Warm-up'
-                              : 'Drop set'
-                        }
+                        aria-label={t(`setTitle.${set.setType}`, {
+                          number: workingNumber,
+                        })}
                       >
                         {set.setType === 'WORKING'
                           ? workingNumber
-                          : set.setType === 'WARMUP'
-                            ? 'W'
-                            : 'D'}
+                          : t(`setShort.${set.setType}`)}
                       </span>
                       <span>{formatSetValues(type, set)}</span>
                       <span className="text-meta text-text-secondary">
-                        {set.rpe !== null && `RPE ${set.rpe}`}
+                        {set.rpe !== null &&
+                          t('detail.rpe', { rpe: format.number(set.rpe) })}
                       </span>
                     </li>
                   );

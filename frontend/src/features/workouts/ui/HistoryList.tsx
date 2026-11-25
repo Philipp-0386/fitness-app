@@ -2,22 +2,16 @@
 
 import { ChevronRight } from 'lucide-react';
 import Link from 'next/link';
+import { useFormatter, useTranslations } from 'next-intl';
 import { useState } from 'react';
 
-import { fallbackErrorMessage } from '@/shared/api/errors/fallback-error-message';
+import { useErrorMessage } from '@/shared/api/errors/use-error-message';
 import { Button } from '@/shared/ui/button';
 import { listClass, listRowClass } from '@/shared/ui/list';
 import { fetchWorkoutHistoryPage } from '../client/fetch-workout-history.client';
 import { formatDuration } from '../lib/format-duration';
 import { TIME_ZONE, groupByWeek } from '../lib/group-by-week';
 import type { WorkoutHistory } from '../types/api.types';
-
-const dayFormat = new Intl.DateTimeFormat('en-GB', {
-  timeZone: TIME_ZONE,
-  weekday: 'short',
-  day: 'numeric',
-  month: 'short',
-});
 
 //finished workouts grouped by week; the first page comes from the server, "Load More" appends the next ones
 export default function HistoryList({ initial }: { initial: WorkoutHistory }) {
@@ -26,6 +20,9 @@ export default function HistoryList({ initial }: { initial: WorkoutHistory }) {
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const t = useTranslations('workouts.history');
+  const errorMessage = useErrorMessage();
+  const format = useFormatter();
 
   async function loadMore() {
     setLoading(true);
@@ -40,7 +37,7 @@ export default function HistoryList({ initial }: { initial: WorkoutHistory }) {
       setHasNext(next.hasNext);
       setPage(page + 1);
     } catch (err) {
-      setError(fallbackErrorMessage(err));
+      setError(errorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -49,17 +46,27 @@ export default function HistoryList({ initial }: { initial: WorkoutHistory }) {
   if (workouts.length === 0) {
     return (
       <div className="mt-4 rounded-card bg-surface px-4 pt-5 pb-4">
-        <h2 className="font-semibold">No workouts yet</h2>
-        <p className="mt-1 text-meta text-text-secondary">
-          Finished workouts show up here, newest first.
-        </p>
+        <h2 className="font-semibold">{t('empty')}</h2>
+        <p className="mt-1 text-meta text-text-secondary">{t('emptyText')}</p>
       </div>
     );
   }
 
   return (
     <>
-      {groupByWeek(workouts).map((group) => (
+      {groupByWeek(workouts, (monday, weeksAgo) =>
+        weeksAgo === 0
+          ? t('thisWeek')
+          : weeksAgo === 1
+            ? t('lastWeek')
+            : t('weekOf', {
+                date: format.dateTime(monday, {
+                  timeZone: 'UTC',
+                  day: 'numeric',
+                  month: 'short',
+                }),
+              }),
+      ).map((group) => (
         <section key={group.key} className="mt-6" aria-labelledby={`week-${group.key}`}>
           <h2
             id={`week-${group.key}`}
@@ -74,9 +81,14 @@ export default function HistoryList({ initial }: { initial: WorkoutHistory }) {
                   <span className="min-w-0 flex-1">
                     <span className="block truncate font-semibold">{workout.name}</span>
                     <span className="block text-meta text-text-secondary tabular-nums">
-                      {dayFormat.format(new Date(workout.startedAt))},{' '}
-                      {formatDuration(workout.startedAt, workout.endedAt)},{' '}
-                      {workout.setCount} {workout.setCount === 1 ? 'set' : 'sets'}
+                      {format.dateTime(new Date(workout.startedAt), {
+                        timeZone: TIME_ZONE,
+                        weekday: 'short',
+                        day: 'numeric',
+                        month: 'short',
+                      })}
+                      , {formatDuration(workout.startedAt, workout.endedAt)},{' '}
+                      {t('sets', { count: workout.setCount })}
                     </span>
                     <span className="block truncate text-meta text-text-tertiary">
                       {workout.exerciseNames.join(', ')}
@@ -106,7 +118,7 @@ export default function HistoryList({ initial }: { initial: WorkoutHistory }) {
           disabled={loading}
           onClick={loadMore}
         >
-          {loading ? 'Loading...' : 'Load More'}
+          {loading ? t('loading') : t('loadMore')}
         </Button>
       )}
     </>

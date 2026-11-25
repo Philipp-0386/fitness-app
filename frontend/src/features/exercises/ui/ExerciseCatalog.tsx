@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { ChevronRight, Search } from 'lucide-react';
 import { usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { cn } from '@/shared/lib/utils';
@@ -10,15 +11,11 @@ import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { listClass, listRowClass } from '@/shared/ui/list';
 import { MuscleFilter, matchesMuscleFilter } from '../lib/muscle-filter';
-import { typeLabels } from '../lib/type-labels';
 import { Exercise, ExerciseType, MuscleGroup } from '../types/api.types';
 import ExerciseTypeFilter from './ExerciseTypeFilter';
 import MuscleGroupFilter from './MuscleGroupFilter';
 
-const ownerOptions = [
-  { value: 'all', label: 'All' },
-  { value: 'yours', label: 'Yours' },
-] as const;
+const ownerOptions = ['all', 'yours'] as const;
 
 type ExerciseCatalogProps = {
   exercises: Exercise[];
@@ -31,6 +28,8 @@ export default function ExerciseCatalog({
   muscleGroups,
 }: ExerciseCatalogProps) {
   const pathname = usePathname();
+  const t = useTranslations('exercises');
+  const tCommon = useTranslations('common');
   const [query, setQuery] = useState('');
   const [owner, setOwner] = useState<'all' | 'yours'>('all');
   const [type, setType] = useState<'all' | ExerciseType>('all');
@@ -49,7 +48,7 @@ export default function ExerciseCatalog({
     <div className="px-4">
       <div className="relative mt-4">
         <label htmlFor="exercise-search" className="sr-only">
-          Search exercises
+          {t('catalog.search')}
         </label>
         <Search
           className="pointer-events-none absolute top-1/2 left-3 size-5 -translate-y-1/2 text-text-tertiary"
@@ -58,7 +57,7 @@ export default function ExerciseCatalog({
         <Input
           id="exercise-search"
           type="search"
-          placeholder="Search exercises"
+          placeholder={t('catalog.search')}
           autoComplete="off"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
@@ -69,10 +68,10 @@ export default function ExerciseCatalog({
       <div className="mt-3 flex flex-col items-start gap-2.5">
         <div
           role="radiogroup"
-          aria-label="Show"
+          aria-label={t('catalog.show')}
           className="inline-grid grid-flow-col gap-1 rounded-card bg-surface p-1"
         >
-          {ownerOptions.map(({ value, label }) => (
+          {ownerOptions.map((value) => (
             <button
               key={value}
               type="button"
@@ -86,7 +85,7 @@ export default function ExerciseCatalog({
                   : 'text-text-tertiary hover:text-text-secondary',
               )}
             >
-              {label}
+              {tCommon(value)}
             </button>
           ))}
         </div>
@@ -104,7 +103,7 @@ export default function ExerciseCatalog({
         className="mt-3 mb-2 text-meta text-text-tertiary tabular-nums"
         aria-live="polite"
       >
-        {visible.length} {visible.length === 1 ? 'exercise' : 'exercises'}
+        {t('catalog.count', { count: visible.length })}
       </p>
 
       {visible.length > 0 ? (
@@ -126,7 +125,7 @@ export default function ExerciseCatalog({
                     <span className="block font-semibold">{exercise.name}</span>
                     {primaryMuscles.length > 0 && (
                       <span className="block text-meta text-text-tertiary">
-                        {primaryMuscles.length === 1 ? 'Muscle' : 'Muscles'}:{' '}
+                        {t('catalog.muscles', { count: primaryMuscles.length })}:{' '}
                         <span className="text-text-secondary">
                           {primaryMuscles.join(', ')}
                         </span>
@@ -135,7 +134,7 @@ export default function ExerciseCatalog({
                   </span>
                   {exercise.custom && (
                     <span className="shrink-0 rounded-full border border-border-strong px-2 text-caption font-semibold text-text-secondary">
-                      Yours
+                      {tCommon('yours')}
                     </span>
                   )}
                   <ChevronRight
@@ -149,13 +148,17 @@ export default function ExerciseCatalog({
         </ul>
       ) : (
         <div className="px-6 py-12 text-center">
-          <h2 className="text-title">No matching exercises</h2>
+          <h2 className="text-title">{t('catalog.noMatch')}</h2>
           <p className="mt-1.5 text-text-secondary">
-            Nothing matches
-            {search && ` "${query.trim()}"`}
-            {owner === 'yours' && ' among your exercises'}
-            {type !== 'all' && ` in ${typeLabels[type]}`}
-            {muscle && ` targeting ${muscle.label}`}.
+            {t('catalog.noMatchText', {
+              hasSearch: search ? 'yes' : 'no',
+              query: query.trim(),
+              yours: owner === 'yours' ? 'yes' : 'no',
+              hasType: type !== 'all' ? 'yes' : 'no',
+              type: type !== 'all' ? t(`type.${type}`) : '',
+              hasMuscle: muscle ? 'yes' : 'no',
+              muscle: muscle?.label ?? '',
+            })}
           </p>
           <Button
             type="button"
@@ -167,7 +170,7 @@ export default function ExerciseCatalog({
               setMuscle(null);
             }}
           >
-            Clear search and filters
+            {t('catalog.clear')}
           </Button>
         </div>
       )}

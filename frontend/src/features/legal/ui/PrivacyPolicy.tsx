@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { ChevronLeft } from 'lucide-react';
+import { getLocale, getTranslations } from 'next-intl/server';
 
 import { isAuthenticated } from '@/shared/auth/session';
 
@@ -18,6 +19,8 @@ function ExternalLink({ href, children }: { href: string; children?: ReactNode }
 
 export default async function PrivacyPolicy() {
   const loggedIn = await isAuthenticated();
+  const locale = await getLocale();
+  const tNav = await getTranslations('nav');
 
   return (
     <main className="mx-auto flex w-full max-w-app flex-1 flex-col px-4 pb-8 lg:max-w-3xl">
@@ -27,7 +30,7 @@ export default async function PrivacyPolicy() {
           className="-ml-2 flex min-h-tap items-center gap-0.5 pr-2 font-semibold text-text-secondary hover:text-text-primary"
         >
           <ChevronLeft className="size-6" aria-hidden="true" />
-          {loggedIn ? 'Today' : 'Home'}
+          {loggedIn ? tNav('today') : tNav('home')}
         </Link>
       </header>
 
@@ -35,20 +38,22 @@ export default async function PrivacyPolicy() {
         lang="de"
         className="flex flex-col gap-3 pt-6 text-text-secondary wrap-anywhere [&_a]:text-text-primary [&_a]:underline [&_a]:underline-offset-2 [&_h2]:mt-5 [&_h2]:scroll-mt-6 [&_h2]:text-title [&_h2]:text-text-primary [&_h3]:mt-1 [&_h3]:font-semibold [&_h3]:text-text-primary [&_strong]:font-semibold [&_strong]:text-text-primary"
       >
-        <aside
-          lang="en"
-          className="rounded-card bg-surface px-4 py-3 text-meta"
-          aria-label="Language notice"
-        >
-          <p>
-            <strong>Note:</strong> This privacy policy is only available in German. If you
-            have questions about how your data is processed, or want to access, correct or
-            delete it, contact me at{' '}
-            <a href="mailto:kontakt@ringelkamp.dev">kontakt@ringelkamp.dev</a>. A
-            translation tool can give you a rough English version, but only the German
-            text below is binding.
-          </p>
-        </aside>
+        {locale !== 'de' && (
+          <aside
+            lang="en"
+            className="rounded-card bg-surface px-4 py-3 text-meta"
+            aria-label="Language notice"
+          >
+            <p>
+              <strong>Note:</strong> This privacy policy is only available in German. If
+              you have questions about how your data is processed, or want to access,
+              correct or delete it, contact me at{' '}
+              <a href="mailto:kontakt@ringelkamp.dev">kontakt@ringelkamp.dev</a>. A
+              translation tool can give you a rough English version, but only the German
+              text below is binding.
+            </p>
+          </aside>
+        )}
 
         <h1 className="pt-6 pb-2 text-display text-text-primary">Datenschutzerklärung</h1>
 

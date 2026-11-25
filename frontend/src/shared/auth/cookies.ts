@@ -1,8 +1,8 @@
 //place to define uniform cookie structure and naming
 
 export const ACCESS_TOKEN_COOKIE = 'access_token';
-
 export const REFRESH_TOKEN_COOKIE = 'refresh_token';
+export const LOCALE_COOKIE = 'locale';
 
 export const accessTokenCookieOptions = {
   httpOnly: true,
@@ -17,5 +17,13 @@ export const refreshTokenCookieOptions = {
   secure: process.env.NODE_ENV === 'production',
   sameSite: 'lax',
   maxAge: 60 * 60 * 24 * 21,
+  path: '/',
+} as const;
+
+export const localeCookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'lax',
+  maxAge: 60 * 60 * 24 * 365,
   path: '/',
 } as const;

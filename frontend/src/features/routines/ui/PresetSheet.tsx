@@ -1,13 +1,14 @@
 'use client';
 
 import { ChevronLeft, ChevronRight, TriangleAlert } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 
 import { cn } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui/button';
 import { listRowClass } from '@/shared/ui/list';
 import { Sheet } from '@/shared/ui/sheet';
-import { formatTarget } from '../lib/format-target';
+import { useFormatTarget } from '../lib/format-target';
 import { RoutineDetail } from '../types/api.types';
 
 type PresetSheetProps = {
@@ -27,6 +28,10 @@ export default function PresetSheet({
 }: PresetSheetProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [selected, setSelected] = useState<RoutineDetail | null>(null);
+  const t = useTranslations('presets');
+  const tRoutines = useTranslations('routines');
+  const tCommon = useTranslations('common');
+  const formatTarget = useFormatTarget();
 
   useEffect(() => {
     dialogRef.current?.showModal();
@@ -42,11 +47,11 @@ export default function PresetSheet({
             className="-ml-2 flex min-h-tap items-center gap-0.5 pr-2 font-semibold text-text-secondary hover:text-text-primary"
           >
             <ChevronLeft className="size-6" aria-hidden="true" />
-            Presets
+            {t('title')}
           </button>
         ) : (
           <h2 id="preset-sheet-title" className="text-title">
-            Presets
+            {t('title')}
           </h2>
         )}
         <Button
@@ -55,7 +60,7 @@ export default function PresetSheet({
           size="sm"
           onClick={() => dialogRef.current?.close()}
         >
-          Cancel
+          {tCommon('cancel')}
         </Button>
       </div>
 
@@ -83,7 +88,7 @@ export default function PresetSheet({
                 className="size-5 shrink-0 text-warning"
                 aria-hidden="true"
               />
-              <span>Replaces the name and exercises you entered.</span>
+              <span>{tRoutines('presetReplaces')}</span>
             </div>
           )}
           <Button
@@ -93,14 +98,12 @@ export default function PresetSheet({
             className="mt-4"
             onClick={() => onUse(selected)}
           >
-            Use Preset
+            {t('use')}
           </Button>
         </>
       ) : (
         <>
-          <p className="mt-1 mb-3 text-text-secondary">
-            Start from a preset and adjust it to your training.
-          </p>
+          <p className="mt-1 mb-3 text-text-secondary">{t('intro')}</p>
           <ul className="divide-y divide-field-on-overlay">
             {presets.map((preset) => (
               <li key={preset.id}>
@@ -115,8 +118,7 @@ export default function PresetSheet({
                   <span className="min-w-0 flex-1">
                     <span className="block truncate font-semibold">{preset.name}</span>
                     <span className="block text-meta text-text-secondary tabular-nums">
-                      {preset.exercises.length}{' '}
-                      {preset.exercises.length === 1 ? 'exercise' : 'exercises'}
+                      {tCommon('exerciseCount', { count: preset.exercises.length })}
                     </span>
                   </span>
                   <ChevronRight

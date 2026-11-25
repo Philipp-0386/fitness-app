@@ -20,13 +20,19 @@ import { CSS } from '@dnd-kit/utilities';
 import { CircleAlert, GripVertical, Plus, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 import type { Routine, RoutineDetail } from '@/features/routines';
 import { createRoutine } from '@/features/routines/client/create-routine.client';
+
 import { ApiError } from '@/shared/api/errors/api-error';
-import { fallbackErrorMessage } from '@/shared/api/errors/fallback-error-message';
+import {
+  useErrorMessage,
+  useFieldErrorMessage,
+} from '@/shared/api/errors/use-error-message';
+
 import { cn } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
@@ -99,17 +105,23 @@ export default function ProgramEditor({
   const sheetIndex = sheet?.dayKey ? days.findIndex((d) => d.key === sheet.dayKey) : -1;
   const sheetDay = sheetIndex >= 0 ? days[sheetIndex] : null;
 
+  const t = useTranslations('programs');
+  const tCommon = useTranslations('common');
+  const tPresets = useTranslations('presets');
+  const errorMessage = useErrorMessage();
+  const fieldErrorMessage = useFieldErrorMessage();
+
   // An undo offered after leaving the editor would do nothing.
   useEffect(() => () => void toast.dismiss(REMOVED_TOAST_ID), []);
 
   function removeDay(day: DayDraft) {
     const index = days.findIndex((d) => d.key === day.key);
     setDays(days.filter((d) => d.key !== day.key));
-    toast('Day removed.', {
+    toast(t('editor.removed'), {
       id: REMOVED_TOAST_ID,
       duration: 5000,
       action: {
-        label: 'Undo',
+        label: tCommon('undo'),
         onClick: () =>
           setDays((current) => [
             ...current.slice(0, index),
@@ -137,7 +149,7 @@ export default function ProgramEditor({
   }
 
   function handleUsePreset(preset: ProgramDetail) {
-    setName(`${preset.name} (Preset)`);
+    setName(tPresets('copyName', { name: preset.name }));
     setDescription(preset.description ?? '');
     setDays(
       preset.days.map((day) => ({
@@ -170,11 +182,11 @@ export default function ProgramEditor({
     setError(null);
 
     if (!name.trim()) {
-      setNameError('Please enter a name.');
+      setNameError(t('editor.nameRequired'));
       return;
     }
     if (!days.some((d) => d.routine)) {
-      setError('Add at least one day with a routine.');
+      setError(t('editor.noTrainingDay'));
       return;
     }
 
@@ -187,7 +199,7 @@ export default function ProgramEditor({
         const source = presetRoutines?.find((r) => r.id === presetId);
         if (!source) continue;
         const copy = await createRoutine({
-          name: `${source.name} (Preset)`,
+          name: tPresets('copyName', { name: source.name }),
           description: source.description,
           exercises: source.exercises.map((re) => ({
             exerciseId: re.exercise.id,
@@ -217,40 +229,32 @@ export default function ProgramEditor({
                   : (d.routine?.id ?? null),
             })),
           });
-      toast.success('Program saved.');
+      toast.success(t('editor.saved'));
       router.replace(`/plans/programs/${saved.id}`);
       router.refresh();
     } catch (err) {
       setIsSaving(false);
       if (err instanceof ApiError && err.fieldErrors?.name) {
-        setNameError(err.fieldErrors.name);
+        setNameError(fieldErrorMessage('name', err.fieldErrors.name));
         return;
       }
       if (err instanceof ApiError && err.code === 'USER_ROUTINE_NOT_FOUND') {
-        setError(
-          'A routine is no longer available. Reload the page and check your program.',
-        );
+        setError(t('editor.routineGone'));
         return;
       }
       if (err instanceof ApiError && err.code === 'USER_PROGRAM_NOT_FOUND') {
-        setError(
-          'This program no longer exists. It may have been deleted in another tab.',
-        );
+        setError(t('editor.programGone'));
         return;
       }
       if (err instanceof ApiError && err.code === 'PROGRAM_DAY_NOT_FOUND') {
-        setError(
-          'This program was changed in another tab. Reload the page and try again.',
-        );
+        setError(t('editor.changed'));
         return;
       }
       if (err instanceof ApiError && err.code === 'PROGRAM_LIMIT_REACHED') {
-        setError(
-          'You already have the maximum number of programs. Delete one to create a new one.',
-        );
+        setError(t('editor.limit'));
         return;
       }
-      setError(fallbackErrorMessage(err));
+      setError(errorMessage(err));
     }
   }
 
@@ -260,16 +264,16 @@ export default function ProgramEditor({
         <header className="sticky top-0 z-10 grid h-14 grid-cols-[1fr_minmax(0,2fr)_1fr] items-center border-b border-border-subtle bg-bg px-4">
           {program ? (
             <Link href={`/plans/programs/${program.id}`} replace className={cancelClass}>
-              Cancel
+              {tCommon('cancel')}
             </Link>
           ) : (
             // A new program is only reached from the list, so going back avoids a second list entry.
             <button type="button" onClick={() => router.back()} className={cancelClass}>
-              Cancel
+              {tCommon('cancel')}
             </button>
           )}
           <h1 className="truncate text-center text-[1.0625rem] font-semibold">
-            {program ? program.name : 'New Program'}
+            {program ? program.name : t('editor.new')}
           </h1>
           <Button
             type="submit"
@@ -278,13 +282,13 @@ export default function ProgramEditor({
             className="justify-self-end"
             disabled={isSaving}
           >
-            {isSaving ? 'Saving...' : 'Save'}
+            {isSaving ? tCommon('saving') : tCommon('save')}
           </Button>
         </header>
 
         <div className="px-4 pt-4">
           <Label className="mb-1.5" htmlFor="program-name">
-            Name
+            {t('editor.name')}
           </Label>
           <Input
             id="program-name"
@@ -309,7 +313,7 @@ export default function ProgramEditor({
           )}
 
           <Label className="mt-4 mb-1.5" htmlFor="program-description">
-            Description (optional)
+            {t('editor.description')}
           </Label>
           <textarea
             id="program-description"
@@ -321,15 +325,15 @@ export default function ProgramEditor({
           />
 
           <div className="mt-6 flex items-center justify-between gap-3">
-            <h2 className="text-title">Days</h2>
+            <h2 className="text-title">{t('editor.days')}</h2>
             {presets && presets.length > 0 && (
               <Button type="button" size="sm" onClick={() => setPresetsOpen(true)}>
-                Use Preset
+                {tPresets('use')}
               </Button>
             )}
           </div>
           <p className="mt-0.5 mb-3 text-meta text-text-secondary">
-            In the order you train them. After the last day the program starts over.
+            {t('editor.daysText')}
           </p>
           {error && (
             <div
@@ -374,7 +378,7 @@ export default function ProgramEditor({
               onClick={() => setSheet({ dayKey: null })}
             >
               <Plus aria-hidden="true" />
-              Add Day
+              {t('editor.addDay')}
             </Button>
           )}
         </div>
@@ -436,7 +440,8 @@ function DayRow({ day, number, onOpen, onRemove }: DayRowProps) {
     transition,
     isDragging,
   } = useSortable({ id: day.key });
-  const label = day.routine?.name ?? 'Rest day';
+  const t = useTranslations('programs');
+  const label = day.routine?.name ?? t('restDay');
 
   return (
     <li
@@ -449,7 +454,7 @@ function DayRow({ day, number, onOpen, onRemove }: DayRowProps) {
         ref={setActivatorNodeRef}
         {...attributes}
         {...listeners}
-        aria-label={`Reorder day ${number}, ${label}`}
+        aria-label={t('editor.reorder', { number, label })}
         className="grid size-tap shrink-0 cursor-grab touch-none place-items-center text-text-tertiary hover:text-text-secondary"
       >
         <GripVertical className="size-5" aria-hidden="true" />
@@ -472,9 +477,10 @@ function DayRow({ day, number, onOpen, onRemove }: DayRowProps) {
           </span>
           {day.routine && (
             <span className="block text-meta text-text-tertiary tabular-nums">
-              {day.routine.exerciseCount}{' '}
-              {day.routine.exerciseCount === 1 ? 'exercise' : 'exercises'}
-              {day.fromPreset && ', copied on save'}
+              {t('editor.dayMeta', {
+                count: day.routine.exerciseCount,
+                fromPreset: day.fromPreset ? 'yes' : 'no',
+              })}
             </span>
           )}
         </span>
@@ -482,7 +488,7 @@ function DayRow({ day, number, onOpen, onRemove }: DayRowProps) {
       <button
         type="button"
         onClick={onRemove}
-        aria-label={`Remove day ${number}, ${label}`}
+        aria-label={t('editor.remove', { number, label })}
         className="mr-1 grid size-tap shrink-0 place-items-center text-text-tertiary hover:text-danger"
       >
         <Trash2 className="size-5" aria-hidden="true" />

@@ -6,7 +6,7 @@ public record StartWorkoutRequest(
         Long routineId,
         Long programDayId
 ) {
-    @AssertTrue(message = "exactly one of routineId and programDayId is required")
+    @AssertTrue
     public boolean isExactlyOneSourceGiven() {
         return (routineId == null) != (programDayId == null);
     }

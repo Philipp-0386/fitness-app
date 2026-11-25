@@ -4,6 +4,8 @@ import de.phil.fitness.backend.exercise.dto.ExerciseSummary;
 import de.phil.fitness.backend.routine.dto.*;
 import de.phil.fitness.backend.routine.model.Routine;
 import de.phil.fitness.backend.routine.model.RoutineExercise;
+import de.phil.fitness.backend.routine.model.RoutineTranslation;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
@@ -15,10 +17,12 @@ public class RoutineMapper {
     public RoutineMapper() { }
 
     public RoutineResponse toRoutineResponse(Routine routine) {
+        String language = LocaleContextHolder.getLocale().getLanguage();
+        RoutineTranslation translation = "en".equals(language) ? null : routine.getTranslations().get(language);
         return new RoutineResponse(
                 routine.getId(),
-                routine.getName(),
-                routine.getDescription(),
+                translation != null ? translation.getName() : routine.getName(),
+                translation != null ? translation.getDescription() : routine.getDescription(),
                 routine.getExercises().size(),
                 routine.getCreatedAt(),
                 routine.getUpdatedAt()
@@ -26,9 +30,11 @@ public class RoutineMapper {
     }
 
     public RoutineSummary toSummary(Routine routine, Map<Long, ExerciseSummary> exercises) {
+        String language = LocaleContextHolder.getLocale().getLanguage();
+        RoutineTranslation translation = "en".equals(language) ? null : routine.getTranslations().get(language);
         return new RoutineSummary(
                 routine.getId(),
-                routine.getName(),
+                translation != null ? translation.getName() : routine.getName(),
                 routine.getExercises().stream()
                         .map(re -> {
                             ExerciseSummary exercise = exercises.get(re.getExerciseId());
@@ -42,10 +48,12 @@ public class RoutineMapper {
     }
 
     public RoutineDetailResponse toRoutineDetailResponse(Routine routine, Map<Long, ExerciseSummary> exercises) {
+        String language = LocaleContextHolder.getLocale().getLanguage();
+        RoutineTranslation translation = "en".equals(language) ? null : routine.getTranslations().get(language);
         return new RoutineDetailResponse(
                 routine.getId(),
-                routine.getName(),
-                routine.getDescription(),
+                translation != null ? translation.getName() : routine.getName(),
+                translation != null ? translation.getDescription() : routine.getDescription(),
                 routine.getCreatedAt(),
                 routine.getUpdatedAt(),
                 routine.getExercises().stream()

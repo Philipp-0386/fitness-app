@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { MonitorSmartphone } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 
 import { cn } from '@/shared/lib/utils';
@@ -10,6 +11,7 @@ import { logoutOthers } from '../client/logout-others.client';
 
 export default function LogoutOthersButton() {
   const [isPending, setIsPending] = useState(false);
+  const t = useTranslations('me.logoutOthers');
 
   async function handleClick() {
     if (isPending) return;
@@ -17,9 +19,9 @@ export default function LogoutOthersButton() {
 
     try {
       await logoutOthers();
-      toast.success('Logged out everywhere else. This device stays logged in.');
+      toast.success(t('done'));
     } catch {
-      toast.error('Logging out everywhere failed. Please try again.');
+      toast.error(t('failed'));
     } finally {
       setIsPending(false);
     }
@@ -37,7 +39,7 @@ export default function LogoutOthersButton() {
     >
       <MonitorSmartphone className="size-5 shrink-0" aria-hidden="true" />
       <span className="min-w-0 flex-1 font-semibold">
-        {isPending ? 'Logging out everywhere...' : 'Log Out Everywhere'}
+        {isPending ? t('submitting') : t('submit')}
       </span>
     </button>
   );

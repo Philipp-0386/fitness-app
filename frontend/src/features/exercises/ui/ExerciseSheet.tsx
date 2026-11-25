@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { useEffect, useRef } from 'react';
 
 import { Button } from '@/shared/ui/button';
@@ -16,6 +17,8 @@ type ExerciseSheetProps = {
 //quick look at an exercise without leaving the page; the caller mounts it while open
 export default function ExerciseSheet({ exercise, onClose }: ExerciseSheetProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const t = useTranslations('exercises');
+  const tCommon = useTranslations('common');
 
   useEffect(() => {
     dialogRef.current?.showModal();
@@ -33,7 +36,7 @@ export default function ExerciseSheet({ exercise, onClose }: ExerciseSheetProps)
           size="sm"
           onClick={() => dialogRef.current?.close()}
         >
-          Done
+          {tCommon('done')}
         </Button>
       </div>
 
@@ -41,7 +44,7 @@ export default function ExerciseSheet({ exercise, onClose }: ExerciseSheetProps)
 
       {exercise.custom && (
         <Button asChild className="mt-6 w-full">
-          <Link href={`/exercises/${exercise.id}/edit`}>Edit Exercise</Link>
+          <Link href={`/exercises/${exercise.id}/edit`}>{t('editExercise')}</Link>
         </Button>
       )}
     </Sheet>

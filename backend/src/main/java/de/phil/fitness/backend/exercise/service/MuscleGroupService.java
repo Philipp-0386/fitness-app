@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,18 +33,23 @@ public class MuscleGroupService {
     @Transactional(readOnly = true)
     public List<MuscleGroupResponse> findAll() {
         List<MuscleGroup> muscleGroups = muscleGroupRepository.findAllByOrderByIdAsc();
+        String language = LocaleContextHolder.getLocale().getLanguage();
+        boolean english = "en".equals(language);
 
         Map<Long, List<MuscleAreaResponse>> areasByGroupId = muscleGroups.stream()
                 .filter(muscleGroup -> muscleGroup.getParent() != null)
                 .collect(Collectors.groupingBy(
                         area -> area.getParent().getId(),
-                        Collectors.mapping(area -> new MuscleAreaResponse(area.getId(), area.getName()), Collectors.toList())));
+                        Collectors.mapping(area -> new MuscleAreaResponse(
+                                area.getId(),
+                                english ? area.getName() : area.getTranslations().getOrDefault(language, area.getName())),
+                                Collectors.toList())));
 
         return muscleGroups.stream()
                 .filter(muscleGroup -> muscleGroup.getParent() == null)
                 .map(group -> new MuscleGroupResponse(
                         group.getId(),
-                        group.getName(),
+                        english ? group.getName() : group.getTranslations().getOrDefault(language, group.getName()),
                         group.getBodyRegion(),
                         areasByGroupId.getOrDefault(group.getId(), List.of())))
                 .toList();

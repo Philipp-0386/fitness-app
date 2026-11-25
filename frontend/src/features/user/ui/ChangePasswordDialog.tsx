@@ -2,10 +2,15 @@
 
 import { useRef, useState } from 'react';
 import { ChevronRight, CircleAlert } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 
 import { ApiError } from '@/shared/api/errors/api-error';
-import { fallbackErrorMessage } from '@/shared/api/errors/fallback-error-message';
+import {
+  useErrorMessage,
+  useFieldErrorMessage,
+} from '@/shared/api/errors/use-error-message';
+
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { Label } from '@/shared/ui/label';
@@ -20,6 +25,10 @@ export default function ChangePasswordDialog() {
   const [repeatPassword, setRepeatPassword] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const t = useTranslations('me.changePassword');
+  const tCommon = useTranslations('common');
+  const errorMessage = useErrorMessage();
+  const fieldErrorMessage = useFieldErrorMessage();
 
   function open() {
     dialogRef.current?.showModal();
@@ -48,17 +57,17 @@ export default function ChangePasswordDialog() {
     setError(null);
 
     if (!currentPassword || !newPassword || !repeatPassword) {
-      setError('Please fill in all fields!');
+      setError(t('required'));
       return;
     }
 
     if (newPassword === currentPassword) {
-      setError('The new password must be different from the current one.');
+      setError(t('same'));
       return;
     }
 
     if (newPassword !== repeatPassword) {
-      setError('The new passwords do not match.');
+      setError(t('mismatch'));
       return;
     }
 
@@ -66,12 +75,10 @@ export default function ChangePasswordDialog() {
     try {
       await updatePassword({ currentPassword, newPassword });
       close();
-      toast.success(
-        'Your password has been changed. Other devices have been logged out.',
-      );
+      toast.success(t('changed'));
     } catch (err) {
       if (err instanceof ApiError && err.code === 'INVALID_PASSWORD') {
-        setError('The current password is incorrect.');
+        setError(t('invalidPassword'));
         return;
       }
       if (
@@ -79,10 +86,14 @@ export default function ChangePasswordDialog() {
         err.code === 'VALIDATION_FAILED' &&
         err.fieldErrors
       ) {
-        setError(Object.values(err.fieldErrors).join(' '));
+        setError(
+          Object.entries(err.fieldErrors)
+            .map(([field, code]) => fieldErrorMessage(field, code))
+            .join(' '),
+        );
         return;
       }
-      setError(fallbackErrorMessage(err));
+      setError(errorMessage(err));
     } finally {
       setIsSaving(false);
     }
@@ -91,7 +102,7 @@ export default function ChangePasswordDialog() {
   return (
     <>
       <button type="button" onClick={open} className={listRowClass}>
-        <span className="min-w-0 flex-1 font-semibold">Change password</span>
+        <span className="min-w-0 flex-1 font-semibold">{t('title')}</span>
         <ChevronRight className="size-5 shrink-0 text-text-tertiary" aria-hidden="true" />
       </button>
 
@@ -103,14 +114,12 @@ export default function ChangePasswordDialog() {
       >
         <form onSubmit={handleSubmit} noValidate>
           <h2 id="change-password-title" className="text-title">
-            Change password
+            {t('title')}
           </h2>
-          <p className="mt-1 mb-4 text-text-secondary">
-            Other sessions stay logged in until they expire.
-          </p>
+          <p className="mt-1 mb-4 text-text-secondary">{t('text')}</p>
           <div className="mb-4">
             <Label className="mb-1.5" htmlFor="change-current-password">
-              Current password
+              {t('current')}
             </Label>
             <Input
               type="password"
@@ -122,7 +131,7 @@ export default function ChangePasswordDialog() {
           </div>
           <div className="mb-4">
             <Label className="mb-1.5" htmlFor="change-new-password">
-              New password
+              {t('new')}
             </Label>
             <Input
               type="password"
@@ -134,7 +143,7 @@ export default function ChangePasswordDialog() {
           </div>
           <div className="mb-4">
             <Label className="mb-1.5" htmlFor="change-repeat-password">
-              Repeat new password
+              {t('repeat')}
             </Label>
             <Input
               type="password"
@@ -155,10 +164,10 @@ export default function ChangePasswordDialog() {
           )}
           <div className="mt-2 flex flex-col gap-2">
             <Button type="submit" variant="primary" size="lg" disabled={isSaving}>
-              {isSaving ? 'Changing password...' : 'Change password'}
+              {isSaving ? t('submitting') : t('title')}
             </Button>
             <Button type="button" className="w-full" disabled={isSaving} onClick={close}>
-              Cancel
+              {tCommon('cancel')}
             </Button>
           </div>
         </form>

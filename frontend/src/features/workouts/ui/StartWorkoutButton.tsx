@@ -3,10 +3,11 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 
 import { ApiError } from '@/shared/api/errors/api-error';
-import { fallbackErrorMessage } from '@/shared/api/errors/fallback-error-message';
+import { useErrorMessage } from '@/shared/api/errors/use-error-message';
 import { Button } from '@/shared/ui/button';
 import { startWorkout } from '../client/start-workout.client';
 
@@ -22,6 +23,8 @@ export default function StartWorkoutButton({
 }: StartWorkoutButtonProps) {
   const [isStarting, setIsStarting] = useState(false);
   const router = useRouter();
+  const t = useTranslations('workouts');
+  const errorMessage = useErrorMessage();
 
   async function handleStart() {
     if (isStarting) return;
@@ -35,7 +38,7 @@ export default function StartWorkoutButton({
         return;
       }
       setIsStarting(false);
-      toast.error(fallbackErrorMessage(err));
+      toast.error(errorMessage(err));
     }
   }
 
@@ -43,12 +46,10 @@ export default function StartWorkoutButton({
     return (
       <div>
         <Button asChild variant="primary" size="lg">
-          <Link href="/workout">Resume {running.name}</Link>
+          <Link href="/workout">{t('resumeName', { name: running.name })}</Link>
         </Button>
         {running.routineId !== routineId && (
-          <p className="mt-2 text-meta text-text-secondary">
-            Another workout is running. Finish it first.
-          </p>
+          <p className="mt-2 text-meta text-text-secondary">{t('otherRunning')}</p>
         )}
       </div>
     );
@@ -62,7 +63,7 @@ export default function StartWorkoutButton({
       onClick={handleStart}
       disabled={isStarting}
     >
-      {isStarting ? 'Starting...' : 'Start Workout'}
+      {isStarting ? t('starting') : t('start')}
     </Button>
   );
 }

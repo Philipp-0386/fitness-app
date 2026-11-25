@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 
-import { fallbackErrorMessage } from '@/shared/api/errors/fallback-error-message';
+import { useErrorMessage } from '@/shared/api/errors/use-error-message';
 import { deleteSet } from '../client/delete-set.client';
 import { saveSet } from '../client/save-set.client';
 import type { SetRow } from './set-rows';
@@ -12,6 +12,7 @@ const MIN_SAVING_MS = 800;
 /** The rows of a workout per entry id, with saving and removing that keep the requests of one row in order. */
 export function useSetRows(workoutId: number, initial: () => Record<number, SetRow[]>) {
   const [rows, setRows] = useState<Record<number, SetRow[]>>(initial);
+  const errorMessage = useErrorMessage();
   const inFlight = useRef(new Map<string, Promise<unknown>>());
 
   //one request per row at a time: a new save waits for the previous one, so the server sees them in order
@@ -81,7 +82,7 @@ export function useSetRows(workoutId: number, initial: () => Record<number, SetR
             ...prev,
             [entryId]: prev[entryId].filter((r) => r.clientId !== row.clientId),
           })),
-        (error) => toast.error(fallbackErrorMessage(error)),
+        (error) => toast.error(errorMessage(error)),
       )
       .finally(() => {
         if (inFlight.current.get(row.clientId) === request) {

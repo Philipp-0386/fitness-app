@@ -1,4 +1,5 @@
 import type { NextConfig } from 'next';
+import createNextIntlPlugin from 'next-intl/plugin';
 
 const nextConfig: NextConfig = {
   // Emits .next/standalone with a self-contained server.js, so the Docker
@@ -7,4 +8,6 @@ const nextConfig: NextConfig = {
   allowedDevOrigins: ['192.168.178.*'],
 };
 
-export default nextConfig;
+const withNextIntl = createNextIntlPlugin();
+
+export default withNextIntl(nextConfig);

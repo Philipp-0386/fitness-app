@@ -13,7 +13,7 @@ public record CreateProgramRequest(
     @Size(max = 1000) String description,
     @NotNull @Size(min = 1, max = 14) List<@NotNull @Valid ProgramDayRequest> days
 ) {
-    @AssertTrue(message = "program needs minimum one training day on creation")
+    @AssertTrue
     public boolean isTrainingDayPresent() {
         return days == null || days.stream().anyMatch(day -> day != null && day.routineId() != null);
     }

@@ -1,9 +1,11 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
 import { useState, useSyncExternalStore } from 'react';
 import { toast } from 'sonner';
 
-import { fallbackErrorMessage } from '@/shared/api/errors/fallback-error-message';
+import { useErrorMessage } from '@/shared/api/errors/use-error-message';
 import { cn } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui/button';
 import { listClass } from '@/shared/ui/list';
@@ -20,6 +22,11 @@ const distanceOptions = [
   { value: 'MI', label: 'mi' },
 ] as const;
 
+const languageOptions = [
+  { value: 'EN', label: 'English' },
+  { value: 'DE', label: 'Deutsch' },
+] as const;
+
 const noSubscription = () => () => {};
 const readDeviceTimeZone = () => Intl.DateTimeFormat().resolvedOptions().timeZone;
 const noDeviceTimeZoneOnServer = () => null;
@@ -31,6 +38,9 @@ type Props = {
 export default function UnitSettings({ initialSettings }: Props) {
   const [settings, setSettings] = useState(initialSettings);
   const [isSaving, setIsSaving] = useState(false);
+  const router = useRouter();
+  const t = useTranslations('me');
+  const errorMessage = useErrorMessage();
   const deviceTimeZone = useSyncExternalStore(
     noSubscription,
     readDeviceTimeZone,
@@ -44,9 +54,10 @@ export default function UnitSettings({ initialSettings }: Props) {
     setIsSaving(true);
     try {
       setSettings(await updateSettings(next));
+      if (next.language !== previous.language) router.refresh();
     } catch (err) {
       setSettings(previous);
-      toast.error(fallbackErrorMessage(err));
+      toast.error(errorMessage(err));
     } finally {
       setIsSaving(false);
     }
@@ -55,14 +66,14 @@ export default function UnitSettings({ initialSettings }: Props) {
   return (
     <section aria-labelledby="preferences-title" className="mx-4 mt-8">
       <h2 id="preferences-title" className="mb-3 text-title">
-        Preferences
+        {t('preferences')}
       </h2>
       <ul className={listClass}>
         <li className="flex min-h-14 items-center gap-3 px-4 py-2.5">
-          <span className="min-w-0 flex-1 font-semibold">Weight</span>
+          <span className="min-w-0 flex-1 font-semibold">{t('weight')}</span>
           <div
             role="radiogroup"
-            aria-label="Weight unit"
+            aria-label={t('weightUnit')}
             className="inline-grid grid-flow-col gap-1 rounded-card bg-bg p-1"
           >
             {weightOptions.map(({ value, label }) => (
@@ -86,10 +97,10 @@ export default function UnitSettings({ initialSettings }: Props) {
           </div>
         </li>
         <li className="flex min-h-14 items-center gap-3 px-4 py-2.5">
-          <span className="min-w-0 flex-1 font-semibold">Distance</span>
+          <span className="min-w-0 flex-1 font-semibold">{t('distance')}</span>
           <div
             role="radiogroup"
-            aria-label="Distance unit"
+            aria-label={t('distanceUnit')}
             className="inline-grid grid-flow-col gap-1 rounded-card bg-bg p-1"
           >
             {distanceOptions.map(({ value, label }) => (
@@ -112,9 +123,36 @@ export default function UnitSettings({ initialSettings }: Props) {
             ))}
           </div>
         </li>
+        <li className="flex min-h-14 items-center gap-3 px-4 py-2.5">
+          <span className="min-w-0 flex-1 font-semibold">{t('language')}</span>
+          <div
+            role="radiogroup"
+            aria-label={t('language')}
+            className="inline-grid grid-flow-col gap-1 rounded-card bg-bg p-1"
+          >
+            {languageOptions.map(({ value, label }) => (
+              <button
+                key={value}
+                type="button"
+                role="radio"
+                aria-checked={settings.language === value}
+                disabled={isSaving}
+                onClick={() => handleChange({ ...settings, language: value })}
+                className={cn(
+                  'min-h-9 rounded-field px-3.5 text-meta font-semibold',
+                  settings.language === value
+                    ? 'bg-surface-raised text-text-primary'
+                    : 'text-text-tertiary hover:text-text-secondary',
+                )}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </li>
         <li className="px-4 py-2.5">
           <div className="flex min-h-9 items-center gap-3">
-            <span className="min-w-0 flex-1 font-semibold">Time Zone</span>
+            <span className="min-w-0 flex-1 font-semibold">{t('timeZone')}</span>
             <span className="truncate text-meta text-text-secondary">
               {settings.timeZone.replaceAll('_', ' ')}
             </span>
@@ -122,7 +160,7 @@ export default function UnitSettings({ initialSettings }: Props) {
           {timeZoneDiffers && (
             <div className="mt-2 flex items-center gap-3">
               <p className="min-w-0 flex-1 text-meta text-text-tertiary">
-                Your device uses {deviceTimeZone.replaceAll('_', ' ')}.
+                {t('deviceTimeZone', { timeZone: deviceTimeZone.replaceAll('_', ' ') })}
               </p>
               <Button
                 type="button"
@@ -130,7 +168,7 @@ export default function UnitSettings({ initialSettings }: Props) {
                 disabled={isSaving}
                 onClick={() => handleChange({ ...settings, timeZone: deviceTimeZone })}
               >
-                Use Device Time Zone
+                {t('useDeviceTimeZone')}
               </Button>
             </div>
           )}

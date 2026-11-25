@@ -1,9 +1,10 @@
 'use client';
 
 import { Trash2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 
-import { fallbackErrorMessage } from '@/shared/api/errors/fallback-error-message';
+import { useErrorMessage } from '@/shared/api/errors/use-error-message';
 import { Button } from '@/shared/ui/button';
 import { Sheet } from '@/shared/ui/sheet';
 import ElapsedClock from './ElapsedClock';
@@ -28,6 +29,9 @@ export default function FinishSheet({
   onClose,
 }: FinishSheetProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const t = useTranslations('workouts.finish');
+  const tCommon = useTranslations('common');
+  const errorMessage = useErrorMessage();
   const [confirmDiscard, setConfirmDiscard] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -43,11 +47,9 @@ export default function FinishSheet({
       await action();
     } catch (err) {
       setPending(false);
-      setError(fallbackErrorMessage(err));
+      setError(errorMessage(err));
     }
   }
-
-  const setsText = `${loggedCount} ${loggedCount === 1 ? 'set' : 'sets'} logged`;
 
   return (
     <Sheet
@@ -61,12 +63,12 @@ export default function FinishSheet({
       {confirmDiscard ? (
         <>
           <h2 id="finish-sheet-title" className="text-title">
-            Discard this workout?
+            {t('discardTitle')}
           </h2>
           <p className="mt-1 text-text-secondary">
             {loggedCount > 0
-              ? `The workout and its ${setsText} are deleted. This cannot be undone.`
-              : 'The workout is deleted. This cannot be undone.'}
+              ? t('discardWithSets', { count: loggedCount })
+              : t('discardEmpty')}
           </p>
           {error && (
             <p role="alert" className="mt-3 text-meta text-danger">
@@ -81,7 +83,7 @@ export default function FinishSheet({
               disabled={pending}
               onClick={() => run(onDiscard)}
             >
-              Discard Workout
+              {t('discard')}
             </Button>
             <Button
               type="button"
@@ -92,27 +94,28 @@ export default function FinishSheet({
                 setError(null);
               }}
             >
-              Cancel
+              {tCommon('cancel')}
             </Button>
           </div>
         </>
       ) : (
         <>
           <h2 id="finish-sheet-title" className="text-title">
-            {loggedCount > 0 ? 'Finish workout?' : 'Nothing logged yet'}
+            {loggedCount > 0 ? t('title') : t('nothingTitle')}
           </h2>
           <p className="mt-1 text-text-secondary tabular-nums">
             {loggedCount > 0 ? (
               <>
-                <ElapsedClock startedAt={startedAt} />, {setsText}
+                <ElapsedClock startedAt={startedAt} />,{' '}
+                {t('logged', { count: loggedCount })}
               </>
             ) : (
-              'Log a set to finish the workout, or discard it.'
+              t('nothingText')
             )}
           </p>
           {failedCount > 0 && (
             <p className="mt-3 text-meta text-danger">
-              {failedCount === 1 ? '1 set was' : `${failedCount} sets were`} not saved.
+              {t('failed', { count: failedCount })}
             </p>
           )}
           {error && (
@@ -129,7 +132,7 @@ export default function FinishSheet({
                 disabled={pending}
                 onClick={() => run(onFinish)}
               >
-                {pending ? 'Finishing...' : 'Finish Workout'}
+                {pending ? t('submitting') : t('submit')}
               </Button>
             )}
             <Button
@@ -138,7 +141,7 @@ export default function FinishSheet({
               disabled={pending}
               onClick={() => dialogRef.current?.close()}
             >
-              Keep Training
+              {t('keep')}
             </Button>
           </div>
           <div className="mt-4 border-t border-field-on-overlay pt-2">
@@ -150,7 +153,7 @@ export default function FinishSheet({
               onClick={() => setConfirmDiscard(true)}
             >
               <Trash2 aria-hidden="true" />
-              Discard Workout
+              {t('discard')}
             </Button>
           </div>
         </>

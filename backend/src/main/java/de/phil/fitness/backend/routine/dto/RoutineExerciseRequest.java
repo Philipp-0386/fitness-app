@@ -12,7 +12,7 @@ public record RoutineExerciseRequest(
         @Positive Integer targetDurationSeconds,
         @Positive @Digits(integer = 6, fraction = 2) BigDecimal targetDistanceMeters
 ) {
-    @AssertTrue(message = "targetRepsMin must not exceed targetRepsMax")
+    @AssertTrue
     public boolean isRepRangeValid() {
         return targetRepsMin == null || targetRepsMax == null || targetRepsMin <= targetRepsMax;
     }

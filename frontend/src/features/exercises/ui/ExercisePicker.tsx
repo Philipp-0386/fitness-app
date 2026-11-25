@@ -1,6 +1,7 @@
 'use client';
 
 import { Search } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 
 import { cn } from '@/shared/lib/utils';
@@ -9,15 +10,11 @@ import { Input } from '@/shared/ui/input';
 import { listRowClass } from '@/shared/ui/list';
 import { Sheet } from '@/shared/ui/sheet';
 import { MuscleFilter, matchesMuscleFilter } from '../lib/muscle-filter';
-import { typeLabels } from '../lib/type-labels';
 import { Exercise, ExerciseType, MuscleGroup } from '../types/api.types';
 import ExerciseTypeFilter from './ExerciseTypeFilter';
 import MuscleGroupFilter from './MuscleGroupFilter';
 
-const ownerOptions = [
-  { value: 'all', label: 'All' },
-  { value: 'yours', label: 'Yours' },
-] as const;
+const ownerOptions = ['all', 'yours'] as const;
 
 type ExercisePickerProps = {
   exercises: Exercise[];
@@ -39,6 +36,8 @@ export default function ExercisePicker({
   onClose,
 }: ExercisePickerProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const t = useTranslations('exercises');
+  const tCommon = useTranslations('common');
   const [query, setQuery] = useState('');
   const [owner, setOwner] = useState<'all' | 'yours'>('all');
   const [type, setType] = useState<'all' | ExerciseType>('all');
@@ -75,16 +74,16 @@ export default function ExercisePicker({
     <Sheet ref={dialogRef} onClose={handleClose} aria-labelledby="exercise-picker-title">
       <div className="flex items-center justify-between gap-3">
         <h2 id="exercise-picker-title" className="text-title">
-          Choose an exercise
+          {t('picker.title')}
         </h2>
         <Button type="button" variant="text" size="sm" onClick={onClose}>
-          Cancel
+          {tCommon('cancel')}
         </Button>
       </div>
 
       <div className="relative mt-3">
         <label htmlFor="exercise-picker-search" className="sr-only">
-          Search exercises
+          {t('catalog.search')}
         </label>
         <Search
           className="pointer-events-none absolute top-1/2 left-3 size-5 -translate-y-1/2 text-text-secondary"
@@ -93,7 +92,7 @@ export default function ExercisePicker({
         <Input
           id="exercise-picker-search"
           type="search"
-          placeholder="Search exercises"
+          placeholder={t('catalog.search')}
           autoComplete="off"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
@@ -104,10 +103,10 @@ export default function ExercisePicker({
       <div className="mt-3 flex flex-col items-start gap-2.5">
         <div
           role="radiogroup"
-          aria-label="Show"
+          aria-label={t('catalog.show')}
           className="inline-grid grid-flow-col gap-1 rounded-card bg-field-on-overlay p-1"
         >
-          {ownerOptions.map(({ value, label }) => (
+          {ownerOptions.map((value) => (
             <button
               key={value}
               type="button"
@@ -121,7 +120,7 @@ export default function ExercisePicker({
                   : 'text-text-secondary hover:text-text-primary',
               )}
             >
-              {label}
+              {tCommon(value)}
             </button>
           ))}
         </div>
@@ -155,14 +154,14 @@ export default function ExercisePicker({
                     <span className="block font-semibold">{exercise.name}</span>
                     {primaryMuscles.length > 0 && (
                       <span className="block text-meta text-text-secondary">
-                        {primaryMuscles.length === 1 ? 'Muscle' : 'Muscles'}:{' '}
+                        {t('catalog.muscles', { count: primaryMuscles.length })}:{' '}
                         {primaryMuscles.join(', ')}
                       </span>
                     )}
                   </span>
                   {exercise.custom && (
                     <span className="shrink-0 rounded-full border border-border-on-overlay px-2 text-caption font-semibold text-text-secondary">
-                      Yours
+                      {tCommon('yours')}
                     </span>
                   )}
                 </button>
@@ -172,11 +171,15 @@ export default function ExercisePicker({
         </ul>
       ) : (
         <p className="mt-6 mb-4 text-center text-text-secondary">
-          No matching exercises
-          {search && ` for "${query.trim()}"`}
-          {owner === 'yours' && ' among your exercises'}
-          {type !== 'all' && ` in ${typeLabels[type]}`}
-          {muscle && ` targeting ${muscle.label}`}.
+          {t('picker.noMatch', {
+            hasSearch: search ? 'yes' : 'no',
+            query: query.trim(),
+            yours: owner === 'yours' ? 'yes' : 'no',
+            hasType: type !== 'all' ? 'yes' : 'no',
+            type: type !== 'all' ? t(`type.${type}`) : '',
+            hasMuscle: muscle ? 'yes' : 'no',
+            muscle: muscle?.label ?? '',
+          })}
         </p>
       )}
     </Sheet>

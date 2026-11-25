@@ -2,7 +2,9 @@ package de.phil.fitness.backend.exercise.mapper;
 
 import de.phil.fitness.backend.exercise.dto.*;
 import de.phil.fitness.backend.exercise.model.ExerciseMuscle;
+import de.phil.fitness.backend.exercise.model.ExerciseTranslation;
 import de.phil.fitness.backend.exercise.model.MuscleGroup;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Component;
 
 import de.phil.fitness.backend.exercise.model.Exercise;
@@ -20,20 +22,23 @@ public class ExerciseMapper {
      * @return the response DTO with ownership reduced to a boolean flag
      */
     public ExerciseResponse toResponse(Exercise exercise) {
+        String language = LocaleContextHolder.getLocale().getLanguage();
+        boolean english = "en".equals(language);
+        ExerciseTranslation translation = english ? null : exercise.getTranslations().get(language);
         return new ExerciseResponse(
                 exercise.getId(),
-                exercise.getName(),
+                translation != null ? translation.getName() : exercise.getName(),
                 exercise.getExerciseType(),
                 exercise.getTrackingType(),
-                exercise.getDescription(),
-                exercise.getInstructions(),
+                translation != null ? translation.getDescription() : exercise.getDescription(),
+                translation != null ? translation.getInstructions() : exercise.getInstructions(),
                 exercise.getMuscles().stream()
                         .sorted(Comparator.comparing(ExerciseMuscle::getRole))
                         .map(muscle -> {
                             MuscleGroup group = muscle.getMuscleGroup();
                             return new ExerciseMuscleResponse(
                                     group.getId(),
-                                    group.getName(),
+                                    english ? group.getName() : group.getTranslations().getOrDefault(language, group.getName()),
                                     group.getParent() != null ? group.getParent().getId() : group.getId(),
                                     muscle.getRole());
                         })
@@ -64,9 +69,11 @@ public class ExerciseMapper {
      * @return Compact DTO
      */
     public ExerciseSummary toSummary(Exercise exercise) {
+        String language = LocaleContextHolder.getLocale().getLanguage();
+        ExerciseTranslation translation = "en".equals(language) ? null : exercise.getTranslations().get(language);
         return new ExerciseSummary(
                 exercise.getId(),
-                exercise.getName(),
+                translation != null ? translation.getName() : exercise.getName(),
                 exercise.getTrackingType(),
                 exercise.getDeletedAt() != null
         );

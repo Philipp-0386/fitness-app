@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ChevronRight } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import { cn } from '@/shared/lib/utils';
 import { listClass, listRowClass } from '@/shared/ui/list';
@@ -16,9 +17,11 @@ type ProgramDayListProps = {
 
 export default function ProgramDayList({ program, exercises }: ProgramDayListProps) {
   const pathname = usePathname();
+  const t = useTranslations('programs');
+  const tCommon = useTranslations('common');
 
   return (
-    <ol className={listClass} aria-label={`Days of ${program.name}`}>
+    <ol className={listClass} aria-label={t('daysOf', { name: program.name })}>
       {program.days.map((day, index) => {
         const number = (
           <span
@@ -33,7 +36,7 @@ export default function ProgramDayList({ program, exercises }: ProgramDayListPro
           return (
             <li key={day.id} className="flex min-h-14 items-center gap-3 px-4 py-2.5">
               {number}
-              <span className="font-semibold text-text-secondary">Rest day</span>
+              <span className="font-semibold text-text-secondary">{t('restDay')}</span>
             </li>
           );
         }
@@ -53,10 +56,10 @@ export default function ProgramDayList({ program, exercises }: ProgramDayListPro
                 <span className="block truncate font-semibold">{day.routine.name}</span>
                 <span className="line-clamp-2 text-meta text-text-tertiary tabular-nums">
                   {names.length === 0
-                    ? 'No exercises yet'
+                    ? t('noExercises')
                     : exercises === 'names'
                       ? names.join(', ')
-                      : `${names.length} ${names.length === 1 ? 'exercise' : 'exercises'}`}
+                      : tCommon('exerciseCount', { count: names.length })}
                 </span>
               </span>
               <ChevronRight

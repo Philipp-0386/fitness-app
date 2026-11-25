@@ -2,11 +2,15 @@
 
 import { useRef, useState } from 'react';
 import { updateMe } from '../client/update-user.client';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { ChevronRight, CircleAlert } from 'lucide-react';
 import { ApiError } from '@/shared/api/errors/api-error';
-import { fallbackErrorMessage } from '@/shared/api/errors/fallback-error-message';
+import {
+  useErrorMessage,
+  useFieldErrorMessage,
+} from '@/shared/api/errors/use-error-message';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { Label } from '@/shared/ui/label';
@@ -26,6 +30,10 @@ export default function UpdateAccountDialog({ username, email }: Props) {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const t = useTranslations('me.updateAccount');
+  const tCommon = useTranslations('common');
+  const errorMessage = useErrorMessage();
+  const fieldErrorMessage = useFieldErrorMessage();
 
   function open() {
     setNewEmail(email);
@@ -54,7 +62,7 @@ export default function UpdateAccountDialog({ username, email }: Props) {
     setError(null);
 
     if (!newUsername || !newEmail || !password) {
-      setError('Please fill in all fields!');
+      setError(t('required'));
       return;
     }
 
@@ -66,7 +74,7 @@ export default function UpdateAccountDialog({ username, email }: Props) {
         currentPassword: password,
       });
       close();
-      toast.success(`Account updated: ${user.username}`);
+      toast.success(t('updated', { username: user.username }));
       router.refresh();
     } catch (err) {
       setError(evaluateError(err));
@@ -74,10 +82,32 @@ export default function UpdateAccountDialog({ username, email }: Props) {
       setIsSaving(false);
     }
   }
+
+  function evaluateError(error: unknown): string {
+    if (error instanceof ApiError) {
+      switch (error.code) {
+        case 'INVALID_PASSWORD':
+          return t('invalidPassword');
+        case 'USERNAME_ALREADY_TAKEN':
+          return t('usernameTaken');
+        case 'EMAIL_ALREADY_EXISTS':
+          return t('emailTaken');
+        case 'VALIDATION_FAILED':
+          if (error.fieldErrors) {
+            return Object.entries(error.fieldErrors)
+              .map(([field, code]) => fieldErrorMessage(field, code))
+              .join(' ');
+          }
+          break;
+      }
+    }
+    return errorMessage(error);
+  }
+
   return (
     <>
       <button type="button" onClick={open} className={listRowClass}>
-        <span className="min-w-0 flex-1 font-semibold">Edit account</span>
+        <span className="min-w-0 flex-1 font-semibold">{t('title')}</span>
         <ChevronRight className="size-5 shrink-0 text-text-tertiary" aria-hidden="true" />
       </button>
 
@@ -89,11 +119,11 @@ export default function UpdateAccountDialog({ username, email }: Props) {
       >
         <form onSubmit={handleSubmit} noValidate>
           <h2 id="update-account-title" className="mb-4 text-title">
-            Edit account
+            {t('title')}
           </h2>
           <div className="mb-4">
             <Label className="mb-1.5" htmlFor="update-username">
-              Username
+              {t('username')}
             </Label>
             <Input
               type="text"
@@ -105,7 +135,7 @@ export default function UpdateAccountDialog({ username, email }: Props) {
           </div>
           <div className="mb-4">
             <Label className="mb-1.5" htmlFor="update-email">
-              Email
+              {t('email')}
             </Label>
             <Input
               type="email"
@@ -117,7 +147,7 @@ export default function UpdateAccountDialog({ username, email }: Props) {
           </div>
           <div className="mb-4">
             <Label className="mb-1.5" htmlFor="update-password">
-              Confirm with your password
+              {t('password')}
             </Label>
             <Input
               type="password"
@@ -138,31 +168,14 @@ export default function UpdateAccountDialog({ username, email }: Props) {
           )}
           <div className="mt-2 flex flex-col gap-2">
             <Button type="submit" variant="primary" size="lg" disabled={isSaving}>
-              {isSaving ? 'Saving changes...' : 'Save changes'}
+              {isSaving ? t('submitting') : t('submit')}
             </Button>
             <Button type="button" className="w-full" disabled={isSaving} onClick={close}>
-              Cancel
+              {tCommon('cancel')}
             </Button>
           </div>
         </form>
       </Sheet>
     </>
   );
-}
-
-function evaluateError(error: unknown): string {
-  if (error instanceof ApiError) {
-    switch (error.code) {
-      case 'INVALID_PASSWORD':
-        return 'The password is incorrect.';
-      case 'USERNAME_ALREADY_TAKEN':
-        return 'This username is already taken. Please choose another one.';
-      case 'EMAIL_ALREADY_EXISTS':
-        return 'An account with this email already exists. Please use another one.';
-      case 'VALIDATION_FAILED':
-        if (error.fieldErrors) return Object.values(error.fieldErrors).join(' ');
-        break;
-    }
-  }
-  return fallbackErrorMessage(error);
 }
