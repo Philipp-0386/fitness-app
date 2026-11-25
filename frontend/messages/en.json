@@ -15,7 +15,7 @@
     "add": "Add",
     "all": "All",
     "yours": "Yours",
-    "tryAgain": "Try again",
+    "tryAgain": "Try Again",
     "reload": "Reload the page to try again.",
     "reference": "Reference: {digest}",
     "deleting": "Deleting...",
@@ -62,7 +62,7 @@
         "text": "Watch your volume and personal records develop over time."
       }
     },
-    "logIn": "Log in",
+    "logIn": "Log In",
     "noAccount": "No account yet?",
     "signUp": "Sign up"
   },
@@ -93,8 +93,8 @@
     "passwordRequired": "Enter your password",
     "invalidCredentials": "Wrong username or password. Check both and try again.",
     "tooManyAttempts": "Too many failed attempts. Please wait 15 minutes and try again.",
-    "submit": "Log in",
-    "submitting": "Logging in...",
+    "submit": "Log In",
+    "submitting": "Logging In...",
     "noAccount": "No account yet?",
     "signUp": "Sign up"
   },
@@ -109,8 +109,8 @@
     "confirmPassword": "Confirm password",
     "showConfirmation": "Show confirmation",
     "hideConfirmation": "Hide confirmation",
-    "submit": "Create account",
-    "submitting": "Creating account...",
+    "submit": "Create Account",
+    "submitting": "Creating Account...",
     "created": "User {username} with email {email} created successfully!",
     "haveAccount": "Already have an account?",
     "logIn": "Log in",
@@ -132,8 +132,8 @@
     }
   },
   "logout": {
-    "submit": "Log out",
-    "submitting": "Logging out...",
+    "submit": "Log Out",
+    "submitting": "Logging Out...",
     "failed": "Logout failed. Please try again."
   },
   "about": {
@@ -207,10 +207,10 @@
       "muscles": "{count, plural, one {Muscle} other {Muscles}}",
       "noMatch": "No matching exercises",
       "noMatchText": "Nothing matches{hasSearch, select, yes { \"{query}\"} other {}}{yours, select, yes { among your exercises} other {}}{hasType, select, yes { in {type}} other {}}{hasMuscle, select, yes { targeting {muscle}} other {}}.",
-      "clear": "Clear search and filters"
+      "clear": "Clear Search and Filters"
     },
     "picker": {
-      "title": "Choose an exercise",
+      "title": "Choose an Exercise",
       "noMatch": "No matching exercises{hasSearch, select, yes { for \"{query}\"} other {}}{yours, select, yes { among your exercises} other {}}{hasType, select, yes { in {type}} other {}}{hasMuscle, select, yes { targeting {muscle}} other {}}."
     },
     "typeFilter": {
@@ -261,8 +261,8 @@
       "instructionsPlaceholder": "How to perform it, step by step"
     },
     "delete": {
-      "button": "Delete exercise",
-      "title": "Delete this exercise?",
+      "button": "Delete Exercise",
+      "title": "Delete This Exercise?",
       "text": "It is removed from your routines. Workouts you logged with it stay complete.",
       "deleted": "Exercise deleted."
     }
@@ -334,8 +334,8 @@
       "distanceM": "Distance (m)",
       "minutes": "Minutes",
       "seconds": "Seconds",
-      "changeExercise": "Change exercise",
-      "remove": "Remove from routine",
+      "changeExercise": "Change Exercise",
+      "remove": "Remove from Routine",
       "wholeMin1": "Enter a whole number of at least 1.",
       "belowMin": "Must not be below the minimum.",
       "whole": "Enter a whole number.",
@@ -344,8 +344,8 @@
       "distanceTooLong": "This distance is too long."
     },
     "delete": {
-      "button": "Delete routine",
-      "title": "Delete this routine?",
+      "button": "Delete Routine",
+      "title": "Delete This Routine?",
       "text": "Workouts you logged with this routine stay complete.",
       "deleted": "Routine deleted."
     }
@@ -393,7 +393,7 @@
     },
     "delete": {
       "button": "Delete Program",
-      "title": "Delete this program?",
+      "title": "Delete This Program?",
       "text": "Your logged workouts stay complete.{active, select, yes { This is your active program, Today shows no program until you activate another one.} other {}}",
       "deleted": "Program deleted."
     }
@@ -419,40 +419,40 @@
     "deviceTimeZone": "Your device uses {timeZone}.",
     "useDeviceTimeZone": "Use Device Time Zone",
     "logoutOthers": {
-      "submit": "Log Out Everywhere",
-      "submitting": "Logging out everywhere...",
-      "done": "Logged out everywhere else. This device stays logged in.",
-      "failed": "Logging out everywhere failed. Please try again."
+      "submit": "Log Out Other Devices",
+      "submitting": "Logging out other devices...",
+      "done": "Logged out on all other devices. This device stays logged in.",
+      "failed": "Logging out other devices failed. Please try again."
     },
     "updateAccount": {
-      "title": "Edit account",
+      "title": "Edit Account",
       "username": "Username",
       "email": "Email",
       "password": "Confirm with your password",
-      "required": "Please fill in all fields!",
-      "submit": "Save changes",
-      "submitting": "Saving changes...",
+      "required": "Please fill in all fields.",
+      "submit": "Save Changes",
+      "submitting": "Saving Changes...",
       "updated": "Account updated: {username}",
       "invalidPassword": "The password is incorrect.",
       "usernameTaken": "This username is already taken. Please choose another one.",
       "emailTaken": "An account with this email already exists. Please use another one."
     },
     "changePassword": {
-      "title": "Change password",
-      "text": "Other sessions stay logged in until they expire.",
+      "title": "Change Password",
+      "text": "Other devices are logged out, at the latest after 15 minutes.",
       "current": "Current password",
       "new": "New password",
       "repeat": "Repeat new password",
-      "required": "Please fill in all fields!",
+      "required": "Please fill in all fields.",
       "same": "The new password must be different from the current one.",
       "mismatch": "The new passwords do not match.",
       "changed": "Your password has been changed. Other devices have been logged out.",
       "invalidPassword": "The current password is incorrect.",
-      "submitting": "Changing password..."
+      "submitting": "Changing Password..."
     },
     "deleteAccount": {
-      "title": "Delete your account?",
-      "button": "Delete account",
+      "title": "Delete Your Account?",
+      "button": "Delete Account",
       "text": "This permanently deletes your account and all your data. It cannot be undone.",
       "password": "Confirm with your password",
       "required": "Please enter your password.",
@@ -547,12 +547,12 @@
       "progress": "{done} of {total, plural, one {# set} other {# sets}}"
     },
     "finish": {
-      "discardTitle": "Discard this workout?",
+      "discardTitle": "Discard This Workout?",
       "discardWithSets": "The workout and its {count, plural, one {# set} other {# sets}} logged are deleted. This cannot be undone.",
       "discardEmpty": "The workout is deleted. This cannot be undone.",
       "discard": "Discard Workout",
-      "title": "Finish workout?",
-      "nothingTitle": "Nothing logged yet",
+      "title": "Finish Workout?",
+      "nothingTitle": "Nothing Logged Yet",
       "logged": "{count, plural, one {# set} other {# sets}} logged",
       "nothingText": "Log a set to finish the workout, or discard it.",
       "failed": "{count, plural, one {# set was} other {# sets were}} not saved.",

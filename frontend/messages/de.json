@@ -1,7 +1,7 @@
 {
   "layout": {
     "title": "Avren",
-    "description": "Workouts planen, Trainings festhalten und Fortschritte verfolgen."
+    "description": "Workouts planen, festhalten und Fortschritte verfolgen."
   },
   "common": {
     "language": "Sprache",
@@ -9,7 +9,7 @@
     "hidePassword": "Passwort verbergen",
     "cancel": "Abbrechen",
     "save": "Speichern",
-    "saving": "Speichern...",
+    "saving": "Wird gespeichert...",
     "done": "Fertig",
     "edit": "Bearbeiten",
     "add": "Hinzufügen",
@@ -27,7 +27,7 @@
   "nav": {
     "main": "Hauptmenü",
     "site": "Website",
-    "home": "Start",
+    "home": "Startseite",
     "today": "Heute",
     "history": "Verlauf",
     "plans": "Pläne",
@@ -44,7 +44,7 @@
   },
   "guestHome": {
     "title": "Trainiere mit Plan.",
-    "intro": "Erstelle deine Trainingspläne, halte deine Einheiten fest und behalte deinen Fortschritt an einem Ort im Blick.",
+    "intro": "Erstelle deine Trainingspläne, halte deine Workouts fest und behalte deinen Fortschritt an einem Ort im Blick.",
     "featuresTitle": "Was die App kann",
     "available": "Verfügbar",
     "inDevelopment": "In Entwicklung",
@@ -54,7 +54,7 @@
         "text": "Stelle Routinen aus einem Übungskatalog zusammen und nutze sie Woche für Woche."
       },
       "log": {
-        "title": "Jede Einheit festhalten",
+        "title": "Jedes Workout festhalten",
         "text": "Erfasse Sätze, Wiederholungen und Gewichte direkt beim Training."
       },
       "progress": {
@@ -94,7 +94,7 @@
     "invalidCredentials": "Benutzername oder Passwort ist falsch. Prüfe beides und versuche es erneut.",
     "tooManyAttempts": "Zu viele Fehlversuche. Bitte warte 15 Minuten und versuche es dann erneut.",
     "submit": "Anmelden",
-    "submitting": "Anmelden...",
+    "submitting": "Wird angemeldet...",
     "noAccount": "Noch kein Konto?",
     "signUp": "Registrieren"
   },
@@ -133,7 +133,7 @@
   },
   "logout": {
     "submit": "Abmelden",
-    "submitting": "Abmelden...",
+    "submitting": "Wird abgemeldet...",
     "failed": "Abmelden fehlgeschlagen. Bitte versuche es erneut."
   },
   "about": {
@@ -179,7 +179,7 @@
       },
       "DURATION": {
         "label": "Zeit",
-        "hint": "z. B. Unterarmstütz, Dehnen"
+        "hint": "z. B. Plank, Dehnen"
       },
       "WEIGHT_DISTANCE": {
         "label": "Gewicht und Strecke",
@@ -193,7 +193,7 @@
     "role": {
       "PRIMARY": "Primär",
       "SECONDARY": "Sekundär",
-      "EITHER": "Beides"
+      "EITHER": "Beliebig"
     },
     "region": {
       "UPPER": "Oberkörper",
@@ -219,7 +219,7 @@
     },
     "muscleFilter": {
       "label": "Muskelgruppe",
-      "chip": "{name}{role, select, SECONDARY {, sekundär} EITHER {, beides} other {}}",
+      "chip": "{name}{role, select, SECONDARY {, sekundär} EITHER {, beliebig} other {}}",
       "change": "Muskelgruppe: {name}. Ändern",
       "clear": "Muskelgruppe entfernen",
       "trainedAs": "Trainiert als",
@@ -407,7 +407,7 @@
     "privacy": "Datenschutzerklärung",
     "privacyLanguage": "Deutsch",
     "dangerZone": "Gefahrenzone",
-    "dangerText": "Löscht dein Konto und alles, was du erstellt hast, endgültig: eigene Übungen, Pläne und erfasste Einheiten.",
+    "dangerText": "Löscht dein Konto und alles, was du erstellt hast, endgültig: eigene Übungen, Pläne und erfasste Workouts.",
     "loadError": "Dein Konto konnte nicht geladen werden",
     "preferences": "Einstellungen",
     "weight": "Gewicht",
@@ -419,17 +419,17 @@
     "deviceTimeZone": "Dein Gerät nutzt {timeZone}.",
     "useDeviceTimeZone": "Zeitzone des Geräts verwenden",
     "logoutOthers": {
-      "submit": "Überall abmelden",
-      "submitting": "Wird überall abgemeldet...",
-      "done": "Überall sonst abgemeldet. Dieses Gerät bleibt angemeldet.",
-      "failed": "Überall abmelden ist fehlgeschlagen. Bitte versuche es erneut."
+      "submit": "Andere Geräte abmelden",
+      "submitting": "Andere Geräte werden abgemeldet...",
+      "done": "Auf allen anderen Geräten abgemeldet. Dieses Gerät bleibt angemeldet.",
+      "failed": "Abmelden der anderen Geräte ist fehlgeschlagen. Bitte versuche es erneut."
     },
     "updateAccount": {
       "title": "Konto bearbeiten",
       "username": "Benutzername",
       "email": "E-Mail",
       "password": "Mit deinem Passwort bestätigen",
-      "required": "Bitte fülle alle Felder aus!",
+      "required": "Bitte fülle alle Felder aus.",
       "submit": "Änderungen speichern",
       "submitting": "Änderungen werden gespeichert...",
       "updated": "Konto aktualisiert: {username}",
@@ -439,11 +439,11 @@
     },
     "changePassword": {
       "title": "Passwort ändern",
-      "text": "Andere Sitzungen bleiben angemeldet, bis sie ablaufen.",
+      "text": "Andere Geräte werden dabei abgemeldet, spätestens nach 15 Minuten.",
       "current": "Aktuelles Passwort",
       "new": "Neues Passwort",
       "repeat": "Neues Passwort wiederholen",
-      "required": "Bitte fülle alle Felder aus!",
+      "required": "Bitte fülle alle Felder aus.",
       "same": "Das neue Passwort muss sich vom aktuellen unterscheiden.",
       "mismatch": "Die neuen Passwörter stimmen nicht überein.",
       "changed": "Dein Passwort wurde geändert. Andere Geräte wurden abgemeldet.",
@@ -479,7 +479,7 @@
     "emptyText": "Füge die Übungen hinzu, die du trainieren willst. Sätze werden gespeichert, sobald du sie erfasst.",
     "addExercise": "Übung hinzufügen",
     "exerciseOptions": "Übungsoptionen",
-    "lastTime": "Letztes Mal {when}",
+    "lastTime": "Zuletzt {when}",
     "previous": "Zurück",
     "next": "Weiter",
     "repsValue": "{reps} Wdh.",
@@ -487,33 +487,33 @@
       "minimize": "Workout minimieren",
       "position": "Übung {current} von {total}. Alle Übungen anzeigen",
       "positionShort": "{current} von {total}",
-      "elapsed": "Verstrichene Zeit",
+      "elapsed": "Trainingsdauer",
       "finish": "Beenden"
     },
     "log": {
       "finish": "Workout beenden",
       "nextExercise": "Nächste Übung",
       "WORKING": "Satz {number} erfassen: {values}",
-      "WARMUP": "Aufwärmsatz erfassen: {values}",
+      "WARMUP": "Warm-Up erfassen: {values}",
       "DROP": "Dropsatz erfassen: {values}"
     },
     "setType": {
-      "WARMUP": "Aufwärmen",
+      "WARMUP": "Warm-Up",
       "WORKING": "Arbeitssatz",
-      "DROP": "Drop"
+      "DROP": "Dropsatz"
     },
     "setTitle": {
       "WORKING": "Satz {number}",
-      "WARMUP": "Aufwärmsatz",
+      "WARMUP": "Warm-Up",
       "DROP": "Dropsatz"
     },
     "setShort": {
-      "WARMUP": "A",
+      "WARMUP": "W",
       "DROP": "D"
     },
     "table": {
       "set": "SATZ",
-      "lastTime": "LETZTES MAL",
+      "lastTime": "ZULETZT",
       "reps": "WDH.",
       "time": "ZEIT",
       "meters": "M",
@@ -536,8 +536,8 @@
       "close": "Schließen",
       "swap": "Übung tauschen",
       "hasLogged": "Hat erfasste Sätze. Füge stattdessen die andere Übung hinzu.",
-      "moveBack": "Früher",
-      "moveForward": "Später",
+      "moveBack": "Nach vorne",
+      "moveForward": "Nach hinten",
       "position": "{position} von {total}",
       "remove": "Übung entfernen"
     },
