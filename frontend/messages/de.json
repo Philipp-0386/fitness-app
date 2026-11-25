@@ -37,11 +37,6 @@
     "privacy": "Datenschutz",
     "opensInNewTab": "(öffnet in neuem Tab)"
   },
-  "wipBanner": {
-    "label": "Projektstatus",
-    "text": "Noch in Arbeit. Daten können jederzeit zurückgesetzt werden.",
-    "hide": "Für 48 Stunden ausblenden"
-  },
   "guestHome": {
     "title": "Trainiere mit Plan.",
     "intro": "Erstelle deine Trainingspläne, halte deine Workouts fest und behalte deinen Fortschritt an einem Ort im Blick.",
@@ -141,7 +136,6 @@
     "title": "Über diese App",
     "intro": "Diese App ist ein privates Projekt. Sie ist noch früh in der Entwicklung, rechne also mit Ecken und Kanten, fehlenden Funktionen und gelegentlichen Fehlern.",
     "noteTitle": "Bitte beachte",
-    "noteReset": "Deine Daten können zurückgesetzt werden, solange sich die App noch entwickelt. Verlass dich vorerst nicht darauf als einziges Trainingstagebuch.",
     "noteFree": "Die App ist kostenlos und nicht kommerziell. Es gibt keine Werbung und kein Tracking.",
     "noteAdvice": "Dies ist <strong>keine medizinische oder professionelle</strong> Trainingsberatung.",
     "feedback": "Einen Fehler gefunden oder eine Idee? Ich freue mich über dein Feedback: <link>Erstelle ein Issue auf GitHub</link>.",
