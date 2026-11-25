@@ -1,4 +1,4 @@
-import { SiteFooter, WipBanner } from '@/shared/layout';
+import { SiteFooter } from '@/shared/layout';
 
 export default function PublicLayout({
   children,
@@ -7,7 +7,6 @@ export default function PublicLayout({
 }>) {
   return (
     <>
-      <WipBanner />
       <div className="flex flex-1 flex-col">{children}</div>
       <SiteFooter />
     </>

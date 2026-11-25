@@ -34,6 +34,7 @@ type SetTableProps = {
     option: Partial<Pick<SetRow, 'setType' | 'rpe'>>,
   ) => void;
   onAdd: () => void;
+  onLog?: (row: SetRow) => void;
   onRetry: (row: SetRow) => void;
   onRemove: (row: SetRow) => void;
 };
@@ -44,6 +45,7 @@ export default function SetTable({
   onChange,
   onOptionChange,
   onAdd,
+  onLog,
   onRetry,
   onRemove,
 }: SetTableProps) {
@@ -184,7 +186,10 @@ export default function SetTable({
                       }
                       defaultValue={text}
                       aria-label={heads[field]}
-                      onFocus={(e) => e.currentTarget.select()}
+                      onFocus={(e) => {
+                        const end = e.currentTarget.value.length;
+                        e.currentTarget.setSelectionRange(end, end);
+                      }}
                       onBlur={(e) => commit(index, field, e.currentTarget.value)}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') e.currentTarget.blur();
@@ -208,7 +213,20 @@ export default function SetTable({
                   </button>
                 );
               })}
-              <span className="flex justify-center">
+              <span className="flex justify-end">
+                {onLog && index === active && (
+                  <button
+                    type="button"
+                    disabled={requiredFields[type].some((field) => row[field] === null)}
+                    onClick={() => onLog(row)}
+                    aria-label={t('table.log', { title })}
+                    className="group flex size-tap items-center justify-end disabled:opacity-40"
+                  >
+                    <span className="flex size-7 items-center justify-center rounded-full border border-action text-text-primary group-active:bg-surface-raised">
+                      <Check className="size-4" aria-hidden="true" />
+                    </span>
+                  </button>
+                )}
                 {row.status === 'saving' && (
                   <LoaderCircle
                     className="size-5 animate-spin text-text-tertiary motion-reduce:animate-none"

@@ -72,7 +72,7 @@ export default async function PrivacyPolicy() {
           keine Einnahmen.
         </p>
         <p>Die verwendeten Begriffe sind nicht geschlechtsspezifisch.</p>
-        <p>Stand: 24. November 2026</p>
+        <p>Stand: 25. November 2026</p>
 
         <h2>Inhaltsübersicht</h2>
         <ul className={cardListClass}>
@@ -508,8 +508,7 @@ export default async function PrivacyPolicy() {
         </p>
         <p>
           <strong>Von mir eingesetzte Cookies:</strong> Diese Web-App setzt ausschließlich
-          technisch notwendige Cookies: für die Anmeldung und, nur auf ausdrücklichen
-          Klick, um sich das Ausblenden des Hinweises zum Entwicklungsstand zu merken.
+          technisch notwendige Cookies: für die Anmeldung und für die gewählte Sprache.
           Eine Einwilligung ist hierfür nicht erforderlich (§ 25 Abs. 2 Nr. 2 TDDDG). Es
           werden keine Cookies zu Analyse-, Tracking- oder Werbezwecken eingesetzt, und es
           werden keine sonstigen Informationen im Browser gespeichert (z. B. Local
@@ -521,13 +520,13 @@ export default async function PrivacyPolicy() {
             Minuten.
           </li>
           <li>
-            <strong>refresh_token:</strong> Dient der Verlängerung der Anmeldung;
-            Speicherdauer 7 Tage.
+            <strong>refresh_token:</strong> Dient der Verlängerung der Anmeldung; wird bei
+            jeder Nutzung erneuert; Speicherdauer 21 Tage ab der letzten Nutzung.
           </li>
           <li>
-            <strong>wip_hidden:</strong> Merkt sich, dass der Hinweis zum
-            Entwicklungsstand ausgeblendet wurde; enthält keine personenbezogenen Daten;
-            Speicherdauer 48 Stunden.
+            <strong>locale:</strong> Speichert die gewählte Sprache der Oberfläche; wird
+            bei der Sprachauswahl und bei der Anmeldung gesetzt; enthält keine
+            personenbezogenen Daten; Speicherdauer 1 Jahr.
           </li>
         </ul>
         <p>
@@ -554,9 +553,9 @@ export default async function PrivacyPolicy() {
         <p>
           Eine öffentliche Registrierung ist nicht möglich. Nutzerkonten werden
           ausschließlich von mir persönlich angelegt. Für das Nutzerkonto werden
-          Nutzername, E-Mail-Adresse und Passwort verarbeitet. Das Passwort wird
-          ausschließlich als kryptografischer Hash gespeichert, nie im Klartext. Klarnamen
-          sind nicht erforderlich.
+          Nutzername, E-Mail-Adresse, Passwort und die gewählte Sprache verarbeitet. Das
+          Passwort wird ausschließlich als kryptografischer Hash gespeichert, nie im
+          Klartext. Klarnamen sind nicht erforderlich.
         </p>
         <p>
           Im Rahmen der Nutzung speichere ich die Inhalte, die Nutzer selbst in der App
@@ -572,19 +571,19 @@ export default async function PrivacyPolicy() {
           „Bereitstellung des Onlineangebots und Webhosting“).
         </p>
         <p>
-          Nutzer können ihre Kontodaten (Nutzername, E-Mail-Adresse und Passwort) in den
-          Kontoeinstellungen jederzeit ändern und ihr Konto dort selbst löschen. Dabei
-          werden alle zugehörigen Daten gelöscht. Alternativ ist die Löschung auf Anfrage
-          per E-Mail an <a href="mailto:kontakt@ringelkamp.dev">kontakt@ringelkamp.dev</a>{' '}
-          möglich.
+          Nutzer können ihre Kontodaten (Nutzername, E-Mail-Adresse, Passwort und Sprache)
+          in den Kontoeinstellungen jederzeit ändern und ihr Konto dort selbst löschen.
+          Dabei werden alle zugehörigen Daten gelöscht. Alternativ ist die Löschung auf
+          Anfrage per E-Mail an{' '}
+          <a href="mailto:kontakt@ringelkamp.dev">kontakt@ringelkamp.dev</a> möglich.
         </p>
         <ul className={cardListClass}>
           <li>
             <strong>Verarbeitete Datenarten:</strong> Bestandsdaten (Nutzername,
-            E-Mail-Adresse, Passwort-Hash); Inhaltsdaten (von Nutzern angelegte
-            Trainingsdaten); Meta-, Kommunikations- und Verfahrensdaten (Zeitpunkte der
-            Erstellung und Änderung); Protokolldaten (pseudonyme Nutzer-ID in technischen
-            Fehlerprotokollen).
+            E-Mail-Adresse, Passwort-Hash, gewählte Sprache); Inhaltsdaten (von Nutzern
+            angelegte Trainingsdaten); Meta-, Kommunikations- und Verfahrensdaten
+            (Zeitpunkte der Erstellung und Änderung); Protokolldaten (pseudonyme Nutzer-ID
+            in technischen Fehlerprotokollen).
           </li>
           <li>
             <strong>Betroffene Personen:</strong> Nutzer (z. B. Webseitenbesucher, Nutzer

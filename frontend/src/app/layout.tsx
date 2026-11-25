@@ -44,8 +44,8 @@ export default async function RootLayout({
           <Toaster
             position="bottom-center"
             duration={2600}
-            offset={{ bottom: 'calc(72px + env(safe-area-inset-bottom))' }}
-            mobileOffset={{ bottom: 'calc(72px + env(safe-area-inset-bottom))' }}
+            offset={{ bottom: 'calc(88px + env(safe-area-inset-bottom))' }}
+            mobileOffset={{ bottom: 'calc(88px + env(safe-area-inset-bottom))' }}
             icons={{
               success: <CircleCheck className="size-5 text-success" aria-hidden="true" />,
               error: <CircleAlert className="size-5 text-danger" aria-hidden="true" />,

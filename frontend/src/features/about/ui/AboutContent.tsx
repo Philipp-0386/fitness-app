@@ -31,7 +31,6 @@ export default async function AboutContent() {
       <section className="mt-6 rounded-card bg-surface px-4 pt-5 pb-4">
         <h2 className="mb-3 text-title">{t('noteTitle')}</h2>
         <ul className="flex list-disc flex-col gap-2 pl-5 text-text-secondary">
-          <li>{t('noteReset')}</li>
           <li>{t('noteFree')}</li>
           <li>
             {t.rich('noteAdvice', {

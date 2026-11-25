@@ -131,12 +131,18 @@ export default function ActiveWorkoutView({
     }
   }
 
-  async function handleRemoveExercise() {
+  async function handleRemoveExercise(index: number) {
+    const removed = exercises[index];
     setExerciseSheetOpen(false);
     try {
-      await removeExercise(workout.id, entry.id);
-      setExercises((prev) => prev.filter((e) => e.id !== entry.id));
-      setCurrent(Math.max(0, Math.min(current, exercises.length - 2)));
+      await removeExercise(workout.id, removed.id);
+      setExercises((prev) => prev.filter((e) => e.id !== removed.id));
+      setCurrent(
+        Math.max(
+          0,
+          index < current ? current - 1 : Math.min(current, exercises.length - 2),
+        ),
+      );
     } catch (error) {
       toast.error(errorMessage(error));
     }
@@ -226,6 +232,7 @@ export default function ActiveWorkoutView({
               onAdd={() =>
                 setRows({ ...rows, [entry.id]: addRow(entry, rows[entry.id]) })
               }
+              onLog={(row) => save(entry.id, row)}
               onRetry={(row) => save(entry.id, row)}
               onRemove={(row) => remove(entry.id, row)}
             />
@@ -288,6 +295,7 @@ export default function ActiveWorkoutView({
             setOverviewOpen(false);
           }}
           onMove={moveExercise}
+          onRemove={handleRemoveExercise}
           onAdd={() => {
             setOverviewOpen(false);
             setPicker('add');
@@ -314,7 +322,7 @@ export default function ActiveWorkoutView({
           }}
           onMoveUp={() => moveExercise(current, current - 1)}
           onMoveDown={() => moveExercise(current, current + 1)}
-          onRemove={handleRemoveExercise}
+          onRemove={() => handleRemoveExercise(current)}
           onClose={() => {
             setExerciseSheetOpen(false);
             setReorderError(null);

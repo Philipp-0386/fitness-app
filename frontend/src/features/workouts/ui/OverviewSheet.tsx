@@ -16,9 +16,9 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Check, GripVertical, Plus } from 'lucide-react';
+import { Check, GripVertical, Plus, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { cn } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui/button';
@@ -37,6 +37,7 @@ type OverviewSheetProps = {
   error: string | null;
   onSelect: (index: number) => void;
   onMove: (from: number, to: number) => void;
+  onRemove: (index: number) => void;
   onAdd: () => void;
   onClose: () => void;
 };
@@ -51,6 +52,7 @@ export default function OverviewSheet({
   error,
   onSelect,
   onMove,
+  onRemove,
   onAdd,
   onClose,
 }: OverviewSheetProps) {
@@ -123,6 +125,7 @@ export default function OverviewSheet({
                 isCurrent={index === current}
                 reordering={reordering}
                 onSelect={() => onSelect(index)}
+                onRemove={() => onRemove(index)}
               />
             ))}
           </ol>
@@ -144,6 +147,7 @@ type EntryRowProps = {
   isCurrent: boolean;
   reordering: boolean;
   onSelect: () => void;
+  onRemove: () => void;
 };
 
 function EntryRow({
@@ -153,7 +157,10 @@ function EntryRow({
   isCurrent,
   reordering,
   onSelect,
+  onRemove,
 }: EntryRowProps) {
+  const [confirming, setConfirming] = useState(false);
+  const removeRef = useRef<HTMLButtonElement>(null);
   const {
     attributes,
     listeners,
@@ -171,6 +178,16 @@ function EntryRow({
     (row) => row.status === 'saved' || row.status === 'saving',
   ).length;
   const complete = rows.length > 0 && rows.every((row) => row.status !== 'open');
+  const hasLogged = rows.some((row) => row.status !== 'open');
+
+  useEffect(() => {
+    if (!confirming) return;
+    function cancelOutside(e: PointerEvent) {
+      if (!removeRef.current?.contains(e.target as Node)) setConfirming(false);
+    }
+    document.addEventListener('pointerdown', cancelOutside);
+    return () => document.removeEventListener('pointerdown', cancelOutside);
+  }, [confirming]);
 
   return (
     <li
@@ -214,6 +231,29 @@ function EntryRow({
           <Check className="size-5 shrink-0 text-success" aria-label={tCommon('done')} />
         )}
       </button>
+      {!hasLogged &&
+        (confirming ? (
+          <Button
+            type="button"
+            ref={removeRef}
+            variant="text"
+            disabled={reordering}
+            onClick={onRemove}
+            className="-mr-3 shrink-0 text-danger hover:bg-field-on-overlay active:bg-field-on-overlay"
+          >
+            {t('overview.remove')}
+          </Button>
+        ) : (
+          <button
+            type="button"
+            disabled={reordering}
+            onClick={() => setConfirming(true)}
+            aria-label={t('overview.removeExercise', { name: entry.exercise.name })}
+            className="-mr-3 grid size-tap shrink-0 place-items-center text-text-tertiary hover:text-text-secondary disabled:opacity-40"
+          >
+            <Trash2 className="size-5" aria-hidden="true" />
+          </button>
+        ))}
     </li>
   );
 }
