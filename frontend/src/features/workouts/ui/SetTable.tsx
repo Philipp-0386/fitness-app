@@ -186,7 +186,10 @@ export default function SetTable({
                       }
                       defaultValue={text}
                       aria-label={heads[field]}
-                      onFocus={(e) => e.currentTarget.select()}
+                      onFocus={(e) => {
+                        const end = e.currentTarget.value.length;
+                        e.currentTarget.setSelectionRange(end, end);
+                      }}
                       onBlur={(e) => commit(index, field, e.currentTarget.value)}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') e.currentTarget.blur();
