@@ -1,12 +1,13 @@
 'use client';
 
 import { Check, LoaderCircle, Plus } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useRef, useState } from 'react';
 
 import type { TrackingType } from '@/features/exercises';
 import { cn } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui/button';
-import { formatSetValues, weightHead } from '../lib/format-set';
+import { useFormatSetValues, weightHead } from '../lib/format-set';
 import { requiredFields, type SetField, type SetRow } from '../lib/set-rows';
 import type { WorkoutExercise } from '../types/api.types';
 import SetSheet from './SetSheet';
@@ -49,13 +50,15 @@ export default function SetTable({
   const [editing, setEditing] = useState<{ index: number; field: SetField } | null>(null);
   const [sheetId, setSheetId] = useState<string | null>(null);
   const cancelled = useRef(false);
+  const t = useTranslations('workouts');
+  const formatSetValues = useFormatSetValues();
 
   const type = entry.exercise.trackingType;
   const heads: Record<SetField, string> = {
     weightKg: weightHead(type),
-    reps: 'REPS',
-    durationSeconds: 'TIME',
-    distanceMeters: 'M',
+    reps: t('table.reps'),
+    durationSeconds: t('table.time'),
+    distanceMeters: t('table.meters'),
   };
   const active = rows.findIndex((row) => row.status === 'open');
   //the k-th row of a type is compared with the k-th set of that type last time
@@ -66,11 +69,11 @@ export default function SetTable({
     const last = entry.lastTime?.sets.filter((s) => s.setType === row.setType)[
       number - 1
     ];
-    return row.setType === 'WORKING'
-      ? { last, short: String(number), title: `Set ${number}` }
-      : row.setType === 'WARMUP'
-        ? { last, short: 'W', title: 'Warm-Up' }
-        : { last, short: 'D', title: 'Drop Set' };
+    return {
+      last,
+      short: row.setType === 'WORKING' ? String(number) : t(`setShort.${row.setType}`),
+      title: t(`setTitle.${row.setType}`, { number }),
+    };
   });
   const sheetIndex = rows.findIndex((row) => row.clientId === sheetId);
 
@@ -106,11 +109,11 @@ export default function SetTable({
   return (
     <div className="mt-6">
       <div className={cn(grid, 'pb-2 text-meta font-semibold text-text-tertiary')}>
-        <span>SET</span>
-        <span>LAST TIME</span>
+        <span>{t('table.set')}</span>
+        <span>{t('table.lastTime')}</span>
         <span className="text-right">{heads[columns[type][0]]}</span>
         <span className="text-right">{heads[columns[type][1]]}</span>
-        <span className="sr-only">Status</span>
+        <span className="sr-only">{t('table.status')}</span>
       </div>
 
       <ol className="flex flex-col gap-1">
@@ -120,7 +123,7 @@ export default function SetTable({
           return (
             <SwipeableRow
               key={row.clientId}
-              actionLabel="Remove"
+              actionLabel={t('table.remove')}
               onAction={() => onRemove(row)}
               className={cn(
                 grid,
@@ -133,7 +136,7 @@ export default function SetTable({
               <button
                 type="button"
                 aria-haspopup="dialog"
-                aria-label={`${title} options`}
+                aria-label={t('table.options', { title })}
                 onClick={() => setSheetId(row.clientId)}
                 className="flex min-h-tap flex-col items-start justify-center font-semibold"
               >
@@ -150,7 +153,7 @@ export default function SetTable({
                 </span>
               ) : (
                 <span
-                  aria-label="Not done last time"
+                  aria-label={t('table.notDoneLastTime')}
                   className="truncate text-meta text-text-secondary"
                 >
                   -
@@ -205,7 +208,7 @@ export default function SetTable({
                 {row.status === 'saving' && (
                   <LoaderCircle
                     className="size-5 animate-spin text-text-tertiary motion-reduce:animate-none"
-                    aria-label="Saving"
+                    aria-label={t('table.saving')}
                   />
                 )}
                 {row.status === 'saved' && (
@@ -216,7 +219,7 @@ export default function SetTable({
                     />
                     <Check
                       className="size-5 animate-saved-pop text-success motion-reduce:animate-none"
-                      aria-label="Saved"
+                      aria-label={t('table.saved')}
                     />
                   </>
                 )}
@@ -226,7 +229,7 @@ export default function SetTable({
                     onClick={() => onRetry(row)}
                     className="min-h-tap text-meta font-semibold text-danger"
                   >
-                    Retry
+                    {t('table.retry')}
                   </button>
                 )}
               </span>
@@ -237,7 +240,7 @@ export default function SetTable({
 
       <Button type="button" variant="text" className="mt-2 w-full" onClick={onAdd}>
         <Plus aria-hidden="true" />
-        Add Set
+        {t('table.addSet')}
       </Button>
 
       {sheetIndex !== -1 && (

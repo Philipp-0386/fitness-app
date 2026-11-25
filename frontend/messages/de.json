@@ -398,6 +398,213 @@
       "deleted": "Programm gelöscht."
     }
   },
+  "me": {
+    "title": "Konto",
+    "profile": "Profil",
+    "memberSince": "Mitglied seit {date}",
+    "loginDetails": "Anmeldedaten",
+    "info": "Info",
+    "privacy": "Datenschutzerklärung",
+    "privacyLanguage": "Deutsch",
+    "dangerZone": "Gefahrenzone",
+    "dangerText": "Löscht dein Konto und alles, was du erstellt hast, endgültig: eigene Übungen, Pläne und erfasste Einheiten.",
+    "loadError": "Dein Konto konnte nicht geladen werden",
+    "preferences": "Einstellungen",
+    "weight": "Gewicht",
+    "weightUnit": "Gewichtseinheit",
+    "distance": "Strecke",
+    "distanceUnit": "Streckeneinheit",
+    "language": "Sprache",
+    "timeZone": "Zeitzone",
+    "deviceTimeZone": "Dein Gerät nutzt {timeZone}.",
+    "useDeviceTimeZone": "Zeitzone des Geräts verwenden",
+    "logoutOthers": {
+      "submit": "Überall abmelden",
+      "submitting": "Wird überall abgemeldet...",
+      "done": "Überall sonst abgemeldet. Dieses Gerät bleibt angemeldet.",
+      "failed": "Überall abmelden ist fehlgeschlagen. Bitte versuche es erneut."
+    },
+    "updateAccount": {
+      "title": "Konto bearbeiten",
+      "username": "Benutzername",
+      "email": "E-Mail",
+      "password": "Mit deinem Passwort bestätigen",
+      "required": "Bitte fülle alle Felder aus!",
+      "submit": "Änderungen speichern",
+      "submitting": "Änderungen werden gespeichert...",
+      "updated": "Konto aktualisiert: {username}",
+      "invalidPassword": "Das Passwort ist falsch.",
+      "usernameTaken": "Dieser Benutzername ist bereits vergeben. Bitte wähle einen anderen.",
+      "emailTaken": "Mit dieser E-Mail-Adresse gibt es bereits ein Konto. Bitte verwende eine andere."
+    },
+    "changePassword": {
+      "title": "Passwort ändern",
+      "text": "Andere Sitzungen bleiben angemeldet, bis sie ablaufen.",
+      "current": "Aktuelles Passwort",
+      "new": "Neues Passwort",
+      "repeat": "Neues Passwort wiederholen",
+      "required": "Bitte fülle alle Felder aus!",
+      "same": "Das neue Passwort muss sich vom aktuellen unterscheiden.",
+      "mismatch": "Die neuen Passwörter stimmen nicht überein.",
+      "changed": "Dein Passwort wurde geändert. Andere Geräte wurden abgemeldet.",
+      "invalidPassword": "Das aktuelle Passwort ist falsch.",
+      "submitting": "Passwort wird geändert..."
+    },
+    "deleteAccount": {
+      "title": "Dein Konto löschen?",
+      "button": "Konto löschen",
+      "text": "Dein Konto und alle deine Daten werden endgültig gelöscht. Das lässt sich nicht rückgängig machen.",
+      "password": "Mit deinem Passwort bestätigen",
+      "required": "Bitte gib dein Passwort ein.",
+      "deleted": "Dein Konto wurde gelöscht.",
+      "invalidPassword": "Das Passwort ist falsch."
+    }
+  },
+  "progress": {
+    "title": "Fortschritt",
+    "text": "In Entwicklung. Bestleistungen, Volumen und Progression erscheinen hier."
+  },
+  "workouts": {
+    "errorTitle": "Workout",
+    "loadError": "Dieses Workout konnte nicht geladen werden",
+    "notFound": "Workout nicht gefunden",
+    "notFoundText": "Dieses Workout gibt es nicht (mehr). Vielleicht wurde es gelöscht, oder der Link ist falsch.",
+    "inProgress": "{name} läuft",
+    "resume": "Fortsetzen",
+    "resumeName": "{name} fortsetzen",
+    "otherRunning": "Ein anderes Workout läuft. Beende es zuerst.",
+    "start": "Workout starten",
+    "starting": "Wird gestartet...",
+    "empty": "Noch keine Übungen",
+    "emptyText": "Füge die Übungen hinzu, die du trainieren willst. Sätze werden gespeichert, sobald du sie erfasst.",
+    "addExercise": "Übung hinzufügen",
+    "exerciseOptions": "Übungsoptionen",
+    "lastTime": "Letztes Mal {when}",
+    "previous": "Zurück",
+    "next": "Weiter",
+    "repsValue": "{reps} Wdh.",
+    "topBar": {
+      "minimize": "Workout minimieren",
+      "position": "Übung {current} von {total}. Alle Übungen anzeigen",
+      "positionShort": "{current} von {total}",
+      "elapsed": "Verstrichene Zeit",
+      "finish": "Beenden"
+    },
+    "log": {
+      "finish": "Workout beenden",
+      "nextExercise": "Nächste Übung",
+      "WORKING": "Satz {number} erfassen: {values}",
+      "WARMUP": "Aufwärmsatz erfassen: {values}",
+      "DROP": "Dropsatz erfassen: {values}"
+    },
+    "setType": {
+      "WARMUP": "Aufwärmen",
+      "WORKING": "Arbeitssatz",
+      "DROP": "Drop"
+    },
+    "setTitle": {
+      "WORKING": "Satz {number}",
+      "WARMUP": "Aufwärmsatz",
+      "DROP": "Dropsatz"
+    },
+    "setShort": {
+      "WARMUP": "A",
+      "DROP": "D"
+    },
+    "table": {
+      "set": "SATZ",
+      "lastTime": "LETZTES MAL",
+      "reps": "WDH.",
+      "time": "ZEIT",
+      "meters": "M",
+      "status": "Status",
+      "options": "Optionen für {title}",
+      "notDoneLastTime": "Letztes Mal nicht gemacht",
+      "saving": "Wird gespeichert",
+      "saved": "Gespeichert",
+      "retry": "Erneut",
+      "remove": "Entfernen",
+      "addSet": "Satz hinzufügen"
+    },
+    "setSheet": {
+      "type": "Satztyp",
+      "rpe": "RPE (optional)",
+      "rpeRange": "RPE geht von 1 bis 10.",
+      "remove": "Satz entfernen"
+    },
+    "exerciseSheet": {
+      "close": "Schließen",
+      "swap": "Übung tauschen",
+      "hasLogged": "Hat erfasste Sätze. Füge stattdessen die andere Übung hinzu.",
+      "moveBack": "Früher",
+      "moveForward": "Später",
+      "position": "{position} von {total}",
+      "remove": "Übung entfernen"
+    },
+    "overview": {
+      "summary": "{count, plural, one {# Übung} other {# Übungen}}, {logged, plural, one {# Satz} other {# Sätze}} erfasst",
+      "reorder": "{name} verschieben",
+      "progress": "{done} von {total, plural, one {# Satz} other {# Sätzen}}"
+    },
+    "finish": {
+      "discardTitle": "Dieses Workout verwerfen?",
+      "discardWithSets": "Das Workout und {count, plural, one {# erfasster Satz} other {# erfasste Sätze}} werden gelöscht. Das lässt sich nicht rückgängig machen.",
+      "discardEmpty": "Das Workout wird gelöscht. Das lässt sich nicht rückgängig machen.",
+      "discard": "Workout verwerfen",
+      "title": "Workout beenden?",
+      "nothingTitle": "Noch nichts erfasst",
+      "logged": "{count, plural, one {# Satz} other {# Sätze}} erfasst",
+      "nothingText": "Erfasse einen Satz, um das Workout zu beenden, oder verwirf es.",
+      "failed": "{count, plural, one {# Satz wurde} other {# Sätze wurden}} nicht gespeichert.",
+      "submit": "Workout beenden",
+      "submitting": "Wird beendet...",
+      "keep": "Weiter trainieren"
+    },
+    "summary": {
+      "title": "Workout abgeschlossen",
+      "duration": "Dauer",
+      "sets": "Sätze"
+    },
+    "detail": {
+      "duration": "Dauer",
+      "inProgress": "Läuft noch",
+      "sets": "Sätze",
+      "exercises": "Übungen",
+      "empty": "Keine Übungen in diesem Workout.",
+      "target": "Ziel {target}",
+      "deleted": "Nicht mehr im Katalog",
+      "noSets": "Keine Sätze erfasst.",
+      "rpe": "RPE {rpe}"
+    },
+    "edit": {
+      "title": "{name} bearbeiten",
+      "unsaved": "{count, plural, one {# Satz wurde} other {# Sätze wurden}} nicht gespeichert. Versuche es erneut, oder tippe noch einmal auf Fertig, um trotzdem zu gehen.",
+      "moveUp": "{name} nach oben",
+      "moveDown": "{name} nach unten"
+    },
+    "history": {
+      "title": "Verlauf",
+      "loadError": "Dein Verlauf konnte nicht geladen werden",
+      "noneSelected": "Nichts ausgewählt",
+      "noneSelectedText": "Wähle ein Workout, um seine Übungen und Sätze zu sehen.",
+      "empty": "Noch keine Workouts",
+      "emptyText": "Abgeschlossene Workouts erscheinen hier, die neuesten zuerst.",
+      "thisWeek": "Diese Woche",
+      "lastWeek": "Letzte Woche",
+      "weekOf": "Woche vom {date}",
+      "sets": "{count, plural, one {# Satz} other {# Sätze}}",
+      "loading": "Wird geladen...",
+      "loadMore": "Mehr laden"
+    },
+    "ago": {
+      "today": "heute",
+      "yesterday": "gestern",
+      "days": "vor {count} Tagen",
+      "weeks": "vor {count, plural, one {einer Woche} other {# Wochen}}",
+      "months": "vor {count, plural, one {einem Monat} other {# Monaten}}",
+      "years": "vor {count, plural, one {einem Jahr} other {# Jahren}}"
+    }
+  },
   "errors": {
     "unexpected": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuche es später erneut.",
     "badRequest": "Bitte überprüfe deine Eingaben.",

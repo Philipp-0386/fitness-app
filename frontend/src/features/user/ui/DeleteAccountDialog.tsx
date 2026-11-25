@@ -3,10 +3,11 @@
 import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { CircleAlert } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 
 import { ApiError } from '@/shared/api/errors/api-error';
-import { fallbackErrorMessage } from '@/shared/api/errors/fallback-error-message';
+import { useErrorMessage } from '@/shared/api/errors/use-error-message';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { Label } from '@/shared/ui/label';
@@ -20,6 +21,9 @@ export default function DeleteAccountDialog() {
   const [error, setError] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const router = useRouter();
+  const t = useTranslations('me.deleteAccount');
+  const tCommon = useTranslations('common');
+  const errorMessage = useErrorMessage();
 
   function open() {
     dialogRef.current?.showModal();
@@ -45,7 +49,7 @@ export default function DeleteAccountDialog() {
     setError(null);
 
     if (!password) {
-      setError('Please enter your password.');
+      setError(t('required'));
       return;
     }
 
@@ -53,23 +57,23 @@ export default function DeleteAccountDialog() {
     try {
       await deleteMe({ password });
       close();
-      toast.success('Your account has been deleted.');
+      toast.success(t('deleted'));
       router.replace('/');
       router.refresh();
     } catch (err) {
       setIsDeleting(false);
       if (err instanceof ApiError && err.code === 'INVALID_PASSWORD') {
-        setError('The password is incorrect.');
+        setError(t('invalidPassword'));
         return;
       }
-      setError(fallbackErrorMessage(err));
+      setError(errorMessage(err));
     }
   }
 
   return (
     <>
       <button type="button" onClick={open} className={listRowClass}>
-        <span className="min-w-0 flex-1 font-semibold text-danger">Delete account</span>
+        <span className="min-w-0 flex-1 font-semibold text-danger">{t('button')}</span>
       </button>
 
       <Sheet
@@ -80,14 +84,12 @@ export default function DeleteAccountDialog() {
       >
         <form onSubmit={handleSubmit} noValidate>
           <h2 id="delete-account-title" className="text-title">
-            Delete your account?
+            {t('title')}
           </h2>
-          <p className="mt-1 mb-4 text-text-secondary">
-            This permanently deletes your account and all your data. It cannot be undone.
-          </p>
+          <p className="mt-1 mb-4 text-text-secondary">{t('text')}</p>
           <div className="mb-4">
             <Label className="mb-1.5" htmlFor="delete-password">
-              Confirm with your password
+              {t('password')}
             </Label>
             <Input
               type="password"
@@ -108,7 +110,7 @@ export default function DeleteAccountDialog() {
           )}
           <div className="mt-2 flex flex-col gap-2">
             <Button type="submit" variant="danger" size="lg" disabled={isDeleting}>
-              {isDeleting ? 'Deleting...' : 'Delete account'}
+              {isDeleting ? tCommon('deleting') : t('button')}
             </Button>
             <Button
               type="button"
@@ -116,7 +118,7 @@ export default function DeleteAccountDialog() {
               onClick={close}
               disabled={isDeleting}
             >
-              Cancel
+              {tCommon('cancel')}
             </Button>
           </div>
         </form>

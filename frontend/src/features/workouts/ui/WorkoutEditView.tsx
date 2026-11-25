@@ -3,10 +3,11 @@
 import { arrayMove } from '@dnd-kit/sortable';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { useFormatTarget } from '@/features/routines/lib/format-target';
-import { fallbackErrorMessage } from '@/shared/api/errors/fallback-error-message';
+import { useErrorMessage } from '@/shared/api/errors/use-error-message';
 import { Button } from '@/shared/ui/button';
 import { reorderExercises } from '../client/reorder-exercises.client';
 import { addRow, requiredFields, type SetRow } from '../lib/set-rows';
@@ -18,6 +19,9 @@ import SetTable from './SetTable';
 export default function WorkoutEditView({ workout }: { workout: Workout }) {
   const router = useRouter();
   const formatTarget = useFormatTarget();
+  const t = useTranslations('workouts');
+  const tCommon = useTranslations('common');
+  const errorMessage = useErrorMessage();
   const [exercises, setExercises] = useState(workout.exercises);
   const [reordering, setReordering] = useState(false);
   const [reorderError, setReorderError] = useState<string | null>(null);
@@ -46,7 +50,7 @@ export default function WorkoutEditView({ workout }: { workout: Workout }) {
     )
       .catch((error) => {
         setExercises(before);
-        setReorderError(fallbackErrorMessage(error));
+        setReorderError(errorMessage(error));
       })
       .finally(() => setReordering(false));
   }
@@ -78,16 +82,15 @@ export default function WorkoutEditView({ workout }: { workout: Workout }) {
           disabled={leaving}
           onClick={done}
         >
-          Done
+          {tCommon('done')}
         </Button>
       </header>
 
-      <h1 className="sr-only">Edit {workout.name}</h1>
+      <h1 className="sr-only">{t('edit.title', { name: workout.name })}</h1>
 
       {unsaved !== null && (
         <p role="alert" className="mx-4 mt-4 text-meta text-danger">
-          {unsaved === 1 ? '1 set was' : `${unsaved} sets were`} not saved. Retry them, or
-          tap Done again to leave anyway.
+          {t('edit.unsaved', { count: unsaved })}
         </p>
       )}
       {reorderError && (
@@ -97,7 +100,7 @@ export default function WorkoutEditView({ workout }: { workout: Workout }) {
       )}
 
       {exercises.length === 0 && (
-        <p className="mt-6 px-4 text-text-secondary">No exercises in this workout.</p>
+        <p className="mt-6 px-4 text-text-secondary">{t('detail.empty')}</p>
       )}
 
       {exercises.map((entry, position) => {
@@ -117,7 +120,7 @@ export default function WorkoutEditView({ workout }: { workout: Workout }) {
                 </h2>
                 {target && (
                   <p className="mt-0.5 text-meta text-text-tertiary tabular-nums">
-                    Target {target}
+                    {t('detail.target', { target })}
                   </p>
                 )}
               </div>
@@ -126,7 +129,7 @@ export default function WorkoutEditView({ workout }: { workout: Workout }) {
                   type="button"
                   variant="text"
                   size="icon"
-                  aria-label={`Move ${entry.exercise.name} up`}
+                  aria-label={t('edit.moveUp', { name: entry.exercise.name })}
                   disabled={position === 0 || reordering}
                   onClick={() => moveExercise(position, position - 1)}
                 >
@@ -136,7 +139,7 @@ export default function WorkoutEditView({ workout }: { workout: Workout }) {
                   type="button"
                   variant="text"
                   size="icon"
-                  aria-label={`Move ${entry.exercise.name} down`}
+                  aria-label={t('edit.moveDown', { name: entry.exercise.name })}
                   disabled={position === exercises.length - 1 || reordering}
                   onClick={() => moveExercise(position, position + 1)}
                 >

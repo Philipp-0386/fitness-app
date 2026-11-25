@@ -17,6 +17,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Check, GripVertical, Plus } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useEffect, useRef } from 'react';
 
 import { cn } from '@/shared/lib/utils';
@@ -54,6 +55,7 @@ export default function OverviewSheet({
   onClose,
 }: OverviewSheetProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const t = useTranslations('workouts');
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -88,12 +90,11 @@ export default function OverviewSheet({
           size="sm"
           onClick={() => dialogRef.current?.close()}
         >
-          Close
+          {t('exerciseSheet.close')}
         </Button>
       </div>
       <p className="mt-1 mb-4 text-text-secondary tabular-nums">
-        {count} {count === 1 ? 'exercise' : 'exercises'}, {logged}{' '}
-        {logged === 1 ? 'set' : 'sets'} logged
+        {t('overview.summary', { count, logged })}
       </p>
 
       {error && (
@@ -130,7 +131,7 @@ export default function OverviewSheet({
 
       <Button type="button" className="mt-4 w-full" onClick={onAdd}>
         <Plus aria-hidden="true" />
-        Add Exercise
+        {t('addExercise')}
       </Button>
     </Sheet>
   );
@@ -162,6 +163,8 @@ function EntryRow({
     transition,
     isDragging,
   } = useSortable({ id: entry.id, disabled: reordering });
+  const t = useTranslations('workouts');
+  const tCommon = useTranslations('common');
 
   const working = rows.filter((row) => row.setType === 'WORKING');
   const done = working.filter(
@@ -183,7 +186,7 @@ function EntryRow({
         ref={setActivatorNodeRef}
         {...attributes}
         {...listeners}
-        aria-label={`Reorder ${entry.exercise.name}`}
+        aria-label={t('overview.reorder', { name: entry.exercise.name })}
         className="-ml-3 grid size-tap shrink-0 cursor-grab touch-none place-items-center text-text-tertiary hover:text-text-secondary"
       >
         <GripVertical className="size-5" aria-hidden="true" />
@@ -204,10 +207,12 @@ function EntryRow({
         <span className="min-w-0 flex-1">
           <span className="block truncate font-semibold">{entry.exercise.name}</span>
           <span className="block text-meta text-text-secondary tabular-nums">
-            {done} of {working.length} {working.length === 1 ? 'set' : 'sets'}
+            {t('overview.progress', { done, total: working.length })}
           </span>
         </span>
-        {complete && <Check className="size-5 shrink-0 text-success" aria-label="Done" />}
+        {complete && (
+          <Check className="size-5 shrink-0 text-success" aria-label={tCommon('done')} />
+        )}
       </button>
     </li>
   );

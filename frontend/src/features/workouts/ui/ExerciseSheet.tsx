@@ -1,6 +1,7 @@
 'use client';
 
 import { ArrowLeftRight, Trash2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useEffect, useRef } from 'react';
 
 import { Button } from '@/shared/ui/button';
@@ -39,6 +40,7 @@ export default function ExerciseSheet({
   onClose,
 }: ExerciseSheetProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const t = useTranslations('workouts.exerciseSheet');
 
   useEffect(() => {
     dialogRef.current?.showModal();
@@ -56,7 +58,7 @@ export default function ExerciseSheet({
           size="sm"
           onClick={() => dialogRef.current?.close()}
         >
-          Close
+          {t('close')}
         </Button>
       </div>
 
@@ -69,27 +71,25 @@ export default function ExerciseSheet({
       <div className="mt-4">
         <Button type="button" className="w-full" disabled={hasLogged} onClick={onSwap}>
           <ArrowLeftRight aria-hidden="true" />
-          Swap Exercise
+          {t('swap')}
         </Button>
         {hasLogged && (
-          <p className="mt-2 text-meta text-text-secondary">
-            Has logged sets. Add the other exercise instead.
-          </p>
+          <p className="mt-2 text-meta text-text-secondary">{t('hasLogged')}</p>
         )}
       </div>
 
       <div className="mt-2 grid grid-cols-[1fr_auto_1fr] items-center gap-2">
         <Button type="button" onClick={onMoveUp} disabled={!canMoveUp}>
-          Move Back
+          {t('moveBack')}
         </Button>
         <span
           aria-live="polite"
           className="px-1 font-semibold whitespace-nowrap text-text-secondary tabular-nums"
         >
-          {position} of {total}
+          {t('position', { position, total })}
         </span>
         <Button type="button" onClick={onMoveDown} disabled={!canMoveDown}>
-          Move Forward
+          {t('moveForward')}
         </Button>
       </div>
 
@@ -102,7 +102,7 @@ export default function ExerciseSheet({
             onClick={onRemove}
           >
             <Trash2 aria-hidden="true" />
-            Remove Exercise
+            {t('remove')}
           </Button>
         </div>
       )}

@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
+
 import { Button } from '@/shared/ui/button';
 
 type Props = {
@@ -8,18 +10,24 @@ type Props = {
 };
 
 export default function MeError({ error, reset }: Props) {
+  const t = useTranslations('me');
+  const tCommon = useTranslations('common');
+  const tErrors = useTranslations('errors');
+
   return (
     <main className="mx-auto flex w-full max-w-app flex-1 flex-col pb-8">
       <header className="flex min-h-tap items-center px-4 pt-4">
-        <h1 className="text-display">Account</h1>
+        <h1 className="text-display">{t('title')}</h1>
       </header>
 
       <div className="px-4 pt-3">
         <section role="alert" className="rounded-card bg-surface px-4 pt-5 pb-4">
-          <h2 className="text-title">Your account could not be loaded</h2>
-          <p className="mt-1 text-text-secondary">{error.message}</p>
+          <h2 className="text-title">{t('loadError')}</h2>
+          <p className="mt-1 text-text-secondary">{tErrors('unexpected')}</p>
           {error.digest && (
-            <p className="mt-1 text-meta text-text-tertiary">Reference: {error.digest}</p>
+            <p className="mt-1 text-meta text-text-tertiary">
+              {tCommon('reference', { digest: error.digest })}
+            </p>
           )}
         </section>
         <Button
@@ -29,7 +37,7 @@ export default function MeError({ error, reset }: Props) {
           size="lg"
           onClick={reset}
         >
-          Try again
+          {tCommon('tryAgain')}
         </Button>
       </div>
     </main>

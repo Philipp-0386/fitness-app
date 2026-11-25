@@ -398,6 +398,213 @@
       "deleted": "Program deleted."
     }
   },
+  "me": {
+    "title": "Account",
+    "profile": "Profile",
+    "memberSince": "Member since {date}",
+    "loginDetails": "Login Details",
+    "info": "Info",
+    "privacy": "Privacy policy",
+    "privacyLanguage": "German",
+    "dangerZone": "Danger Zone",
+    "dangerText": "Permanently deletes your account and everything you created: own exercises, plans and logged sessions.",
+    "loadError": "Your account could not be loaded",
+    "preferences": "Preferences",
+    "weight": "Weight",
+    "weightUnit": "Weight unit",
+    "distance": "Distance",
+    "distanceUnit": "Distance unit",
+    "language": "Language",
+    "timeZone": "Time Zone",
+    "deviceTimeZone": "Your device uses {timeZone}.",
+    "useDeviceTimeZone": "Use Device Time Zone",
+    "logoutOthers": {
+      "submit": "Log Out Everywhere",
+      "submitting": "Logging out everywhere...",
+      "done": "Logged out everywhere else. This device stays logged in.",
+      "failed": "Logging out everywhere failed. Please try again."
+    },
+    "updateAccount": {
+      "title": "Edit account",
+      "username": "Username",
+      "email": "Email",
+      "password": "Confirm with your password",
+      "required": "Please fill in all fields!",
+      "submit": "Save changes",
+      "submitting": "Saving changes...",
+      "updated": "Account updated: {username}",
+      "invalidPassword": "The password is incorrect.",
+      "usernameTaken": "This username is already taken. Please choose another one.",
+      "emailTaken": "An account with this email already exists. Please use another one."
+    },
+    "changePassword": {
+      "title": "Change password",
+      "text": "Other sessions stay logged in until they expire.",
+      "current": "Current password",
+      "new": "New password",
+      "repeat": "Repeat new password",
+      "required": "Please fill in all fields!",
+      "same": "The new password must be different from the current one.",
+      "mismatch": "The new passwords do not match.",
+      "changed": "Your password has been changed. Other devices have been logged out.",
+      "invalidPassword": "The current password is incorrect.",
+      "submitting": "Changing password..."
+    },
+    "deleteAccount": {
+      "title": "Delete your account?",
+      "button": "Delete account",
+      "text": "This permanently deletes your account and all your data. It cannot be undone.",
+      "password": "Confirm with your password",
+      "required": "Please enter your password.",
+      "deleted": "Your account has been deleted.",
+      "invalidPassword": "The password is incorrect."
+    }
+  },
+  "progress": {
+    "title": "Progress",
+    "text": "In development. Records, volume and progression will show up here."
+  },
+  "workouts": {
+    "errorTitle": "Workout",
+    "loadError": "This workout could not be loaded",
+    "notFound": "Workout not found",
+    "notFoundText": "This workout does not exist (anymore). It may have been deleted, or the link is wrong.",
+    "inProgress": "{name} in progress",
+    "resume": "Resume",
+    "resumeName": "Resume {name}",
+    "otherRunning": "Another workout is running. Finish it first.",
+    "start": "Start Workout",
+    "starting": "Starting...",
+    "empty": "No exercises yet",
+    "emptyText": "Add the exercises you want to train. Sets are saved as you log them.",
+    "addExercise": "Add Exercise",
+    "exerciseOptions": "Exercise options",
+    "lastTime": "Last time {when}",
+    "previous": "Previous",
+    "next": "Next",
+    "repsValue": "{reps} reps",
+    "topBar": {
+      "minimize": "Minimize workout",
+      "position": "Exercise {current} of {total}. Show all exercises",
+      "positionShort": "{current} of {total}",
+      "elapsed": "Elapsed time",
+      "finish": "Finish"
+    },
+    "log": {
+      "finish": "Finish Workout",
+      "nextExercise": "Next Exercise",
+      "WORKING": "Log Set {number}: {values}",
+      "WARMUP": "Log Warm-Up: {values}",
+      "DROP": "Log Drop Set: {values}"
+    },
+    "setType": {
+      "WARMUP": "Warm-Up",
+      "WORKING": "Working",
+      "DROP": "Drop"
+    },
+    "setTitle": {
+      "WORKING": "Set {number}",
+      "WARMUP": "Warm-Up",
+      "DROP": "Drop Set"
+    },
+    "setShort": {
+      "WARMUP": "W",
+      "DROP": "D"
+    },
+    "table": {
+      "set": "SET",
+      "lastTime": "LAST TIME",
+      "reps": "REPS",
+      "time": "TIME",
+      "meters": "M",
+      "status": "Status",
+      "options": "{title} options",
+      "notDoneLastTime": "Not done last time",
+      "saving": "Saving",
+      "saved": "Saved",
+      "retry": "Retry",
+      "remove": "Remove",
+      "addSet": "Add Set"
+    },
+    "setSheet": {
+      "type": "Set type",
+      "rpe": "RPE (optional)",
+      "rpeRange": "RPE goes from 1 to 10.",
+      "remove": "Remove Set"
+    },
+    "exerciseSheet": {
+      "close": "Close",
+      "swap": "Swap Exercise",
+      "hasLogged": "Has logged sets. Add the other exercise instead.",
+      "moveBack": "Move Back",
+      "moveForward": "Move Forward",
+      "position": "{position} of {total}",
+      "remove": "Remove Exercise"
+    },
+    "overview": {
+      "summary": "{count, plural, one {# exercise} other {# exercises}}, {logged, plural, one {# set} other {# sets}} logged",
+      "reorder": "Reorder {name}",
+      "progress": "{done} of {total, plural, one {# set} other {# sets}}"
+    },
+    "finish": {
+      "discardTitle": "Discard this workout?",
+      "discardWithSets": "The workout and its {count, plural, one {# set} other {# sets}} logged are deleted. This cannot be undone.",
+      "discardEmpty": "The workout is deleted. This cannot be undone.",
+      "discard": "Discard Workout",
+      "title": "Finish workout?",
+      "nothingTitle": "Nothing logged yet",
+      "logged": "{count, plural, one {# set} other {# sets}} logged",
+      "nothingText": "Log a set to finish the workout, or discard it.",
+      "failed": "{count, plural, one {# set was} other {# sets were}} not saved.",
+      "submit": "Finish Workout",
+      "submitting": "Finishing...",
+      "keep": "Keep Training"
+    },
+    "summary": {
+      "title": "Workout Complete",
+      "duration": "Duration",
+      "sets": "Sets"
+    },
+    "detail": {
+      "duration": "Duration",
+      "inProgress": "In progress",
+      "sets": "Sets",
+      "exercises": "Exercises",
+      "empty": "No exercises in this workout.",
+      "target": "Target {target}",
+      "deleted": "No longer in the catalog",
+      "noSets": "No sets logged.",
+      "rpe": "RPE {rpe}"
+    },
+    "edit": {
+      "title": "Edit {name}",
+      "unsaved": "{count, plural, one {# set was} other {# sets were}} not saved. Retry them, or tap Done again to leave anyway.",
+      "moveUp": "Move {name} up",
+      "moveDown": "Move {name} down"
+    },
+    "history": {
+      "title": "History",
+      "loadError": "Your history could not be loaded",
+      "noneSelected": "Nothing selected",
+      "noneSelectedText": "Pick a workout to see its exercises and sets.",
+      "empty": "No workouts yet",
+      "emptyText": "Finished workouts show up here, newest first.",
+      "thisWeek": "This Week",
+      "lastWeek": "Last Week",
+      "weekOf": "Week of {date}",
+      "sets": "{count, plural, one {# set} other {# sets}}",
+      "loading": "Loading...",
+      "loadMore": "Load More"
+    },
+    "ago": {
+      "today": "today",
+      "yesterday": "yesterday",
+      "days": "{count} days ago",
+      "weeks": "{count, plural, one {a week ago} other {# weeks ago}}",
+      "months": "{count, plural, one {a month ago} other {# months ago}}",
+      "years": "{count, plural, one {a year ago} other {# years ago}}"
+    }
+  },
   "errors": {
     "unexpected": "An unexpected error occurred. Please try again later.",
     "badRequest": "Please check your input.",
