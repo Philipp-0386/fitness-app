@@ -32,7 +32,9 @@ error must be handled sensibly without knowing its code. The frontend mirrors th
 In the frontend, [toApiError](../../frontend/src/shared/api/errors/to-api-error.ts) turns every failed
 response into an `ApiError`. A feature checks only the codes it reacts to specifically (e.g. `INVALID_PASSWORD`
 in the account dialogs) and passes everything else to
-[fallbackErrorMessage](../../frontend/src/shared/api/errors/fallback-error-message.ts), which picks the message by status.
+[useErrorMessage](../../frontend/src/shared/api/errors/use-error-message.ts) (or
+[getErrorMessage](../../frontend/src/shared/api/errors/get-error-message.ts) in async server components), which
+picks a translated message by status. Field error codes go through `useFieldErrorMessage` in the same file.
 User facing texts belong to the frontend, the backend `message` is not shown.
 
 `ApiError.code` is typed as [ErrorCode](../../frontend/src/shared/api/errors/error-code.ts), so a
@@ -57,7 +59,7 @@ comparison against a misspelled code fails to compile. A new code in the backend
 | `PRESET_ROUTINE_NOT_FOUND` | 404 | `PresetRoutineNotFoundException` from `RoutineService` on `GET /backend/routines/presets/{id}`: missing, or an own routine (copies of presets included) |
 | `INVALID_PASSWORD`       | 403    | `InvalidPasswordException` on `DELETE /backend/me`, `PUT /backend/me` and `PUT /backend/me/password`, wrong password; not 401, the session is still valid   |
 | `INVALID_JSON`           | 400    | unparseable request body                                                                                                                                    |
-| `VALIDATION_FAILED`      | 400    | bean validation on a `@Valid` request body (including `@ValidTimeZone`, which accepts only IANA region ids), a value outside an enum, a routine target the exercise's `tracking_type` does not use (`RoutineTargetMismatchException`), and a new password equal to the current one (`PasswordUnchangedException`); `fieldErrors` maps each rejected field to its first message |
+| `VALIDATION_FAILED`      | 400    | bean validation on a `@Valid` request body (including `@ValidTimeZone`, which accepts only IANA region ids), a value outside an enum, a routine target the exercise's `tracking_type` does not use (`RoutineTargetMismatchException`), and a new password equal to the current one (`PasswordUnchangedException`); `fieldErrors` maps each rejected field to the code of its first violation (e.g. `NotBlank`, `Size`, `OneOf`, `Unchanged`), the frontend translates it |
 | `RESOURCE_NOT_FOUND`     | 404    | no handler mapped to the path                                                                                                                               |
 | `INVALID_PARAMETER`      | 400    | path variable or query parameter of the wrong type, e.g. `/backend/exercises/abc`                                                                           |
 | `DATA_CONFLICT`          | 409    | the database rejected a write (unique or foreign key constraint) the service did not check first; a safety net, only the constraint name is logged          |

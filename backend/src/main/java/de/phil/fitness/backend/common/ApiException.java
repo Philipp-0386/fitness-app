@@ -32,7 +32,7 @@ public abstract class ApiException extends RuntimeException {
      * @param code internal code evaluated by the frontend
      * @param clientMessage message sent to the client
      * @param logMessage message written to the log, may contain internal details such as ids
-     * @param fieldErrors rejected fields mapped to their message, sent to the client
+     * @param fieldErrors rejected fields mapped to an error code such as {@code Null}, sent to the client
      */
     protected ApiException(HttpStatus status, String code, String clientMessage, String logMessage,
                            Map<String, String> fieldErrors) {
