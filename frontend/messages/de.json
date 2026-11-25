@@ -545,7 +545,9 @@
     "overview": {
       "summary": "{count, plural, one {# Übung} other {# Übungen}}, {logged, plural, one {# Satz} other {# Sätze}} erfasst",
       "reorder": "{name} verschieben",
-      "progress": "{done} von {total, plural, one {# Satz} other {# Sätzen}}"
+      "progress": "{done} von {total, plural, one {# Satz} other {# Sätzen}}",
+      "remove": "Entfernen",
+      "removeExercise": "{name} entfernen"
     },
     "finish": {
       "discardTitle": "Dieses Workout verwerfen?",
