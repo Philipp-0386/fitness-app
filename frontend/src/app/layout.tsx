@@ -27,7 +27,11 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export const viewport: Viewport = { viewportFit: 'cover' };
+export const viewport: Viewport = {
+  viewportFit: 'cover',
+  maximumScale: 1,
+  userScalable: false,
+};
 
 export default async function RootLayout({
   children,

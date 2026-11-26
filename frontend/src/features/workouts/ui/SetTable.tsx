@@ -198,7 +198,10 @@ export default function SetTable({
                           e.currentTarget.blur();
                         }
                       }}
-                      className="h-10 w-full min-w-0 rounded-field border border-border-strong bg-surface-raised px-2 text-right"
+                      className={cn(
+                        'h-10 w-full min-w-0 rounded-field border border-border-strong bg-surface-raised px-2 text-right',
+                        index !== active && 'text-field',
+                      )}
                     />
                   );
                 }
