@@ -176,6 +176,7 @@
   html {
     @apply font-sans;
     scrollbar-color: var(--color-surface-overlay) transparent;
+    touch-action: manipulation;
   }
   body {
     @apply bg-background text-body text-foreground antialiased;

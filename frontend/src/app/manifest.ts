@@ -7,6 +7,7 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: 'Avren',
     start_url: '/',
     display: 'standalone',
+    orientation: 'portrait',
     background_color: '#121212',
     theme_color: '#121212',
     icons: [
